@@ -11,8 +11,10 @@ from datetime import datetime, timezone
 from typing import Any, Iterable
 
 from . import seed_data
+from .appearance import compute_appearance
 from .rendering import make_excerpt, reading_minutes, render_markdown
 from .security import hash_password, iso_utc
+from .ui_copy import DEFAULT_UI_COPY
 
 PUBLIC_SETTING_KEYS = (
     "site_title",
@@ -33,7 +35,16 @@ PUBLIC_SETTING_KEYS = (
     "site_url",
 )
 
-ADMIN_SETTING_KEYS = PUBLIC_SETTING_KEYS + ("about_md",)
+ADMIN_SETTING_KEYS = PUBLIC_SETTING_KEYS + (
+    "about_md",
+    "ui_copy",
+    "layout_style",
+    "theme_mode",
+    "theme_timezone",
+    "ntp_server",
+    "day_start",
+    "night_start",
+)
 
 
 def _loads_tags(raw: str | None) -> list[str]:
@@ -312,10 +323,26 @@ def get_all_settings(conn: sqlite3.Connection) -> dict[str, str]:
     return {key: values.get(key, "") for key in ADMIN_SETTING_KEYS}
 
 
+def _load_ui_copy(raw: str) -> dict[str, str]:
+    copy = dict(DEFAULT_UI_COPY)
+    try:
+        stored = json.loads(raw or "{}")
+    except json.JSONDecodeError:
+        return copy
+    if not isinstance(stored, dict):
+        return copy
+    for key, value in stored.items():
+        if key in copy and isinstance(value, str):
+            copy[key] = value
+    return copy
+
+
 def get_public_site(conn: sqlite3.Connection) -> dict[str, Any]:
     settings = get_all_settings(conn)
     site = {key: settings.get(key, "") for key in PUBLIC_SETTING_KEYS}
     site["about_html"] = render_markdown(settings.get("about_md", ""))
+    site["ui_copy"] = _load_ui_copy(settings.get("ui_copy", ""))
+    site["appearance"] = compute_appearance(settings)
     return site
 
 
@@ -330,6 +357,52 @@ def update_settings(conn: sqlite3.Connection, values: dict[str, str]) -> dict[st
         )
     conn.commit()
     return get_all_settings(conn)
+
+
+def get_dashboard_summary(conn: sqlite3.Connection) -> dict[str, Any]:
+    rows = conn.execute(
+        "SELECT * FROM posts ORDER BY updated_at DESC, id DESC"
+    ).fetchall()
+    tag_counter: Counter[str] = Counter()
+    total_characters = 0
+    total_reading = 0
+    for row in rows:
+        tag_counter.update(_loads_tags(row["tags"]))
+        total_characters += len(row["content_md"] or "")
+        total_reading += reading_minutes(row["content_md"] or "")
+
+    recent = []
+    for row in rows[:5]:
+        recent.append(
+            {
+                "id": row["id"],
+                "title": row["title"],
+                "slug": row["slug"],
+                "status": row["status"],
+                "updated_at": row["updated_at"],
+                "published_at": row["published_at"],
+                "reading_minutes": reading_minutes(row["content_md"] or ""),
+            }
+        )
+
+    return {
+        "counts": {
+            "all": len(rows),
+            "published": sum(1 for row in rows if row["status"] == "published"),
+            "draft": sum(1 for row in rows if row["status"] == "draft"),
+            "tags": len(tag_counter),
+            "characters": total_characters,
+            "reading_minutes": total_reading,
+        },
+        "recent": recent,
+        "top_tags": [
+            {"name": name, "count": count}
+            for name, count in sorted(
+                tag_counter.items(), key=lambda item: (-item[1], item[0])
+            )[:8]
+        ],
+        "last_updated": rows[0]["updated_at"] if rows else None,
+    }
 
 
 def get_admin_account(conn: sqlite3.Connection) -> sqlite3.Row | None:

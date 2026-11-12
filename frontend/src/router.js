@@ -29,9 +29,21 @@ const routes = [
     meta: { admin: true, guestOnly: true, noindex: true },
   },
   {
+    path: '/admin/dashboard',
+    name: 'admin-dashboard',
+    component: () => import('./admin/AdminDashboardView.vue'),
+    meta: { admin: true, requiresAdmin: true, noindex: true },
+  },
+  {
     path: '/admin/posts',
     name: 'admin-posts',
     component: () => import('./admin/AdminPostsView.vue'),
+    meta: { admin: true, requiresAdmin: true, noindex: true },
+  },
+  {
+    path: '/admin/appearance',
+    name: 'admin-appearance',
+    component: () => import('./admin/AdminAppearanceView.vue'),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
@@ -89,7 +101,7 @@ router.beforeEach(async (to) => {
   if (to.meta.guestOnly) {
     const authenticated = await ensureAdminSession()
     if (authenticated) {
-      return { name: 'admin-posts' }
+      return { name: 'admin-dashboard' }
     }
   }
   return true

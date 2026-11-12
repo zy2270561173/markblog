@@ -1,5 +1,6 @@
 import { reactive, readonly } from 'vue'
 import { publicApi } from '../api'
+import { UI_COPY_DEFAULTS } from './copy'
 
 const fallback = {
   site_title: 'Markblog',
@@ -19,6 +20,18 @@ const fallback = {
   footer_note: '维修有风险，重要数据请先备份；本站内容为个人经验记录。',
   site_since: '2026',
   site_url: window.location.origin,
+  ui_copy: { ...UI_COPY_DEFAULTS },
+  appearance: {
+    mode: 'auto',
+    active: 'light',
+    layout: 'sketch',
+    source: 'server',
+    timezone: 'Asia/Shanghai',
+    ntp_server: 'ntp.aliyun.com',
+    day_start: '07:00',
+    night_start: '19:00',
+    local_time: '',
+  },
 }
 
 const state = reactive({

@@ -1,9 +1,11 @@
 <script setup>
 import { computed } from 'vue'
 import { useSite } from '../lib/site'
+import { useCopy } from '../lib/useCopy'
 import { copyrightLine } from '../lib/format'
 
 const { state: siteState } = useSite()
+const copy = useCopy()
 const site = computed(() => siteState.site)
 const copyright = computed(() => copyrightLine(site.value.copyright))
 const hasIcp = computed(() => Boolean(site.value.icp_number?.trim()))
@@ -28,20 +30,22 @@ const policeHref = computed(
           <p class="footer-brand__text">
             {{ site.site_subtitle || '把电脑问题，写到纸上。' }}
           </p>
-          <p v-if="since" class="footer-brand__since">SINCE {{ since }} · 个人非经营性博客</p>
+          <p v-if="since" class="footer-brand__since">
+            {{ copy.footer_since_label }} {{ since }} · {{ copy.footer_since }}
+          </p>
         </div>
 
         <nav class="footer-nav" aria-label="页脚导航">
-          <p class="footer-heading">翻一翻</p>
-          <RouterLink to="/">首页</RouterLink>
-          <RouterLink to="/posts">文章</RouterLink>
-          <RouterLink to="/about">关于</RouterLink>
-          <a href="/feed.xml">RSS 订阅</a>
+          <p class="footer-heading">{{ copy.footer_heading }}</p>
+          <RouterLink to="/">{{ copy.footer_home }}</RouterLink>
+          <RouterLink to="/posts">{{ copy.footer_posts }}</RouterLink>
+          <RouterLink to="/about">{{ copy.footer_about }}</RouterLink>
+          <a href="/feed.xml">{{ copy.footer_rss }}</a>
         </nav>
 
         <div class="footer-doodle" aria-hidden="true">
           <span class="footer-doodle__circle">M</span>
-          <p>用 Markdown 写，<br />用铅笔灰排版。</p>
+          <p class="footer-doodle__text">{{ copy.footer_doodle }}</p>
         </div>
       </div>
 
@@ -53,7 +57,7 @@ const policeHref = computed(
 
         <div class="filings" aria-label="网站备案信息">
           <p class="filing-line">
-            <span class="filing-label">ICP 备案</span>
+            <span class="filing-label">{{ copy.footer_icp_label }}</span>
             <a
               v-if="hasIcp"
               class="filing-link"
@@ -61,10 +65,10 @@ const policeHref = computed(
               target="_blank"
               rel="noopener noreferrer"
             >{{ site.icp_number }}</a>
-            <span v-else class="filing-pending">ICP 备案号待补充</span>
+            <span v-else class="filing-pending">{{ copy.footer_pending }}</span>
           </p>
           <p v-if="hasPolice" class="filing-line">
-            <span class="filing-label">公安备案</span>
+            <span class="filing-label">{{ copy.footer_police_label }}</span>
             <a
               class="filing-link"
               :href="policeHref"
@@ -72,7 +76,7 @@ const policeHref = computed(
               rel="noopener noreferrer"
             >{{ site.police_number }}</a>
           </p>
-          <p class="filing-hint">备案信息以工信部及公安备案系统公示为准。</p>
+          <p class="filing-hint">{{ copy.footer_filing_hint }}</p>
         </div>
       </div>
     </div>
@@ -84,7 +88,7 @@ const policeHref = computed(
   margin-top: var(--section-gap);
   padding: 0 0 36px;
   border-top: 1.5px dashed var(--color-line);
-  background-color: rgba(236, 228, 214, 0.18);
+  background-color: var(--surface-soft);
 }
 
 .footer-line {
@@ -210,6 +214,10 @@ const policeHref = computed(
   line-height: 1.35;
 }
 
+.footer-doodle__text {
+  white-space: pre-line;
+}
+
 .footer-bottom {
   display: flex;
   align-items: flex-end;
@@ -263,8 +271,8 @@ const policeHref = computed(
 }
 
 .filing-pending {
-  color: #a93226;
-  border-bottom: 1px dashed rgba(169, 50, 38, 0.55);
+  color: var(--filing-pending-ink);
+  border-bottom: 1px dashed currentColor;
 }
 
 .filing-hint {

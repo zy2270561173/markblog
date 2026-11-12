@@ -1,18 +1,18 @@
 
-.not-found[data-v-70ccd51f] {
+.not-found[data-v-f6951a94] {
   position: relative;
   max-width: 760px;
   padding-top: 92px;
   text-align: center;
 }
-.not-found__art[data-v-70ccd51f] {
+.not-found__art[data-v-f6951a94] {
   position: relative;
   display: inline-block;
   width: 310px;
   height: 170px;
   margin-bottom: 22px;
 }
-.not-found__number[data-v-70ccd51f] {
+.not-found__number[data-v-f6951a94] {
   position: relative;
   z-index: 1;
   color: var(--color-pencil);
@@ -24,7 +24,7 @@
   transform: rotate(-3deg);
   display: inline-block;
 }
-.not-found__circle[data-v-70ccd51f] {
+.not-found__circle[data-v-f6951a94] {
   position: absolute;
   top: 38px;
   left: 37px;
@@ -35,7 +35,7 @@
   transform: rotate(2deg);
   opacity: 0.5;
 }
-.not-found__scribble[data-v-70ccd51f] {
+.not-found__scribble[data-v-f6951a94] {
   position: absolute;
   right: 8px;
   bottom: 8px;
@@ -47,25 +47,25 @@
   transform: rotate(-8deg);
   opacity: 0.55;
 }
-.not-found h1[data-v-70ccd51f] {
+.not-found h1[data-v-f6951a94] {
   margin: 0 0 18px;
   font-size: clamp(42px, 7vw, 64px);
 }
-.not-found__text[data-v-70ccd51f] {
+.not-found__text[data-v-f6951a94] {
   max-width: 46ch;
   margin: 0 auto;
   color: var(--color-ink-soft);
   font-size: 17px;
   line-height: 1.8;
 }
-.not-found__actions[data-v-70ccd51f] {
+.not-found__actions[data-v-f6951a94] {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 16px;
   margin-top: 34px;
 }
-.not-found__note[data-v-70ccd51f] {
+.not-found__note[data-v-f6951a94] {
   margin-top: 42px;
   color: var(--color-ink-faint);
   font-family: var(--font-hand);
@@ -73,23 +73,23 @@
   transform: rotate(-1deg);
 }
 @media (max-width: 600px) {
-.not-found[data-v-70ccd51f] {
+.not-found[data-v-f6951a94] {
     padding-top: 54px;
 }
-.not-found__art[data-v-70ccd51f] {
+.not-found__art[data-v-f6951a94] {
     width: 260px;
     height: 145px;
 }
-.not-found__number[data-v-70ccd51f] {
+.not-found__number[data-v-f6951a94] {
     font-size: 118px;
 }
-.not-found__circle[data-v-70ccd51f] {
+.not-found__circle[data-v-f6951a94] {
     top: 32px;
     left: 31px;
     width: 198px;
     height: 82px;
 }
-.not-found__actions[data-v-70ccd51f] {
+.not-found__actions[data-v-f6951a94] {
     align-items: stretch;
     flex-direction: column;
 }

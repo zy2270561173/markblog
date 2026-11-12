@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import tempfile
+from datetime import datetime, timezone
 
 import pytest
 
@@ -12,6 +14,7 @@ os.environ["BLOG_ADMIN_USERNAME"] = "admin"
 os.environ["BLOG_ADMIN_PASSWORD"] = "test-password-123"
 os.environ["BLOG_ENV"] = "test"
 os.environ["BLOG_LOGIN_MAX_ATTEMPTS"] = "20"
+os.environ["BLOG_DISABLE_NTP"] = "1"
 
 from fastapi.testclient import TestClient  # noqa: E402
 
@@ -58,6 +61,9 @@ def test_public_site_and_feeds(client: TestClient):
     assert site["author_name"] == "慕沄 (MuYun)"
     assert "慕沄 (MuYun)" in site["about_html"]
     assert "Markblog" in site["about_html"]
+    assert site["ui_copy"]["nav_home"] == "首页"
+    assert site["appearance"]["layout"] == "sketch"
+    assert site["appearance"]["active"] in {"light", "dark"}
     assert site["seo_title"] == "Markblog · 电脑维修与使用笔记"
     assert site["icp_number"] == ""
     assert site["icp_link"] == "https://beian.miit.gov.cn/"
@@ -103,6 +109,7 @@ def test_public_site_and_feeds(client: TestClient):
 
 def test_admin_is_private_and_csrf_protected(client: TestClient):
     assert client.get("/api/admin/posts").status_code == 401
+    assert client.get("/api/admin/dashboard").status_code == 401
 
     wrong = client.post(
         "/api/admin/login",
@@ -115,6 +122,12 @@ def test_admin_is_private_and_csrf_protected(client: TestClient):
     me = client.get("/api/admin/me", headers=headers)
     assert me.status_code == 200
     assert me.json()["username"] == USERNAME
+
+    dashboard = client.get("/api/admin/dashboard", headers=headers)
+    assert dashboard.status_code == 200, dashboard.text
+    assert dashboard.json()["counts"]["all"] == 6
+    assert dashboard.json()["recent"]
+    assert "appearance" in dashboard.json()
 
     payload = {
         "title": "CSRF check",
@@ -166,6 +179,8 @@ def test_post_crud_and_markdown_safety(client: TestClient):
 def test_settings_and_footer_records(client: TestClient):
     headers = login(client)
     settings = current_settings(client, headers)
+    custom_copy = json.loads(settings["ui_copy"])
+    custom_copy["nav_home"] = "开始"
     payload = {
         **settings,
         "seo_title": "Markblog · 自定义 SEO 标题",
@@ -177,11 +192,21 @@ def test_settings_and_footer_records(client: TestClient):
         "police_link": "https://beian.mps.gov.cn/#/query/webSearch",
         "copyright": "© {year} Test Blog. 保留所有权利。",
         "site_url": "http://testserver",
+        "layout_style": "minimal",
+        "theme_mode": "dark",
+        "theme_timezone": "Asia/Shanghai",
+        "ntp_server": "ntp.aliyun.com",
+        "day_start": "07:00",
+        "night_start": "19:00",
+        "ui_copy": json.dumps(custom_copy, ensure_ascii=False),
     }
     saved = client.put("/api/admin/settings", json=payload, headers=headers)
     assert saved.status_code == 200, saved.text
 
     public_site = client.get("/api/public/site").json()
+    assert public_site["ui_copy"]["nav_home"] == "开始"
+    assert public_site["appearance"]["active"] == "dark"
+    assert public_site["appearance"]["layout"] == "minimal"
     assert public_site["seo_title"] == payload["seo_title"]
     assert public_site["seo_description"] == payload["seo_description"]
     assert public_site["icp_number"] == payload["icp_number"]
@@ -213,6 +238,36 @@ def test_settings_and_footer_records(client: TestClient):
         headers=headers,
     )
     assert unofficial_police.status_code == 422
+
+
+def test_appearance_day_night_window(monkeypatch):
+    from backend import appearance
+
+    values = {
+        "theme_mode": "auto",
+        "theme_timezone": "Asia/Shanghai",
+        "ntp_server": "ntp.aliyun.com",
+        "day_start": "07:00",
+        "night_start": "19:00",
+        "layout_style": "sketch",
+    }
+    monkeypatch.setattr(
+        appearance,
+        "_now_with_source",
+        lambda _server: (datetime(2026, 7, 1, 2, 0, tzinfo=timezone.utc), "ntp", None),
+    )
+    assert appearance.compute_appearance(values)["active"] == "light"
+
+    monkeypatch.setattr(
+        appearance,
+        "_now_with_source",
+        lambda _server: (datetime(2026, 7, 1, 15, 0, tzinfo=timezone.utc), "ntp", None),
+    )
+    assert appearance.compute_appearance(values)["active"] == "dark"
+
+    values["theme_mode"] = "dark"
+    assert appearance.compute_appearance(values)["active"] == "dark"
+    assert appearance.compute_appearance(values)["source"] == "manual"
 
 
 def test_password_change_invalidates_sessions(client: TestClient):

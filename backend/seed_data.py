@@ -6,6 +6,10 @@ in SQLite; SEO and filing fields can be edited from the hidden admin area.
 
 from __future__ import annotations
 
+import json
+
+from .ui_copy import DEFAULT_UI_COPY
+
 DEFAULT_SETTINGS: dict[str, str] = {
     "site_title": "Markblog",
     "site_subtitle": "把电脑问题，写到纸上。",
@@ -42,6 +46,13 @@ DEFAULT_SETTINGS: dict[str, str] = {
     "footer_note": "维修有风险，重要数据请先备份；本站内容为个人经验记录。",
     "site_since": "2026",
     "site_url": "http://127.0.0.1:8000",
+    "ui_copy": json.dumps(DEFAULT_UI_COPY, ensure_ascii=False),
+    "layout_style": "sketch",
+    "theme_mode": "auto",
+    "theme_timezone": "Asia/Shanghai",
+    "ntp_server": "ntp.aliyun.com",
+    "day_start": "07:00",
+    "night_start": "19:00",
 }
 
 POSTS: list[dict[str, object]] = [

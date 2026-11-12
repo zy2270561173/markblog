@@ -4,12 +4,14 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import StateBlock from '../components/StateBlock.vue'
 import { publicApi } from '../api'
 import { useSite } from '../lib/site'
+import { useCopy } from '../lib/useCopy'
 import { setPageMeta } from '../lib/meta'
-import { formatShortDate, readingLabel } from '../lib/format'
+import { formatShortDate } from '../lib/format'
 
 const route = useRoute()
 const router = useRouter()
 const { state: siteState } = useSite()
+const copy = useCopy()
 
 const posts = ref([])
 const tags = ref([])
@@ -31,8 +33,16 @@ const filteredPosts = computed(() => {
 
 const hasFilters = computed(() => Boolean(activeTag.value || searchTerm.value))
 const pageTitle = computed(() =>
-  activeTag.value ? `标签：${activeTag.value}` : '所有文章',
+  activeTag.value ? `标签：${activeTag.value}` : copy.value.posts_title,
 )
+
+function readingText(minutes) {
+  return copy.value.reading_minutes_template.replace('{minutes}', String(minutes))
+}
+
+function postsCountText(count) {
+  return copy.value.posts_count_template.replace('{count}', String(count))
+}
 
 async function loadPosts() {
   loading.value = true
@@ -84,15 +94,15 @@ watch(activeTag, applyMeta)
 <template>
   <div class="posts-page container">
     <header class="archive-head">
-      <p class="eyebrow">ARCHIVE / 全部笔记</p>
+      <p class="eyebrow">{{ copy.posts_eyebrow }}</p>
       <div class="archive-head__row">
-        <h1>所有文章</h1>
+        <h1>{{ copy.posts_title }}</h1>
         <p class="archive-head__count">
-          {{ loading ? '正在数…' : `共 ${posts.length} 篇，慢慢读` }}
+          {{ loading ? '正在数…' : postsCountText(posts.length) }}
         </p>
       </div>
       <p class="archive-head__desc">
-        按写下的顺序摊开。可以用标签或关键词找一找，不必着急。
+        {{ copy.posts_desc }}
       </p>
     </header>
 
@@ -107,7 +117,7 @@ watch(activeTag, applyMeta)
           v-model="searchDraft"
           type="search"
           class="search-box__input"
-          placeholder="搜一搜标题、摘要或标签…"
+          :placeholder="copy.posts_search"
           autocomplete="off"
         />
         <button
@@ -129,7 +139,7 @@ watch(activeTag, applyMeta)
           :aria-pressed="!activeTag"
           @click="setTag('')"
         >
-          全部
+          {{ copy.posts_filter_all }}
         </button>
         <button
           v-for="tag in tags"
@@ -150,10 +160,12 @@ watch(activeTag, applyMeta)
       <p>
         <span v-if="activeTag" class="result-tag"># {{ activeTag }}</span>
         <span v-if="searchTerm" class="result-query">“{{ searchDraft.trim() }}”</span>
-        <span v-if="!loading" class="result-number">{{ filteredPosts.length }} 篇</span>
+        <span v-if="!loading" class="result-number">
+          {{ filteredPosts.length }} {{ copy.posts_unit }}
+        </span>
       </p>
       <button v-if="hasFilters" type="button" class="link-reset" @click="clearFilters">
-        清除筛选
+        {{ copy.posts_clear }}
       </button>
     </div>
 
@@ -191,7 +203,7 @@ watch(activeTag, applyMeta)
           <div class="ledger-row__meta">
             <time :datetime="post.published_at">{{ formatShortDate(post.published_at) }}</time>
             <span aria-hidden="true">·</span>
-            <span>{{ readingLabel(post.reading_minutes) }}</span>
+            <span>{{ readingText(post.reading_minutes) }}</span>
           </div>
           <h2 class="ledger-row__title">
             <RouterLink :to="{ name: 'post', params: { slug: post.slug } }">
@@ -218,8 +230,8 @@ watch(activeTag, applyMeta)
 
     <aside v-if="!loading && !error && posts.length" class="archive-end">
       <span class="archive-end__line" aria-hidden="true"></span>
-      <p>读到这里，先歇一会儿。</p>
-      <RouterLink to="/" class="text-link">回到首页</RouterLink>
+      <p>{{ copy.posts_end }}</p>
+      <RouterLink to="/" class="text-link">{{ copy.posts_back_home }}</RouterLink>
     </aside>
   </div>
 </template>
@@ -395,7 +407,7 @@ watch(activeTag, applyMeta)
 
 .ledger-row:hover {
   padding-inline: 10px;
-  background: rgba(236, 228, 214, 0.24);
+  background: var(--surface-soft);
 }
 
 .ledger-row__index {

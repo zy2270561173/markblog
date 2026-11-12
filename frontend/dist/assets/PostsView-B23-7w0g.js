@@ -1,53 +1,56 @@
-import { _ as _export_sfc, u as useSite, k as tx, i as iH, l as lS, m as ny, a as ir, b as id, e as ea, w as nu, x as o7, j as i_, Y, o as r2, p as lj, q as ii, n as na, d as ip, t as tA, h as _t, D as Dt, E as Et, r as r9, g as iv, f as formatShortDate, c as readingLabel, s as setPageMeta, v as publicApi } from './index-BvAI33k-.js';
-import { _ as _sfc_main$1 } from './StateBlock-Cbi4YDNN.js';
+import { _ as _export_sfc, j as useSite, u as useCopy, k as tx, i as iH, l as lS, m as ny, a as ir, b as id, e as ea, t as tA, w as nu, x as o7, h as i_, Y, o as r2, p as lj, q as ii, n as na, c as ip, g as _t, D as Dt, E as Et, r as r9, d as iv, f as formatShortDate, s as setPageMeta, v as publicApi } from './index-71-tahyS.js';
+import { _ as _sfc_main$1 } from './StateBlock-BRyVZ8MG.js';
 
 const _hoisted_1 = { class: "posts-page container" };
 const _hoisted_2 = { class: "archive-head" };
-const _hoisted_3 = { class: "archive-head__row" };
-const _hoisted_4 = { class: "archive-head__count" };
-const _hoisted_5 = {
+const _hoisted_3 = { class: "eyebrow" };
+const _hoisted_4 = { class: "archive-head__row" };
+const _hoisted_5 = { class: "archive-head__count" };
+const _hoisted_6 = { class: "archive-head__desc" };
+const _hoisted_7 = {
   class: "filters",
   "aria-label": "筛选文章"
 };
-const _hoisted_6 = { class: "search-box" };
-const _hoisted_7 = {
+const _hoisted_8 = { class: "search-box" };
+const _hoisted_9 = ["placeholder"];
+const _hoisted_10 = {
   key: 0,
   class: "tag-filters",
   role: "group",
   "aria-label": "按标签筛选"
 };
-const _hoisted_8 = ["aria-pressed"];
-const _hoisted_9 = ["aria-pressed", "onClick"];
-const _hoisted_10 = { class: "tag-count" };
-const _hoisted_11 = { class: "result-line" };
-const _hoisted_12 = {
+const _hoisted_11 = ["aria-pressed"];
+const _hoisted_12 = ["aria-pressed", "onClick"];
+const _hoisted_13 = { class: "tag-count" };
+const _hoisted_14 = { class: "result-line" };
+const _hoisted_15 = {
   key: 0,
   class: "result-tag"
 };
-const _hoisted_13 = {
+const _hoisted_16 = {
   key: 1,
   class: "result-query"
 };
-const _hoisted_14 = {
+const _hoisted_17 = {
   key: 2,
   class: "result-number"
 };
-const _hoisted_15 = {
+const _hoisted_18 = {
   key: 3,
   class: "ledger",
   "aria-label": "文章列表"
 };
-const _hoisted_16 = {
+const _hoisted_19 = {
   class: "ledger-row__index",
   "aria-hidden": "true"
 };
-const _hoisted_17 = { class: "ledger-row__main" };
-const _hoisted_18 = { class: "ledger-row__meta" };
-const _hoisted_19 = ["datetime"];
-const _hoisted_20 = { class: "ledger-row__title" };
-const _hoisted_21 = { class: "ledger-row__excerpt" };
-const _hoisted_22 = { class: "ledger-row__tags" };
-const _hoisted_23 = {
+const _hoisted_20 = { class: "ledger-row__main" };
+const _hoisted_21 = { class: "ledger-row__meta" };
+const _hoisted_22 = ["datetime"];
+const _hoisted_23 = { class: "ledger-row__title" };
+const _hoisted_24 = { class: "ledger-row__excerpt" };
+const _hoisted_25 = { class: "ledger-row__tags" };
+const _hoisted_26 = {
   key: 4,
   class: "archive-end"
 };
@@ -60,6 +63,7 @@ const _sfc_main = {
 const route = Dt();
 const router = Et();
 const { state: siteState } = useSite();
+const copy = useCopy();
 
 const posts = tx([]);
 const tags = tx([]);
@@ -81,8 +85,16 @@ const filteredPosts = iH(() => {
 
 const hasFilters = iH(() => Boolean(activeTag.value || searchTerm.value));
 iH(() =>
-  activeTag.value ? `标签：${activeTag.value}` : '所有文章',
+  activeTag.value ? `标签：${activeTag.value}` : copy.value.posts_title,
 );
+
+function readingText(minutes) {
+  return copy.value.reading_minutes_template.replace('{minutes}', String(minutes))
+}
+
+function postsCountText(count) {
+  return copy.value.posts_count_template.replace('{count}', String(count))
+}
 
 async function loadPosts() {
   loading.value = true;
@@ -133,17 +145,17 @@ ny(activeTag, applyMeta);
 return (_ctx, _cache) => {
   return (r9(), ir("div", _hoisted_1, [
     id("header", _hoisted_2, [
-      _cache[4] || (_cache[4] = id("p", { class: "eyebrow" }, "ARCHIVE / 全部笔记", -1)),
-      id("div", _hoisted_3, [
-        _cache[3] || (_cache[3] = id("h1", null, "所有文章", -1)),
-        id("p", _hoisted_4, ea(loading.value ? '正在数…' : `共 ${posts.value.length} 篇，慢慢读`), 1)
+      id("p", _hoisted_3, ea(tA(copy).posts_eyebrow), 1),
+      id("div", _hoisted_4, [
+        id("h1", null, ea(tA(copy).posts_title), 1),
+        id("p", _hoisted_5, ea(loading.value ? '正在数…' : postsCountText(posts.value.length)), 1)
       ]),
-      _cache[5] || (_cache[5] = id("p", { class: "archive-head__desc" }, " 按写下的顺序摊开。可以用标签或关键词找一找，不必着急。 ", -1))
+      id("p", _hoisted_6, ea(tA(copy).posts_desc), 1)
     ]),
-    id("section", _hoisted_5, [
-      id("label", _hoisted_6, [
-        _cache[6] || (_cache[6] = id("span", { class: "visually-hidden" }, "搜索文章标题、摘要或标签", -1)),
-        _cache[7] || (_cache[7] = id("svg", {
+    id("section", _hoisted_7, [
+      id("label", _hoisted_8, [
+        _cache[3] || (_cache[3] = id("span", { class: "visually-hidden" }, "搜索文章标题、摘要或标签", -1)),
+        _cache[4] || (_cache[4] = id("svg", {
           viewBox: "0 0 24 24",
           width: "20",
           height: "20",
@@ -168,9 +180,9 @@ return (_ctx, _cache) => {
           "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((searchDraft).value = $event)),
           type: "search",
           class: "search-box__input",
-          placeholder: "搜一搜标题、摘要或标签…",
+          placeholder: tA(copy).posts_search,
           autocomplete: "off"
-        }, null, 512), [
+        }, null, 8, _hoisted_9), [
           [o7, searchDraft.value]
         ]),
         (searchDraft.value)
@@ -184,13 +196,13 @@ return (_ctx, _cache) => {
           : i_("", true)
       ]),
       (tags.value.length)
-        ? (r9(), ir("div", _hoisted_7, [
+        ? (r9(), ir("div", _hoisted_10, [
             id("button", {
               type: "button",
               class: Y(["tag", { 'is-active': !activeTag.value }]),
               "aria-pressed": !activeTag.value,
               onClick: _cache[2] || (_cache[2] = $event => (setTag('')))
-            }, " 全部 ", 10, _hoisted_8),
+            }, ea(tA(copy).posts_filter_all), 11, _hoisted_11),
             (r9(true), ir(r2, null, lj(tags.value, (tag) => {
               return (r9(), ir("button", {
                 key: tag.name,
@@ -200,22 +212,22 @@ return (_ctx, _cache) => {
                 onClick: $event => (setTag(tag.name))
               }, [
                 iv(ea(tag.name) + " ", 1),
-                id("span", _hoisted_10, ea(tag.count), 1)
-              ], 10, _hoisted_9))
+                id("span", _hoisted_13, ea(tag.count), 1)
+              ], 10, _hoisted_12))
             }), 128))
           ]))
         : i_("", true)
     ]),
-    id("div", _hoisted_11, [
+    id("div", _hoisted_14, [
       id("p", null, [
         (activeTag.value)
-          ? (r9(), ir("span", _hoisted_12, "# " + ea(activeTag.value), 1))
+          ? (r9(), ir("span", _hoisted_15, "# " + ea(activeTag.value), 1))
           : i_("", true),
         (searchTerm.value)
-          ? (r9(), ir("span", _hoisted_13, "“" + ea(searchDraft.value.trim()) + "”", 1))
+          ? (r9(), ir("span", _hoisted_16, "“" + ea(searchDraft.value.trim()) + "”", 1))
           : i_("", true),
         (!loading.value)
-          ? (r9(), ir("span", _hoisted_14, ea(filteredPosts.value.length) + " 篇", 1))
+          ? (r9(), ir("span", _hoisted_17, ea(filteredPosts.value.length) + " " + ea(tA(copy).posts_unit), 1))
           : i_("", true)
       ]),
       (hasFilters.value)
@@ -224,7 +236,7 @@ return (_ctx, _cache) => {
             type: "button",
             class: "link-reset",
             onClick: clearFilters
-          }, " 清除筛选 "))
+          }, ea(tA(copy).posts_clear), 1))
         : i_("", true)
     ]),
     (loading.value)
@@ -269,7 +281,7 @@ return (_ctx, _cache) => {
                       to: "/",
                       class: "btn btn--small"
                     }, {
-                      default: na(() => [...(_cache[8] || (_cache[8] = [
+                      default: na(() => [...(_cache[5] || (_cache[5] = [
                         iv("回到首页", -1)
                       ]))]),
                       _: 1
@@ -277,22 +289,22 @@ return (_ctx, _cache) => {
               ]),
               _: 1
             }))
-          : (r9(), ir("section", _hoisted_15, [
+          : (r9(), ir("section", _hoisted_18, [
               (r9(true), ir(r2, null, lj(filteredPosts.value, (post, index) => {
                 return (r9(), ir("article", {
                   key: post.slug,
                   class: "ledger-row"
                 }, [
-                  id("div", _hoisted_16, ea(String(index + 1).padStart(2, '0')), 1),
-                  id("div", _hoisted_17, [
-                    id("div", _hoisted_18, [
+                  id("div", _hoisted_19, ea(String(index + 1).padStart(2, '0')), 1),
+                  id("div", _hoisted_20, [
+                    id("div", _hoisted_21, [
                       id("time", {
                         datetime: post.published_at
-                      }, ea(tA(formatShortDate)(post.published_at)), 9, _hoisted_19),
-                      _cache[9] || (_cache[9] = id("span", { "aria-hidden": "true" }, "·", -1)),
-                      id("span", null, ea(tA(readingLabel)(post.reading_minutes)), 1)
+                      }, ea(tA(formatShortDate)(post.published_at)), 9, _hoisted_22),
+                      _cache[6] || (_cache[6] = id("span", { "aria-hidden": "true" }, "·", -1)),
+                      id("span", null, ea(readingText(post.reading_minutes)), 1)
                     ]),
-                    id("h2", _hoisted_20, [
+                    id("h2", _hoisted_23, [
                       ip(tA(_t), {
                         to: { name: 'post', params: { slug: post.slug } }
                       }, {
@@ -302,8 +314,8 @@ return (_ctx, _cache) => {
                         _: 2
                       }, 1032, ["to"])
                     ]),
-                    id("p", _hoisted_21, ea(post.excerpt), 1),
-                    id("ul", _hoisted_22, [
+                    id("p", _hoisted_24, ea(post.excerpt), 1),
+                    id("ul", _hoisted_25, [
                       (r9(true), ir(r2, null, lj(post.tags, (tag) => {
                         return (r9(), ir("li", { key: tag }, ea(tag), 1))
                       }), 128))
@@ -314,7 +326,7 @@ return (_ctx, _cache) => {
                     class: "ledger-row__arrow",
                     "aria-label": `阅读《${post.title}》`
                   }, {
-                    default: na(() => [...(_cache[10] || (_cache[10] = [
+                    default: na(() => [...(_cache[7] || (_cache[7] = [
                       id("svg", {
                         viewBox: "0 0 52 26",
                         width: "52",
@@ -343,19 +355,19 @@ return (_ctx, _cache) => {
               }), 128))
             ])),
     (!loading.value && !error.value && posts.value.length)
-      ? (r9(), ir("aside", _hoisted_23, [
-          _cache[12] || (_cache[12] = id("span", {
+      ? (r9(), ir("aside", _hoisted_26, [
+          _cache[8] || (_cache[8] = id("span", {
             class: "archive-end__line",
             "aria-hidden": "true"
           }, null, -1)),
-          _cache[13] || (_cache[13] = id("p", null, "读到这里，先歇一会儿。", -1)),
+          id("p", null, ea(tA(copy).posts_end), 1),
           ip(tA(_t), {
             to: "/",
             class: "text-link"
           }, {
-            default: na(() => [...(_cache[11] || (_cache[11] = [
-              iv("回到首页", -1)
-            ]))]),
+            default: na(() => [
+              iv(ea(tA(copy).posts_back_home), 1)
+            ]),
             _: 1
           })
         ]))
@@ -365,6 +377,6 @@ return (_ctx, _cache) => {
 }
 
 };
-const PostsView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-0abc476e"]]);
+const PostsView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-ba93ebda"]]);
 
 export { PostsView as default };

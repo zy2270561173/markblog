@@ -2,9 +2,11 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSite } from '../lib/site'
+import { useCopy } from '../lib/useCopy'
 
 const route = useRoute()
 const { state: siteState } = useSite()
+const copy = useCopy()
 const menuOpen = ref(false)
 
 const isHome = computed(() => route.name === 'home')
@@ -58,7 +60,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
         </span>
         <span class="brand-type">
           <span class="brand-name">{{ siteTitle }}<span class="brand-dot">.</span></span>
-          <span class="brand-note">PERSONAL NOTES</span>
+          <span class="brand-note">{{ copy.header_note }}</span>
         </span>
       </RouterLink>
 
@@ -90,7 +92,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
           :class="{ 'is-active': isHome }"
           :aria-current="isHome ? 'page' : undefined"
         >
-          首页
+          {{ copy.nav_home }}
         </RouterLink>
         <RouterLink
           to="/posts"
@@ -98,7 +100,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
           :class="{ 'is-active': isPosts }"
           :aria-current="isPosts ? 'page' : undefined"
         >
-          文章
+          {{ copy.nav_posts }}
         </RouterLink>
         <RouterLink
           to="/about"
@@ -106,7 +108,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
           :class="{ 'is-active': isAbout }"
           :aria-current="isAbout ? 'page' : undefined"
         >
-          关于
+          {{ copy.nav_about }}
         </RouterLink>
         <a class="rss-link" href="/feed.xml" aria-label="RSS 订阅">
           <svg viewBox="0 0 18 18" width="15" height="15" fill="none" aria-hidden="true">
@@ -114,7 +116,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
             <path d="M2 8.2A7.8 7.8 0 0 1 9.8 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
             <path d="M2 2.2A13.8 13.8 0 0 1 15.8 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
           </svg>
-          RSS
+          {{ copy.nav_rss }}
         </a>
       </nav>
     </div>

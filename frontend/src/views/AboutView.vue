@@ -3,9 +3,11 @@ import { computed, onMounted, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import StateBlock from '../components/StateBlock.vue'
 import { useSite } from '../lib/site'
+import { useCopy } from '../lib/useCopy'
 import { setPageMeta } from '../lib/meta'
 
 const { state: siteState, loadSite } = useSite()
+const copy = useCopy()
 const site = computed(() => siteState.site)
 const initial = computed(() => (site.value.author_name || 'M').slice(0, 1).toUpperCase())
 
@@ -34,8 +36,8 @@ watch(site, applyMeta, { deep: true })
   <div class="about-page container">
     <header class="about-hero">
       <div class="about-hero__copy">
-        <p class="eyebrow">ABOUT / 关于</p>
-        <h1>关于这本<br /><span>小册子</span></h1>
+        <p class="eyebrow">{{ copy.about_eyebrow }}</p>
+        <h1>{{ copy.about_title_1 }}<br /><span>{{ copy.about_title_2 }}</span></h1>
         <p class="about-hero__intro">
           {{ site.site_description || '电脑维修、Windows 使用技巧、快捷键与数据安全的个人笔记。' }}
         </p>
@@ -48,7 +50,7 @@ watch(site, applyMeta, { deep: true })
 
     <div class="about-divider" aria-hidden="true">
       <span></span>
-      <p>一页纸，一支铅笔，一些想留下的话。</p>
+      <p>{{ copy.about_divider }}</p>
       <span></span>
     </div>
 
@@ -73,12 +75,12 @@ watch(site, applyMeta, { deep: true })
 
       <aside class="about-aside">
         <div class="about-card">
-          <p class="about-card__eyebrow">WRITTEN BY</p>
+          <p class="about-card__eyebrow">{{ copy.about_written }}</p>
           <div class="about-card__author">
             <span class="about-card__initial" aria-hidden="true">{{ initial }}</span>
             <div>
               <p class="about-card__name">{{ site.author_name || '慕沄 (MuYun)' }}</p>
-              <p class="about-card__role">写字的人</p>
+              <p class="about-card__role">{{ copy.about_role }}</p>
             </div>
           </div>
           <p class="about-card__bio">
@@ -87,33 +89,33 @@ watch(site, applyMeta, { deep: true })
           <div class="about-card__rule" aria-hidden="true"></div>
           <dl class="about-facts">
             <div>
-              <dt>开始于</dt>
+              <dt>{{ copy.about_since }}</dt>
               <dd>{{ site.site_since || '2026' }}</dd>
             </div>
             <div>
-              <dt>写作工具</dt>
-              <dd>Markdown</dd>
+              <dt>{{ copy.about_tool }}</dt>
+              <dd>{{ copy.about_tool_value }}</dd>
             </div>
             <div>
-              <dt>更新方式</dt>
-              <dd><a href="/feed.xml" class="text-link">RSS</a></dd>
+              <dt>{{ copy.about_update }}</dt>
+              <dd><a href="/feed.xml" class="text-link">{{ copy.about_rss_value }}</a></dd>
             </div>
           </dl>
         </div>
 
         <div class="about-note">
           <span class="about-note__pin" aria-hidden="true"></span>
-          <p>这里不设评论区。读完后如果想说点什么，可以把它写进自己的笔记里。</p>
+          <p>{{ copy.about_note }}</p>
         </div>
       </aside>
     </div>
 
     <div class="about-back">
       <RouterLink to="/posts" class="btn">
-        去读几篇
+        {{ copy.about_cta }}
         <span class="btn__arrow" aria-hidden="true">↘</span>
       </RouterLink>
-      <RouterLink to="/" class="text-link">回到首页</RouterLink>
+      <RouterLink to="/" class="text-link">{{ copy.about_back }}</RouterLink>
     </div>
   </div>
 </template>
@@ -329,7 +331,7 @@ watch(site, applyMeta, { deep: true })
   position: relative;
   padding: 20px 20px 20px 24px;
   border-left: 3px solid var(--color-amber);
-  background: rgba(243, 156, 18, 0.1);
+  background: var(--surface-amber);
   color: var(--color-ink-soft);
   font-family: var(--font-hand);
   font-size: 16px;

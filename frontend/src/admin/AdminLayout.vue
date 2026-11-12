@@ -14,9 +14,11 @@ const { state: siteState } = useSite()
 const signingOut = ref(false)
 const siteTitle = computed(() => siteState.site.site_title || 'Markblog')
 const copyright = computed(() => copyrightLine(siteState.site.copyright))
+const isDashboard = computed(() => route.path === '/admin/dashboard')
 const isPosts = computed(
   () => route.path === '/admin/posts' || route.path.startsWith('/admin/posts/'),
 )
+const isAppearance = computed(() => route.path === '/admin/appearance')
 const isSettings = computed(() => route.path === '/admin/settings')
 
 onMounted(() => {
@@ -42,7 +44,7 @@ async function handleSignOut() {
     <header class="admin-header">
       <div class="container admin-header__inner">
         <div class="admin-brand-wrap">
-          <RouterLink to="/admin/posts" class="admin-brand">
+          <RouterLink to="/admin/dashboard" class="admin-brand">
             {{ siteTitle }}<span>.</span>
           </RouterLink>
           <span class="admin-brand__label">ADMIN DESK</span>
@@ -50,11 +52,25 @@ async function handleSignOut() {
 
         <nav class="admin-nav" aria-label="后台导航">
           <RouterLink
+            to="/admin/dashboard"
+            class="admin-nav__link"
+            :class="{ 'is-active': isDashboard }"
+          >
+            仪表盘
+          </RouterLink>
+          <RouterLink
             to="/admin/posts"
             class="admin-nav__link"
             :class="{ 'is-active': isPosts }"
           >
             文章
+          </RouterLink>
+          <RouterLink
+            to="/admin/appearance"
+            class="admin-nav__link"
+            :class="{ 'is-active': isAppearance }"
+          >
+            外观文案
           </RouterLink>
           <RouterLink
             to="/admin/settings"

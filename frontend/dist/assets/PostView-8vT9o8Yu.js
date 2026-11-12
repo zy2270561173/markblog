@@ -1,6 +1,6 @@
-import { _ as _export_sfc, u as useSite, k as tx, i as iH, m as ny, a as ir, q as ii, n as na, o as r2, b as id, d as ip, t as tA, h as _t, e as ea, y as formatDate, c as readingLabel, j as i_, Y, D as Dt, r as r9, g as iv, v as publicApi, s as setPageMeta } from './index-BvAI33k-.js';
-import { _ as _sfc_main$1 } from './StateBlock-Cbi4YDNN.js';
-import { _ as _sfc_main$2 } from './TagList-jvGzSmiV.js';
+import { _ as _export_sfc, j as useSite, u as useCopy, k as tx, i as iH, m as ny, a as ir, q as ii, n as na, o as r2, b as id, c as ip, t as tA, g as _t, e as ea, y as formatDate, h as i_, Y, D as Dt, r as r9, d as iv, v as publicApi, s as setPageMeta } from './index-71-tahyS.js';
+import { _ as _sfc_main$1 } from './StateBlock-BRyVZ8MG.js';
+import { _ as _sfc_main$2 } from './TagList-KXeIrPwg.js';
 
 const _hoisted_1 = { class: "article-page container" };
 const _hoisted_2 = {
@@ -17,14 +17,20 @@ const _hoisted_8 = {
   class: "article__lead"
 };
 const _hoisted_9 = { class: "article__footer-meta" };
-const _hoisted_10 = ["innerHTML"];
-const _hoisted_11 = { class: "article__signoff" };
-const _hoisted_12 = { class: "adjacent__title" };
-const _hoisted_13 = {
+const _hoisted_10 = {
+  class: "article__end-mark",
+  "aria-hidden": "true"
+};
+const _hoisted_11 = ["innerHTML"];
+const _hoisted_12 = { class: "article__signoff" };
+const _hoisted_13 = { class: "adjacent__label" };
+const _hoisted_14 = { class: "adjacent__title" };
+const _hoisted_15 = {
   key: 1,
   class: "adjacent__empty"
 };
-const _hoisted_14 = { class: "adjacent__title" };
+const _hoisted_16 = { class: "adjacent__label" };
+const _hoisted_17 = { class: "adjacent__title" };
 
 
 const _sfc_main = {
@@ -33,6 +39,7 @@ const _sfc_main = {
 
 const route = Dt();
 const { state: siteState } = useSite();
+const copy = useCopy();
 
 const post = tx(null);
 const loading = tx(true);
@@ -97,6 +104,15 @@ ny(
 );
 
 const adjacent = iH(() => post.value?.adjacent || { newer: null, older: null });
+const readingText = iH(() =>
+  copy.value.reading_minutes_template.replace(
+    '{minutes}',
+    String(post.value?.reading_minutes || 1),
+  ),
+);
+const signoff = iH(() =>
+  copy.value.post_signoff.replace('{date}', formatDate(post.value?.published_at)),
+);
 
 return (_ctx, _cache) => {
   return (r9(), ir("div", _hoisted_1, [
@@ -146,12 +162,12 @@ return (_ctx, _cache) => {
             ? (r9(), ir(r2, { key: 3 }, [
                 id("nav", _hoisted_2, [
                   ip(tA(_t), { to: "/posts" }, {
-                    default: na(() => [...(_cache[2] || (_cache[2] = [
-                      iv("文章", -1)
-                    ]))]),
+                    default: na(() => [
+                      iv(ea(tA(copy).post_breadcrumb), 1)
+                    ]),
                     _: 1
                   }),
-                  _cache[3] || (_cache[3] = id("span", { "aria-hidden": "true" }, "/", -1)),
+                  _cache[2] || (_cache[2] = id("span", { "aria-hidden": "true" }, "/", -1)),
                   id("span", _hoisted_3, ea(post.value.title), 1)
                 ]),
                 id("article", _hoisted_4, [
@@ -160,10 +176,10 @@ return (_ctx, _cache) => {
                       id("time", {
                         datetime: post.value.published_at
                       }, ea(tA(formatDate)(post.value.published_at)), 9, _hoisted_7),
+                      _cache[3] || (_cache[3] = id("span", { "aria-hidden": "true" }, "·", -1)),
+                      id("span", null, ea(readingText.value), 1),
                       _cache[4] || (_cache[4] = id("span", { "aria-hidden": "true" }, "·", -1)),
-                      id("span", null, ea(tA(readingLabel)(post.value.reading_minutes)), 1),
-                      _cache[5] || (_cache[5] = id("span", { "aria-hidden": "true" }, "·", -1)),
-                      _cache[6] || (_cache[6] = id("span", null, "Markdown 手记", -1))
+                      id("span", null, ea(tA(copy).post_type), 1)
                     ]),
                     id("h1", null, ea(post.value.title), 1),
                     (post.value.excerpt)
@@ -174,13 +190,10 @@ return (_ctx, _cache) => {
                         tags: post.value.tags,
                         linkable: ""
                       }, null, 8, ["tags"]),
-                      _cache[7] || (_cache[7] = id("span", {
-                        class: "article__end-mark",
-                        "aria-hidden": "true"
-                      }, "fin.", -1))
+                      id("span", _hoisted_10, ea(tA(copy).post_fin), 1)
                     ])
                   ]),
-                  _cache[9] || (_cache[9] = id("div", {
+                  _cache[5] || (_cache[5] = id("div", {
                     class: "article__rule",
                     "aria-hidden": "true"
                   }, [
@@ -202,16 +215,16 @@ return (_ctx, _cache) => {
                   id("div", {
                     class: "prose article__body",
                     innerHTML: post.value.content_html
-                  }, null, 8, _hoisted_10),
-                  id("footer", _hoisted_11, [
-                    id("p", null, "写于 " + ea(tA(formatDate)(post.value.published_at)) + "。谢谢你读到这里。", 1),
+                  }, null, 8, _hoisted_11),
+                  id("footer", _hoisted_12, [
+                    id("p", null, ea(signoff.value), 1),
                     ip(tA(_t), {
                       to: "/posts",
                       class: "text-link"
                     }, {
-                      default: na(() => [...(_cache[8] || (_cache[8] = [
-                        iv("回到全部文章", -1)
-                      ]))]),
+                      default: na(() => [
+                        iv(ea(tA(copy).post_back), 1)
+                      ]),
                       _: 1
                     })
                   ])
@@ -229,16 +242,16 @@ return (_ctx, _cache) => {
                             class: "adjacent__card adjacent__card--newer"
                           }, {
                             default: na(() => [
-                              _cache[10] || (_cache[10] = id("span", { class: "adjacent__label" }, "更新的一篇", -1)),
-                              id("span", _hoisted_12, ea(adjacent.value.newer.title), 1),
-                              _cache[11] || (_cache[11] = id("span", {
+                              id("span", _hoisted_13, ea(tA(copy).post_newer), 1),
+                              id("span", _hoisted_14, ea(adjacent.value.newer.title), 1),
+                              _cache[6] || (_cache[6] = id("span", {
                                 class: "adjacent__arrow",
                                 "aria-hidden": "true"
                               }, "↑", -1))
                             ]),
                             _: 1
                           }, 8, ["to"]))
-                        : (r9(), ir("span", _hoisted_13)),
+                        : (r9(), ir("span", _hoisted_15)),
                       (adjacent.value.older)
                         ? (r9(), ii(tA(_t), {
                             key: 2,
@@ -246,9 +259,9 @@ return (_ctx, _cache) => {
                             class: "adjacent__card adjacent__card--older"
                           }, {
                             default: na(() => [
-                              _cache[12] || (_cache[12] = id("span", { class: "adjacent__label" }, "更早的一篇", -1)),
-                              id("span", _hoisted_14, ea(adjacent.value.older.title), 1),
-                              _cache[13] || (_cache[13] = id("span", {
+                              id("span", _hoisted_16, ea(tA(copy).post_older), 1),
+                              id("span", _hoisted_17, ea(adjacent.value.older.title), 1),
+                              _cache[7] || (_cache[7] = id("span", {
                                 class: "adjacent__arrow",
                                 "aria-hidden": "true"
                               }, "↓", -1))
@@ -265,6 +278,6 @@ return (_ctx, _cache) => {
 }
 
 };
-const PostView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-fafe42ed"]]);
+const PostView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-9fc97414"]]);
 
 export { PostView as default };

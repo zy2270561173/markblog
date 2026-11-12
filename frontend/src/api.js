@@ -102,6 +102,12 @@ export const adminApi = {
   logout() {
     return request('/admin/logout', { method: 'POST', csrf: true })
   },
+  getDashboard() {
+    return request('/admin/dashboard')
+  },
+  getAppearance() {
+    return request('/admin/appearance')
+  },
   listPosts() {
     return request('/admin/posts')
   },

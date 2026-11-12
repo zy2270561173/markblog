@@ -1,6 +1,6 @@
-import { _ as _export_sfc, i as iH, r as r9, a as ir, b as id, e as ea, t as tA, f as formatShortDate, c as readingLabel, d as ip, n as na, g as iv, h as _t, j as i_, Y, u as useSite, k as tx, l as lS, m as ny, o as r2, p as lj, q as ii, s as setPageMeta, v as publicApi } from './index-BvAI33k-.js';
-import { _ as _sfc_main$3 } from './TagList-jvGzSmiV.js';
-import { _ as _sfc_main$4 } from './StateBlock-Cbi4YDNN.js';
+import { _ as _export_sfc, u as useCopy, i as iH, r as r9, a as ir, b as id, e as ea, t as tA, f as formatShortDate, c as ip, n as na, d as iv, g as _t, h as i_, Y, j as useSite, k as tx, l as lS, m as ny, o as r2, p as lj, q as ii, s as setPageMeta, v as publicApi } from './index-71-tahyS.js';
+import { _ as _sfc_main$3 } from './TagList-KXeIrPwg.js';
+import { _ as _sfc_main$4 } from './StateBlock-BRyVZ8MG.js';
 
 const _hoisted_1$2 = { class: "post-card__top" };
 const _hoisted_2$1 = {
@@ -28,7 +28,11 @@ const _sfc_main$2 = {
 
 const props = __props;
 
+const copy = useCopy();
 const number = iH(() => String(props.index + 1).padStart(2, '0'));
+const readingText = iH(() =>
+  copy.value.reading_minutes_template.replace('{minutes}', String(props.post.reading_minutes)),
+);
 const tiltClass = iH(() => {
   const variants = ['post-card--tilt-a', 'post-card--tilt-b', 'post-card--tilt-c'];
   return variants[props.index % variants.length]
@@ -48,7 +52,7 @@ return (_ctx, _cache) => {
           class: "meta-dot",
           "aria-hidden": "true"
         }, null, -1)),
-        id("span", null, ea(tA(readingLabel)(__props.post.reading_minutes)), 1)
+        id("span", null, ea(readingText.value), 1)
       ])
     ]),
     id("h3", _hoisted_5$1, [
@@ -74,9 +78,9 @@ return (_ctx, _cache) => {
         class: "read-more",
         "aria-label": `阅读《${__props.post.title}》`
       }, {
-        default: na(() => [...(_cache[1] || (_cache[1] = [
-          iv(" 读下去 ", -1),
-          id("svg", {
+        default: na(() => [
+          iv(ea(tA(copy).post_read_more) + " ", 1),
+          _cache[1] || (_cache[1] = id("svg", {
             viewBox: "0 0 42 16",
             width: "42",
             height: "16",
@@ -96,8 +100,8 @@ return (_ctx, _cache) => {
               "stroke-linecap": "round",
               "stroke-linejoin": "round"
             })
-          ], -1)
-        ]))]),
+          ], -1))
+        ]),
         _: 1
       }, 8, ["to", "aria-label"])
     ]),
@@ -110,7 +114,7 @@ return (_ctx, _cache) => {
 }
 
 };
-const PostCard = /*#__PURE__*/_export_sfc(_sfc_main$2, [['__scopeId',"data-v-7d6b142b"]]);
+const PostCard = /*#__PURE__*/_export_sfc(_sfc_main$2, [['__scopeId',"data-v-234420d5"]]);
 
 const _sfc_main$1 = {  };
 
@@ -384,31 +388,45 @@ const _hoisted_6 = {
 };
 const _hoisted_7 = { class: "hero__lede" };
 const _hoisted_8 = { class: "hero__actions" };
-const _hoisted_9 = { class: "hero__art" };
-const _hoisted_10 = {
+const _hoisted_9 = { class: "hero__footnote" };
+const _hoisted_10 = { class: "hero__art" };
+const _hoisted_11 = {
+  class: "hero__margin-note",
+  "aria-hidden": "true"
+};
+const _hoisted_12 = {
   class: "latest container section",
   "aria-labelledby": "latest-title"
 };
-const _hoisted_11 = { class: "section-head" };
-const _hoisted_12 = {
+const _hoisted_13 = { class: "section-head" };
+const _hoisted_14 = { class: "eyebrow" };
+const _hoisted_15 = { id: "latest-title" };
+const _hoisted_16 = {
   key: 3,
   class: "latest-grid"
 };
-const _hoisted_13 = {
+const _hoisted_17 = {
   key: 4,
   class: "topic-row"
 };
-const _hoisted_14 = { class: "topic-count" };
-const _hoisted_15 = {
+const _hoisted_18 = { class: "topic-row__label" };
+const _hoisted_19 = { class: "topic-count" };
+const _hoisted_20 = {
   class: "about-strip container section",
   "aria-labelledby": "about-strip-title"
 };
-const _hoisted_16 = {
+const _hoisted_21 = {
   class: "about-strip__mark",
   "aria-hidden": "true"
 };
-const _hoisted_17 = { class: "about-strip__copy" };
-const _hoisted_18 = { class: "about-strip__action" };
+const _hoisted_22 = { class: "about-strip__copy" };
+const _hoisted_23 = { class: "eyebrow" };
+const _hoisted_24 = { id: "about-strip-title" };
+const _hoisted_25 = { class: "about-strip__action" };
+const _hoisted_26 = {
+  class: "about-strip__hand",
+  "aria-hidden": "true"
+};
 
 
 const _sfc_main = {
@@ -416,6 +434,7 @@ const _sfc_main = {
   setup(__props) {
 
 const { state: siteState } = useSite();
+const copy = useCopy();
 const posts = tx([]);
 const tags = tx([]);
 const loading = tx(true);
@@ -467,7 +486,7 @@ return (_ctx, _cache) => {
   return (r9(), ir("div", _hoisted_1, [
     id("section", _hoisted_2, [
       id("div", _hoisted_3, [
-        id("p", _hoisted_4, "PERSONAL NOTES / " + ea(tA(currentYear)), 1),
+        id("p", _hoisted_4, ea(tA(copy).hero_eyebrow) + " / " + ea(tA(currentYear)), 1),
         id("h1", _hoisted_5, [
           (r9(true), ir(r2, null, lj(heroLines.value, (line, index) => {
             return (r9(), ir("span", {
@@ -487,58 +506,51 @@ return (_ctx, _cache) => {
             to: "/posts",
             class: "btn"
           }, {
-            default: na(() => [...(_cache[0] || (_cache[0] = [
-              iv(" 翻翻文章 ", -1),
-              id("span", {
+            default: na(() => [
+              iv(ea(tA(copy).hero_primary) + " ", 1),
+              _cache[0] || (_cache[0] = id("span", {
                 class: "btn__arrow",
                 "aria-hidden": "true"
-              }, "↘", -1)
-            ]))]),
+              }, "↘", -1))
+            ]),
             _: 1
           }),
           ip(tA(_t), {
             to: "/about",
             class: "btn btn--quiet"
           }, {
-            default: na(() => [...(_cache[1] || (_cache[1] = [
-              iv("关于这本小册子", -1)
-            ]))]),
+            default: na(() => [
+              iv(ea(tA(copy).hero_secondary), 1)
+            ]),
             _: 1
           })
         ]),
-        _cache[2] || (_cache[2] = id("p", { class: "hero__footnote" }, [
-          id("span", {
+        id("p", _hoisted_9, [
+          _cache[1] || (_cache[1] = id("span", {
             class: "hero__scribble",
             "aria-hidden": "true"
-          }),
-          iv(" 更新不快，但每次都认真写。 ")
-        ], -1))
+          }, null, -1)),
+          iv(" " + ea(tA(copy).hero_footnote), 1)
+        ])
       ]),
-      id("div", _hoisted_9, [
+      id("div", _hoisted_10, [
         ip(NotebookDoodle),
-        _cache[3] || (_cache[3] = id("p", {
-          class: "hero__margin-note",
-          "aria-hidden": "true"
-        }, [
-          iv(" 铅笔削好了"),
-          id("br"),
-          iv(" 今天写点什么？ ")
-        ], -1))
+        id("p", _hoisted_11, ea(tA(copy).hero_note), 1)
       ])
     ]),
-    id("section", _hoisted_10, [
-      id("div", _hoisted_11, [
-        _cache[5] || (_cache[5] = id("div", null, [
-          id("p", { class: "eyebrow" }, "LATEST NOTES"),
-          id("h2", { id: "latest-title" }, "最近写的")
-        ], -1)),
+    id("section", _hoisted_12, [
+      id("div", _hoisted_13, [
+        id("div", null, [
+          id("p", _hoisted_14, ea(tA(copy).home_latest_eyebrow), 1),
+          id("h2", _hoisted_15, ea(tA(copy).home_latest_title), 1)
+        ]),
         ip(tA(_t), {
           to: "/posts",
           class: "section-head__link"
         }, {
-          default: na(() => [...(_cache[4] || (_cache[4] = [
-            iv(" 全部文章 ", -1),
-            id("svg", {
+          default: na(() => [
+            iv(ea(tA(copy).home_all_posts) + " ", 1),
+            _cache[2] || (_cache[2] = id("svg", {
               viewBox: "0 0 46 16",
               width: "46",
               height: "16",
@@ -558,8 +570,8 @@ return (_ctx, _cache) => {
                 "stroke-linecap": "round",
                 "stroke-linejoin": "round"
               })
-            ], -1)
-          ]))]),
+            ], -1))
+          ]),
           _: 1
         })
       ]),
@@ -591,7 +603,7 @@ return (_ctx, _cache) => {
                 tone: "empty",
                 message: "第一篇文章还在路上。先去泡杯茶吧。"
               }))
-            : (r9(), ir("div", _hoisted_12, [
+            : (r9(), ir("div", _hoisted_16, [
                 (r9(true), ir(r2, null, lj(posts.value, (post, index) => {
                   return (r9(), ii(PostCard, {
                     key: post.slug,
@@ -602,8 +614,8 @@ return (_ctx, _cache) => {
                 }), 128))
               ])),
       (tags.value.length)
-        ? (r9(), ir("div", _hoisted_13, [
-            _cache[6] || (_cache[6] = id("span", { class: "topic-row__label" }, "常写的话题", -1)),
+        ? (r9(), ir("div", _hoisted_17, [
+            id("span", _hoisted_18, ea(tA(copy).home_topics), 1),
             (r9(true), ir(r2, null, lj(tags.value, (tag) => {
               return (r9(), ii(tA(_t), {
                 key: tag.name,
@@ -612,7 +624,7 @@ return (_ctx, _cache) => {
               }, {
                 default: na(() => [
                   iv(ea(tag.name), 1),
-                  id("span", _hoisted_14, ea(tag.count), 1)
+                  id("span", _hoisted_19, ea(tag.count), 1)
                 ]),
                 _: 2
               }, 1032, ["to"]))
@@ -620,27 +632,24 @@ return (_ctx, _cache) => {
           ]))
         : i_("", true)
     ]),
-    id("section", _hoisted_15, [
-      id("div", _hoisted_16, [
+    id("section", _hoisted_20, [
+      id("div", _hoisted_21, [
         id("span", null, ea((site.value.author_name || 'M').slice(0, 1)), 1)
       ]),
-      id("div", _hoisted_17, [
-        _cache[7] || (_cache[7] = id("p", { class: "eyebrow" }, "ABOUT THE NOTEBOOK", -1)),
-        _cache[8] || (_cache[8] = id("h2", { id: "about-strip-title" }, "关于这本小册子", -1)),
+      id("div", _hoisted_22, [
+        id("p", _hoisted_23, ea(tA(copy).home_about_eyebrow), 1),
+        id("h2", _hoisted_24, ea(tA(copy).home_about_title), 1),
         id("p", null, ea(site.value.author_bio || '电脑维修爱好者，喜欢把故障排查写成可以照着做的步骤。'), 1)
       ]),
-      id("div", _hoisted_18, [
-        _cache[10] || (_cache[10] = id("p", {
-          class: "about-strip__hand",
-          "aria-hidden": "true"
-        }, "摊开看看 →", -1)),
+      id("div", _hoisted_25, [
+        id("p", _hoisted_26, ea(tA(copy).home_about_hand), 1),
         ip(tA(_t), {
           to: "/about",
           class: "btn"
         }, {
-          default: na(() => [...(_cache[9] || (_cache[9] = [
-            iv("认识一下", -1)
-          ]))]),
+          default: na(() => [
+            iv(ea(tA(copy).home_about_button), 1)
+          ]),
           _: 1
         })
       ])
@@ -650,6 +659,6 @@ return (_ctx, _cache) => {
 }
 
 };
-const HomeView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-5c827f31"]]);
+const HomeView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-d28160f3"]]);
 
 export { HomeView as default };

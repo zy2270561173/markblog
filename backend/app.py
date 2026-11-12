@@ -32,6 +32,7 @@ from fastapi.responses import (
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import repository
+from .appearance import compute_appearance
 from .auth import (
     create_session,
     csrf_matches,
@@ -378,6 +379,39 @@ def admin_logout(
     return {"ok": True}
 
 
+@app.get("/api/admin/dashboard", include_in_schema=False)
+def admin_dashboard(
+    conn: Annotated[Any, Depends(get_db)],
+    _: Annotated[dict[str, Any], Depends(require_session)],
+):
+    data = repository.get_dashboard_summary(conn)
+    settings = repository.get_all_settings(conn)
+    appearance = compute_appearance(settings)
+    data["appearance"] = appearance
+    data["site"] = {
+        "site_title": settings.get("site_title", ""),
+        "site_url": settings.get("site_url", ""),
+        "seo_ready": bool(
+            settings.get("seo_title") and settings.get("seo_description")
+        ),
+        "icp_ready": bool(settings.get("icp_number")),
+        "police_ready": bool(settings.get("police_number")),
+        "about_characters": len(settings.get("about_md", "")),
+        "layout": appearance["layout"],
+        "theme_mode": appearance["mode"],
+        "active_theme": appearance["active"],
+    }
+    return data
+
+
+@app.get("/api/admin/appearance", include_in_schema=False)
+def admin_appearance(
+    conn: Annotated[Any, Depends(get_db)],
+    _: Annotated[dict[str, Any], Depends(require_session)],
+):
+    return compute_appearance(repository.get_all_settings(conn))
+
+
 @app.get("/api/admin/posts", include_in_schema=False)
 def admin_posts(
     conn: Annotated[Any, Depends(get_db)],
@@ -622,6 +656,23 @@ def _upsert_meta(html_text: str, attribute: str, key: str, content: str) -> str:
     return html_text.replace("</head>", f"  {replacement}\n</head>", 1)
 
 
+def _apply_html_appearance(
+    html_text: str, theme: str, layout: str
+) -> str:
+    """Set the initial theme/layout before the Vue bundle runs."""
+
+    theme = theme if theme in {"light", "dark"} else "light"
+    layout = layout if layout in {"sketch", "minimal"} else "sketch"
+
+    def replace(match: re.Match[str]) -> str:
+        attributes = re.sub(
+            r'\sdata-(?:theme|layout)="[^"]*"', "", match.group(1)
+        )
+        return f'<html{attributes} data-theme="{theme}" data-layout="{layout}">'
+
+    return re.sub(r"<html\b([^>]*)>", replace, html_text, count=1, flags=re.IGNORECASE)
+
+
 def _upsert_canonical(html_text: str, href: str | None) -> str:
     html_text = re.sub(
         r'\s*<link\s+rel="canonical"[^>]*>\s*',
@@ -715,6 +766,19 @@ def _spa_page(conn: Any, path: str) -> tuple[str, int, bool]:
     if not is_admin and site.get("seo_keywords"):
         html_text = _upsert_meta(html_text, "name", "keywords", site["seo_keywords"])
     html_text = _upsert_canonical(html_text, canonical)
+    appearance = site.get("appearance") or {}
+    html_text = _apply_html_appearance(
+        html_text,
+        str(appearance.get("active") or "light"),
+        str(appearance.get("layout") or "sketch"),
+    )
+    html_text = _upsert_meta(
+        html_text,
+        "name",
+        "theme-color",
+        "#1f1f1c" if appearance.get("active") == "dark" else "#f5f0e8",
+    )
+
     if not is_admin:
         html_text = _upsert_meta(html_text, "name", "author", site.get("author_name") or "")
         html_text = _upsert_meta(html_text, "property", "og:site_name", site_title)

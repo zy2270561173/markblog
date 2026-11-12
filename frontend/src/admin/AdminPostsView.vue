@@ -255,7 +255,7 @@ onMounted(() => {
 
 .list-filter.is-active {
   border-color: var(--color-line-strong);
-  background: rgba(236, 228, 214, 0.4);
+  background: var(--surface-strong);
   color: var(--color-pencil);
 }
 
@@ -302,7 +302,7 @@ onMounted(() => {
 }
 
 .post-row:hover {
-  background: rgba(236, 228, 214, 0.26);
+  background: var(--surface-tint);
 }
 
 .post-row__main {

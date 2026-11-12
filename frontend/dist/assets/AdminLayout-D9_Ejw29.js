@@ -1,4 +1,4 @@
-import { _ as _export_sfc, D as Dt, E as Et, z as useAdminSession, u as useSite, k as tx, i as iH, G as copyrightLine, l as lS, a as ir, b as id, d as ip, n as na, g as iv, e as ea, t as tA, h as _t, Y, J as lD, j as i_, r as r9, N as setRobots } from './index-BvAI33k-.js';
+import { _ as _export_sfc, D as Dt, E as Et, z as useAdminSession, j as useSite, k as tx, i as iH, G as copyrightLine, l as lS, a as ir, b as id, c as ip, n as na, d as iv, e as ea, t as tA, g as _t, Y, K as lD, h as i_, r as r9, P as setRobots } from './index-71-tahyS.js';
 
 const _hoisted_1 = { class: "admin-shell" };
 const _hoisted_2 = { class: "admin-header" };
@@ -35,9 +35,11 @@ const { state: siteState } = useSite();
 const signingOut = tx(false);
 const siteTitle = iH(() => siteState.site.site_title || 'Markblog');
 const copyright = iH(() => copyrightLine(siteState.site.copyright));
+const isDashboard = iH(() => route.path === '/admin/dashboard');
 const isPosts = iH(
   () => route.path === '/admin/posts' || route.path.startsWith('/admin/posts/'),
 );
+const isAppearance = iH(() => route.path === '/admin/appearance');
 const isSettings = iH(() => route.path === '/admin/settings');
 
 lS(() => {
@@ -57,7 +59,7 @@ async function handleSignOut() {
 
 return (_ctx, _cache) => {
   return (r9(), ir("div", _hoisted_1, [
-    _cache[5] || (_cache[5] = id("a", {
+    _cache[7] || (_cache[7] = id("a", {
       class: "skip-link",
       href: "#admin-main"
     }, "跳到工作区", -1)),
@@ -65,7 +67,7 @@ return (_ctx, _cache) => {
       id("div", _hoisted_3, [
         id("div", _hoisted_4, [
           ip(tA(_t), {
-            to: "/admin/posts",
+            to: "/admin/dashboard",
             class: "admin-brand"
           }, {
             default: na(() => [
@@ -78,11 +80,29 @@ return (_ctx, _cache) => {
         ]),
         id("nav", _hoisted_5, [
           ip(tA(_t), {
+            to: "/admin/dashboard",
+            class: Y(["admin-nav__link", { 'is-active': isDashboard.value }])
+          }, {
+            default: na(() => [...(_cache[2] || (_cache[2] = [
+              iv(" 仪表盘 ", -1)
+            ]))]),
+            _: 1
+          }, 8, ["class"]),
+          ip(tA(_t), {
             to: "/admin/posts",
             class: Y(["admin-nav__link", { 'is-active': isPosts.value }])
           }, {
-            default: na(() => [...(_cache[2] || (_cache[2] = [
+            default: na(() => [...(_cache[3] || (_cache[3] = [
               iv(" 文章 ", -1)
+            ]))]),
+            _: 1
+          }, 8, ["class"]),
+          ip(tA(_t), {
+            to: "/admin/appearance",
+            class: Y(["admin-nav__link", { 'is-active': isAppearance.value }])
+          }, {
+            default: na(() => [...(_cache[4] || (_cache[4] = [
+              iv(" 外观文案 ", -1)
             ]))]),
             _: 1
           }, 8, ["class"]),
@@ -90,14 +110,14 @@ return (_ctx, _cache) => {
             to: "/admin/settings",
             class: Y(["admin-nav__link", { 'is-active': isSettings.value }])
           }, {
-            default: na(() => [...(_cache[3] || (_cache[3] = [
+            default: na(() => [...(_cache[5] || (_cache[5] = [
               iv(" 站点设置 ", -1)
             ]))]),
             _: 1
           }, 8, ["class"])
         ]),
         id("div", _hoisted_6, [
-          _cache[4] || (_cache[4] = id("a", {
+          _cache[6] || (_cache[6] = id("a", {
             href: "/",
             target: "_blank",
             rel: "noopener",
@@ -145,6 +165,6 @@ return (_ctx, _cache) => {
 }
 
 };
-const AdminLayout = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-0419ad8b"]]);
+const AdminLayout = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-d9da6297"]]);
 
 export { AdminLayout as A };

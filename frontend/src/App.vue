@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import SiteHeader from './components/SiteHeader.vue'
 import SiteFooter from './components/SiteFooter.vue'
@@ -13,9 +13,38 @@ const isAdmin = computed(
   () => route.path === '/admin' || route.path.startsWith('/admin/'),
 )
 
+let appearanceTimer = null
+
+function applyAppearance(appearance) {
+  const theme = appearance?.active === 'dark' ? 'dark' : 'light'
+  const layout = appearance?.layout === 'minimal' ? 'minimal' : 'sketch'
+  const root = document.documentElement
+  root.dataset.theme = theme
+  root.dataset.layout = layout
+  root.style.colorScheme = theme
+  const themeColor = document.querySelector('meta[name="theme-color"]')
+  if (themeColor) {
+    themeColor.setAttribute('content', theme === 'dark' ? '#1f1f1c' : '#f5f0e8')
+  }
+}
+
 onMounted(() => {
   loadSite()
+  // Keep the automatic day/night state current while the tab stays open.
+  appearanceTimer = window.setInterval(() => {
+    loadSite(true)
+  }, 5 * 60 * 1000)
 })
+
+onBeforeUnmount(() => {
+  if (appearanceTimer) window.clearInterval(appearanceTimer)
+})
+
+watch(
+  () => siteState.site.appearance,
+  applyAppearance,
+  { deep: true, immediate: true },
+)
 
 watch(
   () => route.path,

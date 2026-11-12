@@ -31,10 +31,14 @@ onMounted(() => {
 
 function safeNextPath() {
   const next = route.query.next
-  if (typeof next === 'string' && next.startsWith('/admin') && !next.startsWith('/admin?')) {
+  if (
+    typeof next === 'string' &&
+    next.startsWith('/admin/') &&
+    !next.startsWith('/admin?')
+  ) {
     return next
   }
-  return '/admin/posts'
+  return '/admin/dashboard'
 }
 
 async function submit() {
@@ -253,8 +257,8 @@ async function submit() {
   padding: 38px 34px 30px;
   border: 2px solid var(--color-pencil);
   border-radius: 2px;
-  background: rgba(250, 247, 241, 0.3);
-  box-shadow: 8px 8px 0 rgba(44, 44, 44, 0.16);
+  background: var(--surface-soft);
+  box-shadow: var(--shadow-sketch-hover);
   transform: rotate(0.45deg);
 }
 

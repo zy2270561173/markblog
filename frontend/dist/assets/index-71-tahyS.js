@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/HomeView-p2vs1VZZ.js","assets/TagList-jvGzSmiV.js","assets/StateBlock-Cbi4YDNN.js","assets/HomeView-kBiMTS6h.css","assets/PostsView-c_ogPb-R.js","assets/PostsView-BP7WVy5F.css","assets/PostView-D2H0wV_Z.js","assets/PostView-BULfeOgS.css","assets/AboutView-C-OPXN8_.js","assets/AboutView-BEwsnVbJ.css","assets/AdminLoginView-D_GmHV3J.js","assets/AdminLoginView-CP5cUlzS.css","assets/AdminPostsView-2XwC5FfJ.js","assets/AdminLayout-DHBAnwm9.js","assets/AdminLayout-HvKaJJo9.css","assets/AdminPostsView-CJBeCIBe.css","assets/AdminEditorView-lKc05Zbq.js","assets/AdminEditorView-CrqXaYAa.css","assets/AdminSettingsView-CVyZZOcZ.js","assets/AdminSettingsView-Cnhsyjen.css","assets/NotFoundView-ByGOleCG.js","assets/NotFoundView-Cg7IkIIV.css"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/HomeView-3KKU4QlU.js","assets/TagList-KXeIrPwg.js","assets/StateBlock-BRyVZ8MG.js","assets/HomeView-p3gBRTpA.css","assets/PostsView-B23-7w0g.js","assets/PostsView-DQr8Zstf.css","assets/PostView-8vT9o8Yu.js","assets/PostView-DINCEedB.css","assets/AboutView-J-973cin.js","assets/AboutView-LTEQ2DmT.css","assets/AdminLoginView-C085YVwX.js","assets/AdminLoginView-DSt0Y5MU.css","assets/AdminDashboardView-judLpOd3.js","assets/AdminLayout-D9_Ejw29.js","assets/AdminLayout-BvBII8w3.css","assets/AdminDashboardView-DA8UZpra.css","assets/AdminPostsView-DUd34-fd.js","assets/AdminPostsView-Ds8R9Rxp.css","assets/AdminAppearanceView-Bli8-hul.js","assets/AdminAppearanceView-DE--qBAX.css","assets/AdminEditorView-ChfGsFjN.js","assets/AdminEditorView-C4VhuYSf.css","assets/AdminSettingsView-Cp-IAT3Q.js","assets/AdminSettingsView-dzc07W69.css","assets/NotFoundView-mYHwPUYm.js","assets/NotFoundView-BEaxyTzW.css"])))=>i.map(i=>d[i]);
 true              &&(function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -155,6 +155,12 @@ const adminApi = {
   logout() {
     return request('/admin/logout', { method: 'POST', csrf: true })
   },
+  getDashboard() {
+    return request('/admin/dashboard')
+  },
+  getAppearance() {
+    return request('/admin/appearance')
+  },
   listPosts() {
     return request('/admin/posts')
   },
@@ -188,6 +194,192 @@ const adminApi = {
   },
 };
 
+const UI_COPY_DEFAULTS = {
+  header_note: 'PERSONAL NOTES',
+  nav_home: '首页',
+  nav_posts: '文章',
+  nav_about: '关于',
+  nav_rss: 'RSS',
+  hero_eyebrow: 'PERSONAL NOTES',
+  hero_primary: '翻翻文章',
+  hero_secondary: '关于这本小册子',
+  hero_footnote: '更新不快，但每次都认真写。',
+  hero_note: '铅笔削好了\n今天写点什么？',
+  home_latest_eyebrow: 'LATEST NOTES',
+  home_latest_title: '最近写的',
+  home_all_posts: '全部文章',
+  home_topics: '常写的话题',
+  home_about_eyebrow: 'ABOUT THE NOTEBOOK',
+  home_about_title: '关于这本小册子',
+  home_about_hand: '摊开看看 →',
+  home_about_button: '认识一下',
+  reading_minutes_template: '约 {minutes} 分钟',
+  post_read_more: '读下去',
+  footer_heading: '翻一翻',
+  footer_home: '首页',
+  footer_posts: '文章',
+  footer_about: '关于',
+  footer_rss: 'RSS 订阅',
+  footer_doodle: '用 Markdown 写，\n用铅笔灰排版。',
+  footer_since_label: 'SINCE',
+  footer_since: '个人非经营性博客',
+  footer_icp_label: 'ICP 备案',
+  footer_police_label: '公安备案',
+  footer_pending: 'ICP 备案号待补充',
+  footer_filing_hint: '备案信息以工信部及公安备案系统公示为准。',
+  posts_eyebrow: 'ARCHIVE / 全部笔记',
+  posts_title: '所有文章',
+  posts_count_template: '共 {count} 篇，慢慢读',
+  posts_desc: '按写下的顺序摊开。可以用标签或关键词找一找，不必着急。',
+  posts_search: '搜一搜标题、摘要或标签…',
+  posts_filter_all: '全部',
+  posts_clear: '清除筛选',
+  posts_unit: '篇',
+  posts_end: '读到这里，先歇一会儿。',
+  posts_back_home: '回到首页',
+  post_breadcrumb: '文章',
+  post_type: 'Markdown 手记',
+  post_fin: 'fin.',
+  post_signoff: '写于 {date}。谢谢你读到这里。',
+  post_back: '回到全部文章',
+  post_newer: '更新的一篇',
+  post_older: '更早的一篇',
+  about_eyebrow: 'ABOUT / 关于',
+  about_title_1: '关于这本',
+  about_title_2: '小册子',
+  about_divider: '一页纸，一支铅笔，一些想留下的话。',
+  about_written: 'WRITTEN BY',
+  about_role: '写字的人',
+  about_since: '开始于',
+  about_tool: '写作工具',
+  about_update: '更新方式',
+  about_tool_value: 'Markdown',
+  about_rss_value: 'RSS',
+  about_note: '这里不设评论区。读完后如果想说点什么，可以把它写进自己的笔记里。',
+  about_cta: '去读几篇',
+  about_back: '回到首页',
+  notfound_eyebrow: 'A BLANK PAGE / 找不到这一页',
+  notfound_title: '这一页被擦掉了。',
+  notfound_text: '可能是地址写错了，也可能是这张纸已经被收进了抽屉。回到有字的地方吧。',
+  notfound_home: '回到首页',
+  notfound_posts: '去读文章',
+  notfound_note: '铅笔也有写错的时候。',
+};
+
+const UI_COPY_GROUPS = [
+  {
+    title: '导航与品牌',
+    description: '站头、导航和 RSS 的文字',
+    fields: [
+      { key: 'header_note', label: '站头英文小字' },
+      { key: 'nav_home', label: '首页导航' },
+      { key: 'nav_posts', label: '文章导航' },
+      { key: 'nav_about', label: '关于导航' },
+      { key: 'nav_rss', label: '订阅导航' },
+    ],
+  },
+  {
+    title: '首页',
+    description: '首屏、最近文章、标签和关于横幅',
+    fields: [
+      { key: 'hero_eyebrow', label: '首屏眉题' },
+      { key: 'hero_primary', label: '主按钮' },
+      { key: 'hero_secondary', label: '次按钮' },
+      { key: 'hero_footnote', label: '首屏小字', type: 'textarea', rows: 2 },
+      { key: 'hero_note', label: '首屏手写便签', type: 'textarea', rows: 2, help: '换行会保留。' },
+      { key: 'home_latest_eyebrow', label: '最新文章眉题' },
+      { key: 'home_latest_title', label: '最新文章标题' },
+      { key: 'home_all_posts', label: '全部文章入口' },
+      { key: 'home_topics', label: '话题区标题' },
+      { key: 'home_about_eyebrow', label: '关于横幅眉题' },
+      { key: 'home_about_title', label: '关于横幅标题' },
+      { key: 'home_about_hand', label: '关于横幅手写提示' },
+      { key: 'home_about_button', label: '关于横幅按钮' },
+      { key: 'reading_minutes_template', label: '阅读时长', help: '可用 {minutes} 代表分钟数。' },
+      { key: 'post_read_more', label: '卡片阅读链接' },
+    ],
+  },
+  {
+    title: '页脚',
+    description: '页脚导航、版权区与备案区',
+    fields: [
+      { key: 'footer_heading', label: '页脚导航标题' },
+      { key: 'footer_home', label: '页脚首页' },
+      { key: 'footer_posts', label: '页脚文章' },
+      { key: 'footer_about', label: '页脚关于' },
+      { key: 'footer_rss', label: '页脚订阅' },
+      { key: 'footer_doodle', label: '页脚手绘便签', type: 'textarea', rows: 2, help: '换行会保留。' },
+      { key: 'footer_since_label', label: '建站英文前缀' },
+      { key: 'footer_since', label: '建站标识后缀' },
+      { key: 'footer_icp_label', label: 'ICP 标签' },
+      { key: 'footer_police_label', label: '公安备案标签' },
+      { key: 'footer_pending', label: '未填备案号提示' },
+      { key: 'footer_filing_hint', label: '备案说明', type: 'textarea', rows: 2 },
+    ],
+  },
+  {
+    title: '文章列表',
+    description: '归档页的标题、搜索与结果文案',
+    fields: [
+      { key: 'posts_eyebrow', label: '眉题' },
+      { key: 'posts_title', label: '页面标题' },
+      { key: 'posts_count_template', label: '总数文案', help: '可用 {count} 代表文章数量。' },
+      { key: 'posts_desc', label: '页面说明', type: 'textarea', rows: 2 },
+      { key: 'posts_search', label: '搜索框提示' },
+      { key: 'posts_filter_all', label: '标签“全部”' },
+      { key: 'posts_clear', label: '清除筛选' },
+      { key: 'posts_unit', label: '结果单位' },
+      { key: 'posts_end', label: '列表底部提示' },
+      { key: 'posts_back_home', label: '列表底部回首页' },
+    ],
+  },
+  {
+    title: '文章详情',
+    description: '文章页的固定文字',
+    fields: [
+      { key: 'post_breadcrumb', label: '面包屑文章' },
+      { key: 'post_type', label: '文章类型小字' },
+      { key: 'post_fin', label: '文章结束标记' },
+      { key: 'post_signoff', label: '文末落款', type: 'textarea', rows: 2, help: '可用 {date} 代表发布日期。' },
+      { key: 'post_back', label: '返回列表' },
+      { key: 'post_newer', label: '更新的一篇' },
+      { key: 'post_older', label: '更早的一篇' },
+    ],
+  },
+  {
+    title: '关于页',
+    description: '关于页标题、侧栏与提示',
+    fields: [
+      { key: 'about_eyebrow', label: '眉题' },
+      { key: 'about_title_1', label: '标题第一行' },
+      { key: 'about_title_2', label: '标题第二行' },
+      { key: 'about_divider', label: '分隔线文案', type: 'textarea', rows: 2 },
+      { key: 'about_written', label: '作者区英文小字' },
+      { key: 'about_role', label: '作者身份' },
+      { key: 'about_since', label: '建站年份标签' },
+      { key: 'about_tool', label: '写作工具标签' },
+      { key: 'about_update', label: '更新方式标签' },
+      { key: 'about_tool_value', label: '写作工具值' },
+      { key: 'about_rss_value', label: '更新方式值' },
+      { key: 'about_note', label: '侧栏便签', type: 'textarea', rows: 3 },
+      { key: 'about_cta', label: '阅读按钮' },
+      { key: 'about_back', label: '返回首页' },
+    ],
+  },
+  {
+    title: '404 页',
+    description: '找不到页面时的提示',
+    fields: [
+      { key: 'notfound_eyebrow', label: '眉题' },
+      { key: 'notfound_title', label: '标题' },
+      { key: 'notfound_text', label: '说明', type: 'textarea', rows: 2 },
+      { key: 'notfound_home', label: '回首页按钮' },
+      { key: 'notfound_posts', label: '去文章按钮' },
+      { key: 'notfound_note', label: '手写小字' },
+    ],
+  },
+];
+
 const fallback = {
   site_title: 'Markblog',
   site_subtitle: '把电脑问题，写到纸上。',
@@ -206,6 +398,18 @@ const fallback = {
   footer_note: '维修有风险，重要数据请先备份；本站内容为个人经验记录。',
   site_since: '2026',
   site_url: window.location.origin,
+  ui_copy: { ...UI_COPY_DEFAULTS },
+  appearance: {
+    mode: 'auto',
+    active: 'light',
+    layout: 'sketch',
+    source: 'server',
+    timezone: 'Asia/Shanghai',
+    ntp_server: 'ntp.aliyun.com',
+    day_start: '07:00',
+    night_start: '19:00',
+    local_time: '',
+  },
 };
 
 const state$1 = tu({
@@ -247,6 +451,14 @@ function useSite() {
   }
 }
 
+function useCopy() {
+  const { state } = useSite();
+  return iH(() => ({
+    ...UI_COPY_DEFAULTS,
+    ...(state.site.ui_copy || {}),
+  }))
+}
+
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -259,8 +471,14 @@ const _hoisted_1$2 = { class: "site-header" };
 const _hoisted_2$2 = { class: "container header-inner" };
 const _hoisted_3$2 = { class: "brand-type" };
 const _hoisted_4$2 = { class: "brand-name" };
-const _hoisted_5$1 = ["aria-expanded"];
-const _hoisted_6$1 = { class: "nav-toggle__label" };
+const _hoisted_5$1 = { class: "brand-note" };
+const _hoisted_6$1 = ["aria-expanded"];
+const _hoisted_7$1 = { class: "nav-toggle__label" };
+const _hoisted_8$1 = {
+  class: "rss-link",
+  href: "/feed.xml",
+  "aria-label": "RSS 订阅"
+};
 
 
 const _sfc_main$2 = {
@@ -269,6 +487,7 @@ const _sfc_main$2 = {
 
 const route = Dt();
 const { state: siteState } = useSite();
+const copy = useCopy();
 const menuOpen = tx(false);
 
 const isHome = iH(() => route.name === 'home');
@@ -308,7 +527,7 @@ return (_ctx, _cache) => {
         "aria-label": "返回首页"
       }, {
         default: na(() => [
-          _cache[3] || (_cache[3] = id("span", {
+          _cache[2] || (_cache[2] = id("span", {
             class: "brand-mark",
             "aria-hidden": "true"
           }, [
@@ -342,7 +561,7 @@ return (_ctx, _cache) => {
               iv(ea(siteTitle.value), 1),
               _cache[1] || (_cache[1] = id("span", { class: "brand-dot" }, ".", -1))
             ]),
-            _cache[2] || (_cache[2] = id("span", { class: "brand-note" }, "PERSONAL NOTES", -1))
+            id("span", _hoisted_5$1, ea(tA(copy).header_note), 1)
           ])
         ]),
         _: 1
@@ -355,8 +574,8 @@ return (_ctx, _cache) => {
         "aria-controls": "site-nav",
         onClick: _cache[0] || (_cache[0] = $event => (menuOpen.value = !menuOpen.value))
       }, [
-        id("span", _hoisted_6$1, ea(menuOpen.value ? '收起' : '目录'), 1),
-        _cache[4] || (_cache[4] = id("svg", {
+        id("span", _hoisted_7$1, ea(menuOpen.value ? '收起' : '目录'), 1),
+        _cache[3] || (_cache[3] = id("svg", {
           viewBox: "0 0 26 18",
           width: "26",
           height: "18",
@@ -382,7 +601,7 @@ return (_ctx, _cache) => {
             "stroke-linecap": "round"
           })
         ], -1))
-      ], 8, _hoisted_5$1),
+      ], 8, _hoisted_6$1),
       id("nav", {
         id: "site-nav",
         class: Y$1(["site-nav", { 'is-open': menuOpen.value }]),
@@ -393,9 +612,9 @@ return (_ctx, _cache) => {
           class: Y$1(["nav-link", { 'is-active': isHome.value }]),
           "aria-current": isHome.value ? 'page' : undefined
         }, {
-          default: na(() => [...(_cache[5] || (_cache[5] = [
-            iv(" 首页 ", -1)
-          ]))]),
+          default: na(() => [
+            iv(ea(tA(copy).nav_home), 1)
+          ]),
           _: 1
         }, 8, ["class", "aria-current"]),
         ip(_component_RouterLink, {
@@ -403,9 +622,9 @@ return (_ctx, _cache) => {
           class: Y$1(["nav-link", { 'is-active': isPosts.value }]),
           "aria-current": isPosts.value ? 'page' : undefined
         }, {
-          default: na(() => [...(_cache[6] || (_cache[6] = [
-            iv(" 文章 ", -1)
-          ]))]),
+          default: na(() => [
+            iv(ea(tA(copy).nav_posts), 1)
+          ]),
           _: 1
         }, 8, ["class", "aria-current"]),
         ip(_component_RouterLink, {
@@ -413,12 +632,40 @@ return (_ctx, _cache) => {
           class: Y$1(["nav-link", { 'is-active': isAbout.value }]),
           "aria-current": isAbout.value ? 'page' : undefined
         }, {
-          default: na(() => [...(_cache[7] || (_cache[7] = [
-            iv(" 关于 ", -1)
-          ]))]),
+          default: na(() => [
+            iv(ea(tA(copy).nav_about), 1)
+          ]),
           _: 1
         }, 8, ["class", "aria-current"]),
-        _cache[8] || (_cache[8] = im("<a class=\"rss-link\" href=\"/feed.xml\" aria-label=\"RSS 订阅\" data-v-3d6fa24e><svg viewBox=\"0 0 18 18\" width=\"15\" height=\"15\" fill=\"none\" aria-hidden=\"true\" data-v-3d6fa24e><circle cx=\"3\" cy=\"15\" r=\"1.7\" fill=\"currentColor\" data-v-3d6fa24e></circle><path d=\"M2 8.2A7.8 7.8 0 0 1 9.8 16\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" data-v-3d6fa24e></path><path d=\"M2 2.2A13.8 13.8 0 0 1 15.8 16\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" data-v-3d6fa24e></path></svg> RSS </a>", 1))
+        id("a", _hoisted_8$1, [
+          _cache[4] || (_cache[4] = id("svg", {
+            viewBox: "0 0 18 18",
+            width: "15",
+            height: "15",
+            fill: "none",
+            "aria-hidden": "true"
+          }, [
+            id("circle", {
+              cx: "3",
+              cy: "15",
+              r: "1.7",
+              fill: "currentColor"
+            }),
+            id("path", {
+              d: "M2 8.2A7.8 7.8 0 0 1 9.8 16",
+              stroke: "currentColor",
+              "stroke-width": "1.8",
+              "stroke-linecap": "round"
+            }),
+            id("path", {
+              d: "M2 2.2A13.8 13.8 0 0 1 15.8 16",
+              stroke: "currentColor",
+              "stroke-width": "1.8",
+              "stroke-linecap": "round"
+            })
+          ], -1)),
+          iv(" " + ea(tA(copy).nav_rss), 1)
+        ])
       ], 2)
     ])
   ]))
@@ -426,7 +673,7 @@ return (_ctx, _cache) => {
 }
 
 };
-const SiteHeader = /*#__PURE__*/_export_sfc(_sfc_main$2, [['__scopeId',"data-v-3d6fa24e"]]);
+const SiteHeader = /*#__PURE__*/_export_sfc(_sfc_main$2, [['__scopeId',"data-v-4ad8fd3e"]]);
 
 const longDate = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',
@@ -465,11 +712,6 @@ function copyrightLine(value) {
   return (value || fallback).replaceAll('{year}', year)
 }
 
-function readingLabel(minutes) {
-  const count = Number(minutes) || 1;
-  return `约 ${count} 分钟`
-}
-
 const _hoisted_1$1 = { class: "site-footer" };
 const _hoisted_2$1 = { class: "container" };
 const _hoisted_3$1 = { class: "footer-top" };
@@ -484,28 +726,38 @@ const _hoisted_8 = {
   class: "footer-nav",
   "aria-label": "页脚导航"
 };
-const _hoisted_9 = { class: "footer-bottom" };
-const _hoisted_10 = { class: "copyright" };
-const _hoisted_11 = { class: "copyright__line" };
-const _hoisted_12 = {
+const _hoisted_9 = { class: "footer-heading" };
+const _hoisted_10 = { href: "/feed.xml" };
+const _hoisted_11 = {
+  class: "footer-doodle",
+  "aria-hidden": "true"
+};
+const _hoisted_12 = { class: "footer-doodle__text" };
+const _hoisted_13 = { class: "footer-bottom" };
+const _hoisted_14 = { class: "copyright" };
+const _hoisted_15 = { class: "copyright__line" };
+const _hoisted_16 = {
   key: 0,
   class: "copyright__note"
 };
-const _hoisted_13 = {
+const _hoisted_17 = {
   class: "filings",
   "aria-label": "网站备案信息"
 };
-const _hoisted_14 = { class: "filing-line" };
-const _hoisted_15 = ["href"];
-const _hoisted_16 = {
+const _hoisted_18 = { class: "filing-line" };
+const _hoisted_19 = { class: "filing-label" };
+const _hoisted_20 = ["href"];
+const _hoisted_21 = {
   key: 1,
   class: "filing-pending"
 };
-const _hoisted_17 = {
+const _hoisted_22 = {
   key: 0,
   class: "filing-line"
 };
-const _hoisted_18 = ["href"];
+const _hoisted_23 = { class: "filing-label" };
+const _hoisted_24 = ["href"];
+const _hoisted_25 = { class: "filing-hint" };
 
 
 const _sfc_main$1 = {
@@ -513,6 +765,7 @@ const _sfc_main$1 = {
   setup(__props) {
 
 const { state: siteState } = useSite();
+const copy = useCopy();
 const site = iH(() => siteState.site);
 const copyright = iH(() => copyrightLine(site.value.copyright));
 const hasIcp = iH(() => Boolean(site.value.icp_number?.trim()));
@@ -530,7 +783,7 @@ return (_ctx, _cache) => {
 
   return (r9(), ir("footer", _hoisted_1$1, [
     id("div", _hoisted_2$1, [
-      _cache[10] || (_cache[10] = id("div", {
+      _cache[2] || (_cache[2] = id("div", {
         class: "footer-line",
         "aria-hidden": "true"
       }, null, -1)),
@@ -542,53 +795,46 @@ return (_ctx, _cache) => {
           ]),
           id("p", _hoisted_6, ea(site.value.site_subtitle || '把电脑问题，写到纸上。'), 1),
           (since.value)
-            ? (r9(), ir("p", _hoisted_7, "SINCE " + ea(since.value) + " · 个人非经营性博客", 1))
+            ? (r9(), ir("p", _hoisted_7, ea(tA(copy).footer_since_label) + " " + ea(since.value) + " · " + ea(tA(copy).footer_since), 1))
             : i_("", true)
         ]),
         id("nav", _hoisted_8, [
-          _cache[4] || (_cache[4] = id("p", { class: "footer-heading" }, "翻一翻", -1)),
+          id("p", _hoisted_9, ea(tA(copy).footer_heading), 1),
           ip(_component_RouterLink, { to: "/" }, {
-            default: na(() => [...(_cache[1] || (_cache[1] = [
-              iv("首页", -1)
-            ]))]),
+            default: na(() => [
+              iv(ea(tA(copy).footer_home), 1)
+            ]),
             _: 1
           }),
           ip(_component_RouterLink, { to: "/posts" }, {
-            default: na(() => [...(_cache[2] || (_cache[2] = [
-              iv("文章", -1)
-            ]))]),
+            default: na(() => [
+              iv(ea(tA(copy).footer_posts), 1)
+            ]),
             _: 1
           }),
           ip(_component_RouterLink, { to: "/about" }, {
-            default: na(() => [...(_cache[3] || (_cache[3] = [
-              iv("关于", -1)
-            ]))]),
+            default: na(() => [
+              iv(ea(tA(copy).footer_about), 1)
+            ]),
             _: 1
           }),
-          _cache[5] || (_cache[5] = id("a", { href: "/feed.xml" }, "RSS 订阅", -1))
+          id("a", _hoisted_10, ea(tA(copy).footer_rss), 1)
         ]),
-        _cache[6] || (_cache[6] = id("div", {
-          class: "footer-doodle",
-          "aria-hidden": "true"
-        }, [
-          id("span", { class: "footer-doodle__circle" }, "M"),
-          id("p", null, [
-            iv("用 Markdown 写，"),
-            id("br"),
-            iv("用铅笔灰排版。")
-          ])
-        ], -1))
+        id("div", _hoisted_11, [
+          _cache[1] || (_cache[1] = id("span", { class: "footer-doodle__circle" }, "M", -1)),
+          id("p", _hoisted_12, ea(tA(copy).footer_doodle), 1)
+        ])
       ]),
-      id("div", _hoisted_9, [
-        id("div", _hoisted_10, [
-          id("p", _hoisted_11, ea(copyright.value), 1),
+      id("div", _hoisted_13, [
+        id("div", _hoisted_14, [
+          id("p", _hoisted_15, ea(copyright.value), 1),
           (site.value.footer_note)
-            ? (r9(), ir("p", _hoisted_12, ea(site.value.footer_note), 1))
+            ? (r9(), ir("p", _hoisted_16, ea(site.value.footer_note), 1))
             : i_("", true)
         ]),
-        id("div", _hoisted_13, [
-          id("p", _hoisted_14, [
-            _cache[7] || (_cache[7] = id("span", { class: "filing-label" }, "ICP 备案", -1)),
+        id("div", _hoisted_17, [
+          id("p", _hoisted_18, [
+            id("span", _hoisted_19, ea(tA(copy).footer_icp_label), 1),
             (hasIcp.value)
               ? (r9(), ir("a", {
                   key: 0,
@@ -596,21 +842,21 @@ return (_ctx, _cache) => {
                   href: icpHref.value,
                   target: "_blank",
                   rel: "noopener noreferrer"
-                }, ea(site.value.icp_number), 9, _hoisted_15))
-              : (r9(), ir("span", _hoisted_16, "ICP 备案号待补充"))
+                }, ea(site.value.icp_number), 9, _hoisted_20))
+              : (r9(), ir("span", _hoisted_21, ea(tA(copy).footer_pending), 1))
           ]),
           (hasPolice.value)
-            ? (r9(), ir("p", _hoisted_17, [
-                _cache[8] || (_cache[8] = id("span", { class: "filing-label" }, "公安备案", -1)),
+            ? (r9(), ir("p", _hoisted_22, [
+                id("span", _hoisted_23, ea(tA(copy).footer_police_label), 1),
                 id("a", {
                   class: "filing-link",
                   href: policeHref.value,
                   target: "_blank",
                   rel: "noopener noreferrer"
-                }, ea(site.value.police_number), 9, _hoisted_18)
+                }, ea(site.value.police_number), 9, _hoisted_24)
               ]))
             : i_("", true),
-          _cache[9] || (_cache[9] = id("p", { class: "filing-hint" }, "备案信息以工信部及公安备案系统公示为准。", -1))
+          id("p", _hoisted_25, ea(tA(copy).footer_filing_hint), 1)
         ])
       ])
     ])
@@ -619,7 +865,7 @@ return (_ctx, _cache) => {
 }
 
 };
-const SiteFooter = /*#__PURE__*/_export_sfc(_sfc_main$1, [['__scopeId',"data-v-acbe5a62"]]);
+const SiteFooter = /*#__PURE__*/_export_sfc(_sfc_main$1, [['__scopeId',"data-v-730ff2d4"]]);
 
 function upsertMeta(attribute, key, content) {
   let element = document.head.querySelector(`meta[${attribute}="${CSS.escape(key)}"]`);
@@ -722,9 +968,38 @@ const isAdmin = iH(
   () => route.path === '/admin' || route.path.startsWith('/admin/'),
 );
 
+let appearanceTimer = null;
+
+function applyAppearance(appearance) {
+  const theme = appearance?.active === 'dark' ? 'dark' : 'light';
+  const layout = appearance?.layout === 'minimal' ? 'minimal' : 'sketch';
+  const root = document.documentElement;
+  root.dataset.theme = theme;
+  root.dataset.layout = layout;
+  root.style.colorScheme = theme;
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  if (themeColor) {
+    themeColor.setAttribute('content', theme === 'dark' ? '#1f1f1c' : '#f5f0e8');
+  }
+}
+
 lS(() => {
   loadSite();
+  // Keep the automatic day/night state current while the tab stays open.
+  appearanceTimer = window.setInterval(() => {
+    loadSite(true);
+  }, 5 * 60 * 1000);
 });
+
+lw(() => {
+  if (appearanceTimer) window.clearInterval(appearanceTimer);
+});
+
+ny(
+  () => siteState.site.appearance,
+  applyAppearance,
+  { deep: true, immediate: true },
+);
 
 ny(
   () => route.path,
@@ -782,7 +1057,7 @@ return (_ctx, _cache) => {
 }
 
 };
-const App = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-2f357b1e"]]);
+const App = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-70160ec5"]]);
 
 const scriptRel = 'modulepreload';const assetsURL = function(dep) { return "/"+dep };const seen = {};const __vitePreload = function preload(baseModule, deps, importerUrl) {
   let promise = Promise.resolve();
@@ -938,63 +1213,75 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: () => __vitePreload(() => import('./HomeView-p2vs1VZZ.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0),
+    component: () => __vitePreload(() => import('./HomeView-3KKU4QlU.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0),
   },
   {
     path: '/posts',
     name: 'posts',
-    component: () => __vitePreload(() => import('./PostsView-c_ogPb-R.js'),true              ?__vite__mapDeps([4,2,5]):void 0),
+    component: () => __vitePreload(() => import('./PostsView-B23-7w0g.js'),true              ?__vite__mapDeps([4,2,5]):void 0),
   },
   {
     path: '/posts/:slug',
     name: 'post',
-    component: () => __vitePreload(() => import('./PostView-D2H0wV_Z.js'),true              ?__vite__mapDeps([6,2,1,7]):void 0),
+    component: () => __vitePreload(() => import('./PostView-8vT9o8Yu.js'),true              ?__vite__mapDeps([6,2,1,7]):void 0),
   },
   {
     path: '/about',
     name: 'about',
-    component: () => __vitePreload(() => import('./AboutView-C-OPXN8_.js'),true              ?__vite__mapDeps([8,2,9]):void 0),
+    component: () => __vitePreload(() => import('./AboutView-J-973cin.js'),true              ?__vite__mapDeps([8,2,9]):void 0),
   },
   {
     path: '/admin',
     name: 'admin-login',
-    component: () => __vitePreload(() => import('./AdminLoginView-D_GmHV3J.js'),true              ?__vite__mapDeps([10,11]):void 0),
+    component: () => __vitePreload(() => import('./AdminLoginView-C085YVwX.js'),true              ?__vite__mapDeps([10,11]):void 0),
     meta: { admin: true, guestOnly: true, noindex: true },
+  },
+  {
+    path: '/admin/dashboard',
+    name: 'admin-dashboard',
+    component: () => __vitePreload(() => import('./AdminDashboardView-judLpOd3.js'),true              ?__vite__mapDeps([12,13,14,2,15]):void 0),
+    meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts',
     name: 'admin-posts',
-    component: () => __vitePreload(() => import('./AdminPostsView-2XwC5FfJ.js'),true              ?__vite__mapDeps([12,13,14,2,15]):void 0),
+    component: () => __vitePreload(() => import('./AdminPostsView-DUd34-fd.js'),true              ?__vite__mapDeps([16,13,14,2,17]):void 0),
+    meta: { admin: true, requiresAdmin: true, noindex: true },
+  },
+  {
+    path: '/admin/appearance',
+    name: 'admin-appearance',
+    component: () => __vitePreload(() => import('./AdminAppearanceView-Bli8-hul.js'),true              ?__vite__mapDeps([18,13,14,2,19]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts/new',
     name: 'admin-post-new',
-    component: () => __vitePreload(() => import('./AdminEditorView-lKc05Zbq.js'),true              ?__vite__mapDeps([16,13,14,2,17]):void 0),
+    component: () => __vitePreload(() => import('./AdminEditorView-ChfGsFjN.js'),true              ?__vite__mapDeps([20,13,14,2,21]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts/:id(\\d+)',
     name: 'admin-post-edit',
-    component: () => __vitePreload(() => import('./AdminEditorView-lKc05Zbq.js'),true              ?__vite__mapDeps([16,13,14,2,17]):void 0),
+    component: () => __vitePreload(() => import('./AdminEditorView-ChfGsFjN.js'),true              ?__vite__mapDeps([20,13,14,2,21]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/settings',
     name: 'admin-settings',
-    component: () => __vitePreload(() => import('./AdminSettingsView-CVyZZOcZ.js'),true              ?__vite__mapDeps([18,13,14,2,19]):void 0),
+    component: () => __vitePreload(() => import('./AdminSettingsView-Cp-IAT3Q.js'),true              ?__vite__mapDeps([22,13,14,2,23]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/404',
     name: 'not-found',
-    component: () => __vitePreload(() => import('./NotFoundView-ByGOleCG.js'),true              ?__vite__mapDeps([20,21]):void 0),
+    component: () => __vitePreload(() => import('./NotFoundView-mYHwPUYm.js'),true              ?__vite__mapDeps([24,25]):void 0),
     meta: { noindex: true },
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'catch-all',
-    component: () => __vitePreload(() => import('./NotFoundView-ByGOleCG.js'),true              ?__vite__mapDeps([20,21]):void 0),
+    component: () => __vitePreload(() => import('./NotFoundView-mYHwPUYm.js'),true              ?__vite__mapDeps([24,25]):void 0),
     meta: { noindex: true },
   },
 ];
@@ -1022,7 +1309,7 @@ router.beforeEach(async (to) => {
   if (to.meta.guestOnly) {
     const authenticated = await ensureAdminSession();
     if (authenticated) {
-      return { name: 'admin-posts' }
+      return { name: 'admin-dashboard' }
     }
   }
   return true
@@ -1053,4 +1340,4 @@ app.config.errorHandler = (error) => {
 app.use(router);
 app.mount('#app');
 
-export { tu as A, im as B, sd as C, Dt as D, Et as E, ss as F, copyrightLine as G, t8 as H, lw as I, lD as J, adminApi as K, ut as L, sn as M, setRobots as N, Y$1 as Y, _export_sfc as _, ir as a, id as b, readingLabel as c, ip as d, ea as e, formatShortDate as f, iv as g, _t as h, iH as i, i_ as j, tx as k, lS as l, ny as m, na as n, r2 as o, lj as p, ii as q, r9 as r, setPageMeta as s, tA as t, useSite as u, publicApi as v, nu as w, o7 as x, formatDate as y, useAdminSession as z };
+export { tu as A, im as B, sd as C, Dt as D, Et as E, ss as F, copyrightLine as G, adminApi as H, t8 as I, lw as J, lD as K, sn as L, sl as M, UI_COPY_GROUPS as N, ut as O, setRobots as P, UI_COPY_DEFAULTS as U, Y$1 as Y, _export_sfc as _, ir as a, id as b, ip as c, iv as d, ea as e, formatShortDate as f, _t as g, i_ as h, iH as i, useSite as j, tx as k, lS as l, ny as m, na as n, r2 as o, lj as p, ii as q, r9 as r, setPageMeta as s, tA as t, useCopy as u, publicApi as v, nu as w, o7 as x, formatDate as y, useAdminSession as z };

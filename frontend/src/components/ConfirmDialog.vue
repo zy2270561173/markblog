@@ -91,7 +91,7 @@ onBeforeUnmount(closeDialog)
   border-radius: 2px;
   background-color: var(--color-paper);
   background-image: var(--paper-grain);
-  box-shadow: 8px 8px 0 rgba(44, 44, 44, 0.2);
+  box-shadow: var(--shadow-sketch-hover);
   color: var(--color-pencil);
 }
 

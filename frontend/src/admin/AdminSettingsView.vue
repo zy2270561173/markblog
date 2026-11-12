@@ -595,7 +595,7 @@ onBeforeUnmount(() => {
   margin-top: 24px;
   padding: 18px 20px;
   border: 1.5px dashed var(--color-line-strong);
-  background: rgba(236, 228, 214, 0.18);
+  background: var(--surface-soft);
 }
 
 .seo-preview__label {
@@ -608,7 +608,7 @@ onBeforeUnmount(() => {
 
 .seo-preview__site {
   margin: 0 0 3px;
-  color: #1f6c3d;
+  color: var(--search-url-ink);
   font-size: 11px;
   word-break: break-all;
 }
@@ -647,7 +647,7 @@ onBeforeUnmount(() => {
   margin-bottom: 24px;
   padding: 12px 14px;
   border: 1.5px dashed rgba(243, 156, 18, 0.7);
-  background: rgba(243, 156, 18, 0.1);
+  background: var(--surface-amber);
 }
 
 .filing-warning--ok {
@@ -683,7 +683,7 @@ onBeforeUnmount(() => {
   margin-top: 26px;
   padding: 20px;
   border: 1.5px dashed var(--color-line-strong);
-  background: rgba(236, 228, 214, 0.18);
+  background: var(--surface-soft);
 }
 
 .footer-preview__label {
@@ -732,7 +732,7 @@ onBeforeUnmount(() => {
 }
 
 .footer-preview__filings .is-missing {
-  color: #a93226;
+  color: var(--filing-pending-ink);
 }
 
 .settings-save-bar {

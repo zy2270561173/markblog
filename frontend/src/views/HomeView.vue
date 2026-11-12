@@ -6,9 +6,11 @@ import NotebookDoodle from '../components/NotebookDoodle.vue'
 import StateBlock from '../components/StateBlock.vue'
 import { publicApi } from '../api'
 import { useSite } from '../lib/site'
+import { useCopy } from '../lib/useCopy'
 import { setPageMeta } from '../lib/meta'
 
 const { state: siteState } = useSite()
+const copy = useCopy()
 const posts = ref([])
 const tags = ref([])
 const loading = ref(true)
@@ -61,7 +63,7 @@ watch(site, applyMeta, { deep: true })
   <div class="home">
     <section class="hero container" aria-labelledby="hero-title">
       <div class="hero__copy">
-        <p class="eyebrow">PERSONAL NOTES / {{ currentYear }}</p>
+        <p class="eyebrow">{{ copy.hero_eyebrow }} / {{ currentYear }}</p>
         <h1 id="hero-title" class="hero__title">
           <span v-for="(line, index) in heroLines" :key="line" :class="`hero__line hero__line--${index + 1}`">
             {{ line }}<span v-if="index < heroLines.length - 1" class="hero__comma">，</span>
@@ -73,35 +75,32 @@ watch(site, applyMeta, { deep: true })
 
         <div class="hero__actions">
           <RouterLink to="/posts" class="btn">
-            翻翻文章
+            {{ copy.hero_primary }}
             <span class="btn__arrow" aria-hidden="true">↘</span>
           </RouterLink>
-          <RouterLink to="/about" class="btn btn--quiet">关于这本小册子</RouterLink>
+          <RouterLink to="/about" class="btn btn--quiet">{{ copy.hero_secondary }}</RouterLink>
         </div>
 
         <p class="hero__footnote">
           <span class="hero__scribble" aria-hidden="true"></span>
-          更新不快，但每次都认真写。
+          {{ copy.hero_footnote }}
         </p>
       </div>
 
       <div class="hero__art">
         <NotebookDoodle />
-        <p class="hero__margin-note" aria-hidden="true">
-          铅笔削好了<br />
-          今天写点什么？
-        </p>
+        <p class="hero__margin-note" aria-hidden="true">{{ copy.hero_note }}</p>
       </div>
     </section>
 
     <section class="latest container section" aria-labelledby="latest-title">
       <div class="section-head">
         <div>
-          <p class="eyebrow">LATEST NOTES</p>
-          <h2 id="latest-title">最近写的</h2>
+          <p class="eyebrow">{{ copy.home_latest_eyebrow }}</p>
+          <h2 id="latest-title">{{ copy.home_latest_title }}</h2>
         </div>
         <RouterLink to="/posts" class="section-head__link">
-          全部文章
+          {{ copy.home_all_posts }}
           <svg viewBox="0 0 46 16" width="46" height="16" fill="none" aria-hidden="true">
             <path d="M1 8.4c13-.8 27-.8 43 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
             <path d="M35 2.2c3.6 2.4 6.2 4.4 8 6.2-2.7 1.9-5.2 3.9-7.6 6.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -134,7 +133,7 @@ watch(site, applyMeta, { deep: true })
       </div>
 
       <div v-if="tags.length" class="topic-row">
-        <span class="topic-row__label">常写的话题</span>
+        <span class="topic-row__label">{{ copy.home_topics }}</span>
         <RouterLink
           v-for="tag in tags"
           :key="tag.name"
@@ -151,15 +150,15 @@ watch(site, applyMeta, { deep: true })
         <span>{{ (site.author_name || 'M').slice(0, 1) }}</span>
       </div>
       <div class="about-strip__copy">
-        <p class="eyebrow">ABOUT THE NOTEBOOK</p>
-        <h2 id="about-strip-title">关于这本小册子</h2>
+        <p class="eyebrow">{{ copy.home_about_eyebrow }}</p>
+        <h2 id="about-strip-title">{{ copy.home_about_title }}</h2>
         <p>
           {{ site.author_bio || '电脑维修爱好者，喜欢把故障排查写成可以照着做的步骤。' }}
         </p>
       </div>
       <div class="about-strip__action">
-        <p class="about-strip__hand" aria-hidden="true">摊开看看 →</p>
-        <RouterLink to="/about" class="btn">认识一下</RouterLink>
+        <p class="about-strip__hand" aria-hidden="true">{{ copy.home_about_hand }}</p>
+        <RouterLink to="/about" class="btn">{{ copy.home_about_button }}</RouterLink>
       </div>
     </section>
   </div>
@@ -258,6 +257,7 @@ watch(site, applyMeta, { deep: true })
   text-align: right;
   transform: rotate(-4deg);
   opacity: 0.78;
+  white-space: pre-line;
 }
 
 .section-head {

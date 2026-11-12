@@ -2,16 +2,28 @@
 
 from __future__ import annotations
 
+import json
 import re
 from typing import Literal
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from .ui_copy import DEFAULT_UI_COPY
+
 DEFAULT_ICP_LINK = "https://beian.miit.gov.cn/"
 DEFAULT_POLICE_LINK = "https://beian.mps.gov.cn/"
 ICP_OFFICIAL_HOSTS = {"beian.miit.gov.cn", "www.miit.gov.cn"}
 POLICE_OFFICIAL_HOSTS = {"beian.mps.gov.cn", "www.beian.gov.cn"}
+ALLOWED_TIMEZONES = {
+    "Asia/Shanghai",
+    "Asia/Hong_Kong",
+    "Asia/Taipei",
+    "Asia/Singapore",
+    "Asia/Tokyo",
+    "UTC",
+}
+DEFAULT_UI_COPY_JSON = json.dumps(DEFAULT_UI_COPY, ensure_ascii=False)
 
 
 def _official_link(value: str, hosts: set[str], label: str, fallback: str) -> str:
@@ -101,6 +113,60 @@ class SettingsIn(StrictModel):
     footer_note: str = Field(default="", max_length=300)
     site_since: str = Field(default="", max_length=4)
     site_url: str = Field(default="", max_length=200)
+    ui_copy: str = Field(default=DEFAULT_UI_COPY_JSON, max_length=100_000)
+    layout_style: Literal["sketch", "minimal"] = "sketch"
+    theme_mode: Literal["auto", "light", "dark"] = "auto"
+    theme_timezone: str = Field(default="Asia/Shanghai", max_length=64)
+    ntp_server: str = Field(default="ntp.aliyun.com", max_length=253)
+    day_start: str = Field(default="07:00", max_length=5)
+    night_start: str = Field(default="19:00", max_length=5)
+
+    @field_validator("ui_copy")
+    @classmethod
+    def valid_ui_copy(cls, value: str) -> str:
+        try:
+            data = json.loads(value or "{}")
+        except json.JSONDecodeError as error:
+            raise ValueError("前台文案必须是合法的 JSON 对象。") from error
+        if not isinstance(data, dict):
+            raise ValueError("前台文案必须是 JSON 对象。")
+        cleaned: dict[str, str] = {}
+        for key, text in data.items():
+            if key not in DEFAULT_UI_COPY:
+                continue
+            if not isinstance(text, str):
+                raise ValueError("前台文案的每个字段都必须是文本。")
+            if len(text) > 4000:
+                raise ValueError("单条前台文案不能超过 4000 个字符。")
+            cleaned[key] = text
+        return json.dumps({**DEFAULT_UI_COPY, **cleaned}, ensure_ascii=False)
+
+    @field_validator("theme_timezone")
+    @classmethod
+    def valid_timezone(cls, value: str) -> str:
+        if value not in ALLOWED_TIMEZONES:
+            raise ValueError("请选择支持的时区。")
+        return value
+
+    @field_validator("ntp_server")
+    @classmethod
+    def valid_ntp_server(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            return "ntp.aliyun.com"
+        if not re.fullmatch(
+            r"[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?", value
+        ) or ".." in value:
+            raise ValueError("NTP 服务器填写域名或 IP，不要带协议、端口或路径。")
+        return value
+
+    @field_validator("day_start", "night_start")
+    @classmethod
+    def valid_clock(cls, value: str) -> str:
+        value = value.strip()
+        if not re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d", value):
+            raise ValueError("时间请使用 HH:MM 格式，例如 07:00。")
+        return value
 
     @field_validator("icp_link")
     @classmethod

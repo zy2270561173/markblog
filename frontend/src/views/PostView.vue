@@ -5,11 +5,13 @@ import StateBlock from '../components/StateBlock.vue'
 import TagList from '../components/TagList.vue'
 import { publicApi } from '../api'
 import { useSite } from '../lib/site'
+import { useCopy } from '../lib/useCopy'
 import { setPageMeta } from '../lib/meta'
-import { formatDate, readingLabel } from '../lib/format'
+import { formatDate } from '../lib/format'
 
 const route = useRoute()
 const { state: siteState } = useSite()
+const copy = useCopy()
 
 const post = ref(null)
 const loading = ref(true)
@@ -74,6 +76,15 @@ watch(
 )
 
 const adjacent = computed(() => post.value?.adjacent || { newer: null, older: null })
+const readingText = computed(() =>
+  copy.value.reading_minutes_template.replace(
+    '{minutes}',
+    String(post.value?.reading_minutes || 1),
+  ),
+)
+const signoff = computed(() =>
+  copy.value.post_signoff.replace('{date}', formatDate(post.value?.published_at)),
+)
 </script>
 
 <template>
@@ -100,7 +111,7 @@ const adjacent = computed(() => post.value?.adjacent || { newer: null, older: nu
 
     <template v-else-if="post">
       <nav class="breadcrumb" aria-label="面包屑">
-        <RouterLink to="/posts">文章</RouterLink>
+        <RouterLink to="/posts">{{ copy.post_breadcrumb }}</RouterLink>
         <span aria-hidden="true">/</span>
         <span aria-current="page">{{ post.title }}</span>
       </nav>
@@ -110,15 +121,15 @@ const adjacent = computed(() => post.value?.adjacent || { newer: null, older: nu
           <div class="article__meta">
             <time :datetime="post.published_at">{{ formatDate(post.published_at) }}</time>
             <span aria-hidden="true">·</span>
-            <span>{{ readingLabel(post.reading_minutes) }}</span>
+            <span>{{ readingText }}</span>
             <span aria-hidden="true">·</span>
-            <span>Markdown 手记</span>
+            <span>{{ copy.post_type }}</span>
           </div>
           <h1>{{ post.title }}</h1>
           <p v-if="post.excerpt" class="article__lead">{{ post.excerpt }}</p>
           <div class="article__footer-meta">
             <TagList :tags="post.tags" linkable />
-            <span class="article__end-mark" aria-hidden="true">fin.</span>
+            <span class="article__end-mark" aria-hidden="true">{{ copy.post_fin }}</span>
           </div>
         </header>
 
@@ -133,8 +144,8 @@ const adjacent = computed(() => post.value?.adjacent || { newer: null, older: nu
         <div class="prose article__body" v-html="post.content_html"></div>
 
         <footer class="article__signoff">
-          <p>写于 {{ formatDate(post.published_at) }}。谢谢你读到这里。</p>
-          <RouterLink to="/posts" class="text-link">回到全部文章</RouterLink>
+          <p>{{ signoff }}</p>
+          <RouterLink to="/posts" class="text-link">{{ copy.post_back }}</RouterLink>
         </footer>
       </article>
 
@@ -149,7 +160,7 @@ const adjacent = computed(() => post.value?.adjacent || { newer: null, older: nu
           :to="{ name: 'post', params: { slug: adjacent.newer.slug } }"
           class="adjacent__card adjacent__card--newer"
         >
-          <span class="adjacent__label">更新的一篇</span>
+          <span class="adjacent__label">{{ copy.post_newer }}</span>
           <span class="adjacent__title">{{ adjacent.newer.title }}</span>
           <span class="adjacent__arrow" aria-hidden="true">↑</span>
         </RouterLink>
@@ -160,7 +171,7 @@ const adjacent = computed(() => post.value?.adjacent || { newer: null, older: nu
           :to="{ name: 'post', params: { slug: adjacent.older.slug } }"
           class="adjacent__card adjacent__card--older"
         >
-          <span class="adjacent__label">更早的一篇</span>
+          <span class="adjacent__label">{{ copy.post_older }}</span>
           <span class="adjacent__title">{{ adjacent.older.title }}</span>
           <span class="adjacent__arrow" aria-hidden="true">↓</span>
         </RouterLink>

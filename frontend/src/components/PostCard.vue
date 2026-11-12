@@ -2,7 +2,8 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import TagList from './TagList.vue'
-import { formatShortDate, readingLabel } from '../lib/format'
+import { useCopy } from '../lib/useCopy'
+import { formatShortDate } from '../lib/format'
 
 const props = defineProps({
   post: { type: Object, required: true },
@@ -10,7 +11,11 @@ const props = defineProps({
   featured: { type: Boolean, default: false },
 })
 
+const copy = useCopy()
 const number = computed(() => String(props.index + 1).padStart(2, '0'))
+const readingText = computed(() =>
+  copy.value.reading_minutes_template.replace('{minutes}', String(props.post.reading_minutes)),
+)
 const tiltClass = computed(() => {
   const variants = ['post-card--tilt-a', 'post-card--tilt-b', 'post-card--tilt-c']
   return variants[props.index % variants.length]
@@ -27,7 +32,7 @@ const tiltClass = computed(() => {
       <div class="post-card__meta">
         <time :datetime="post.published_at">{{ formatShortDate(post.published_at) }}</time>
         <span class="meta-dot" aria-hidden="true"></span>
-        <span>{{ readingLabel(post.reading_minutes) }}</span>
+        <span>{{ readingText }}</span>
       </div>
     </div>
 
@@ -46,7 +51,7 @@ const tiltClass = computed(() => {
         class="read-more"
         :aria-label="`阅读《${post.title}》`"
       >
-        读下去
+        {{ copy.post_read_more }}
         <svg viewBox="0 0 42 16" width="42" height="16" fill="none" aria-hidden="true">
           <path
             d="M1 8.3c12-1 25-1.2 38 .2"

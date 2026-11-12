@@ -1,4 +1,4 @@
-import { _ as _export_sfc, z as useAdminSession, u as useSite, A as tu, k as tx, i as iH, l as lS, a as ir, b as id, d as ip, n as na, t as tA, h as _t, B as im, C as sd, w as nu, x as o7, F as ss, e as ea, j as i_, g as iv, G as copyrightLine, D as Dt, E as Et, r as r9, s as setPageMeta } from './index-BvAI33k-.js';
+import { _ as _export_sfc, z as useAdminSession, j as useSite, A as tu, k as tx, i as iH, l as lS, a as ir, b as id, c as ip, n as na, t as tA, g as _t, B as im, C as sd, w as nu, x as o7, F as ss, e as ea, h as i_, d as iv, G as copyrightLine, D as Dt, E as Et, r as r9, s as setPageMeta } from './index-71-tahyS.js';
 
 const _hoisted_1 = { class: "login-page" };
 const _hoisted_2 = { class: "login-top container" };
@@ -51,10 +51,14 @@ lS(() => {
 
 function safeNextPath() {
   const next = route.query.next;
-  if (typeof next === 'string' && next.startsWith('/admin') && !next.startsWith('/admin?')) {
+  if (
+    typeof next === 'string' &&
+    next.startsWith('/admin/') &&
+    !next.startsWith('/admin?')
+  ) {
     return next
   }
-  return '/admin/posts'
+  return '/admin/dashboard'
 }
 
 async function submit() {
@@ -95,7 +99,7 @@ return (_ctx, _cache) => {
       _cache[4] || (_cache[4] = id("p", { class: "login-top__label" }, "ADMIN DESK · 仅限管理员", -1))
     ]),
     id("main", _hoisted_3, [
-      _cache[13] || (_cache[13] = im("<section class=\"login-intro\" aria-labelledby=\"login-heading\" data-v-5c777393><p class=\"eyebrow\" data-v-5c777393>PRIVATE ENTRANCE</p><h1 id=\"login-heading\" data-v-5c777393>只有一把<br data-v-5c777393><span data-v-5c777393>小小的钥匙。</span></h1><p class=\"login-intro__text\" data-v-5c777393> 这里不是公开的页面。输入管理员账号和密码，推开工作台的门。 </p><div class=\"key-doodle\" aria-hidden=\"true\" data-v-5c777393><svg viewBox=\"0 0 360 260\" fill=\"none\" data-v-5c777393><circle cx=\"163\" cy=\"118\" r=\"87\" stroke=\"var(--color-pencil)\" stroke-width=\"1.4\" stroke-dasharray=\"5 8\" opacity=\"0.35\" data-v-5c777393></circle><path d=\"M88 204c27 13 56 17 87 11\" stroke=\"var(--color-pencil)\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-dasharray=\"4 6\" opacity=\"0.3\" data-v-5c777393></path><g transform=\"rotate(-24 175 120)\" data-v-5c777393><circle cx=\"116\" cy=\"120\" r=\"35\" stroke=\"var(--color-pencil)\" stroke-width=\"3\" data-v-5c777393></circle><circle cx=\"116\" cy=\"120\" r=\"17\" stroke=\"var(--color-pencil)\" stroke-width=\"2.2\" data-v-5c777393></circle><path d=\"m150 120 113 0\" stroke=\"var(--color-pencil)\" stroke-width=\"5\" stroke-linecap=\"round\" data-v-5c777393></path><path d=\"m238 120 0 27m23-27 0 18\" stroke=\"var(--color-pencil)\" stroke-width=\"5\" stroke-linecap=\"round\" data-v-5c777393></path><path d=\"M86 72c18-22 47-30 74-22\" stroke=\"var(--color-vermilion)\" stroke-width=\"1.6\" stroke-linecap=\"round\" opacity=\"0.7\" data-v-5c777393></path></g><path d=\"m287 46 6 12 13 2-10 9 3 13-12-6-11 7 2-13-9-9 13-2 5-13Z\" stroke=\"var(--color-amber)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.7\" data-v-5c777393></path><path d=\"M52 65c7 0 12 5 12 12\" stroke=\"var(--color-pencil)\" stroke-width=\"1.2\" stroke-linecap=\"round\" opacity=\"0.45\" data-v-5c777393></path></svg><p data-v-5c777393>轻一点推，门会响。</p></div></section>", 1)),
+      _cache[13] || (_cache[13] = im("<section class=\"login-intro\" aria-labelledby=\"login-heading\" data-v-c8b7c969><p class=\"eyebrow\" data-v-c8b7c969>PRIVATE ENTRANCE</p><h1 id=\"login-heading\" data-v-c8b7c969>只有一把<br data-v-c8b7c969><span data-v-c8b7c969>小小的钥匙。</span></h1><p class=\"login-intro__text\" data-v-c8b7c969> 这里不是公开的页面。输入管理员账号和密码，推开工作台的门。 </p><div class=\"key-doodle\" aria-hidden=\"true\" data-v-c8b7c969><svg viewBox=\"0 0 360 260\" fill=\"none\" data-v-c8b7c969><circle cx=\"163\" cy=\"118\" r=\"87\" stroke=\"var(--color-pencil)\" stroke-width=\"1.4\" stroke-dasharray=\"5 8\" opacity=\"0.35\" data-v-c8b7c969></circle><path d=\"M88 204c27 13 56 17 87 11\" stroke=\"var(--color-pencil)\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-dasharray=\"4 6\" opacity=\"0.3\" data-v-c8b7c969></path><g transform=\"rotate(-24 175 120)\" data-v-c8b7c969><circle cx=\"116\" cy=\"120\" r=\"35\" stroke=\"var(--color-pencil)\" stroke-width=\"3\" data-v-c8b7c969></circle><circle cx=\"116\" cy=\"120\" r=\"17\" stroke=\"var(--color-pencil)\" stroke-width=\"2.2\" data-v-c8b7c969></circle><path d=\"m150 120 113 0\" stroke=\"var(--color-pencil)\" stroke-width=\"5\" stroke-linecap=\"round\" data-v-c8b7c969></path><path d=\"m238 120 0 27m23-27 0 18\" stroke=\"var(--color-pencil)\" stroke-width=\"5\" stroke-linecap=\"round\" data-v-c8b7c969></path><path d=\"M86 72c18-22 47-30 74-22\" stroke=\"var(--color-vermilion)\" stroke-width=\"1.6\" stroke-linecap=\"round\" opacity=\"0.7\" data-v-c8b7c969></path></g><path d=\"m287 46 6 12 13 2-10 9 3 13-12-6-11 7 2-13-9-9 13-2 5-13Z\" stroke=\"var(--color-amber)\" stroke-width=\"1.5\" fill=\"none\" opacity=\"0.7\" data-v-c8b7c969></path><path d=\"M52 65c7 0 12 5 12 12\" stroke=\"var(--color-pencil)\" stroke-width=\"1.2\" stroke-linecap=\"round\" opacity=\"0.45\" data-v-c8b7c969></path></svg><p data-v-c8b7c969>轻一点推，门会响。</p></div></section>", 1)),
       id("section", _hoisted_4, [
         _cache[8] || (_cache[8] = id("div", {
           class: "login-card__tab",
@@ -188,6 +192,6 @@ return (_ctx, _cache) => {
 }
 
 };
-const AdminLoginView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-5c777393"]]);
+const AdminLoginView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-c8b7c969"]]);
 
 export { AdminLoginView as default };

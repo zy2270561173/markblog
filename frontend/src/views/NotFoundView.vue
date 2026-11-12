@@ -2,9 +2,11 @@
 import { computed, onMounted, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useSite } from '../lib/site'
+import { useCopy } from '../lib/useCopy'
 import { setPageMeta } from '../lib/meta'
 
 const { state: siteState } = useSite()
+const copy = useCopy()
 const site = computed(() => siteState.site)
 
 function applyMeta() {
@@ -27,19 +29,19 @@ watch(site, applyMeta, { deep: true })
       <span class="not-found__circle"></span>
       <span class="not-found__scribble"></span>
     </div>
-    <p class="eyebrow">A BLANK PAGE / 找不到这一页</p>
-    <h1>这一页被擦掉了。</h1>
+    <p class="eyebrow">{{ copy.notfound_eyebrow }}</p>
+    <h1>{{ copy.notfound_title }}</h1>
     <p class="not-found__text">
-      可能是地址写错了，也可能是这张纸已经被收进了抽屉。回到有字的地方吧。
+      {{ copy.notfound_text }}
     </p>
     <div class="not-found__actions">
       <RouterLink to="/" class="btn">
-        回到首页
+        {{ copy.notfound_home }}
         <span class="btn__arrow" aria-hidden="true">↖</span>
       </RouterLink>
-      <RouterLink to="/posts" class="btn btn--quiet">去读文章</RouterLink>
+      <RouterLink to="/posts" class="btn btn--quiet">{{ copy.notfound_posts }}</RouterLink>
     </div>
-    <p class="not-found__note" aria-hidden="true">铅笔也有写错的时候。</p>
+    <p class="not-found__note" aria-hidden="true">{{ copy.notfound_note }}</p>
   </div>
 </template>
 

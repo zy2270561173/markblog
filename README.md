@@ -1,6 +1,8 @@
 # Markblog
 
-一个铅笔手绘风的中文电脑维修笔记：Vue 3 前端构建成静态文件，由 FastAPI 统一提供页面与 API；文章、SEO、备案信息、页脚和后台会话全部存放在 SQLite 中；正文使用 Markdown 编写。
+一个铅笔手绘风的中文电脑维修笔记：Vue 3 前端构建成静态文件，由 FastAPI 统一提供页面与 API；文章、SEO、备案信息、前台文案、外观和后台会话全部存放在 SQLite 中；正文使用 Markdown 编写。
+
+后台包含仪表盘、文章管理、外观与文案、站点设置。公开站支持「纸本手绘 / 素纸极简」两套排版，以及按 NTP 校时自动切换的白天 / 黑夜主题。
 
 公开页面**没有任何登录、注册、用户中心入口或相关导航**，也不提供评论、投稿等访客账号功能。唯一的管理员入口位于 `/admin`，不出现在公开页面链接中，并带有 `noindex` 响应头与 robots 屏蔽。
 
@@ -8,11 +10,11 @@
 
 ## 界面预览
 
-| 公开首页 | 后台设置（SEO / 备案） |
+| 公开首页 | 管理仪表盘 |
 | --- | --- |
-| ![Markblog 公开首页](docs/preview-home.png) | ![Markblog 后台设置](docs/preview-admin-settings.png) |
+| ![Markblog 公开首页](docs/preview-home.png) | ![Markblog 管理仪表盘](docs/preview-admin-dashboard.png) |
 
-[查看关于页预览](docs/preview-about.png)
+[后台外观与文案](docs/preview-admin-appearance.png) · [黑夜 + 素纸极简](docs/preview-dark-minimal.png) · [手机版黑夜/极简](docs/preview-dark-minimal-mobile.png) · [后台设置](docs/preview-admin-settings.png) · [关于页](docs/preview-about.png)
 
 ## 默认内容
 
@@ -57,7 +59,7 @@ npm run build
 
 ## 数据与设置
 
-以下字段全部保存在 SQLite 的 `settings` 表中，由后台「站点设置」编辑：
+以下字段全部保存在 SQLite 的 `settings` 表中，由后台「站点设置」和「外观与文案」编辑：
 
 | 功能 | 字段 |
 | --- | --- |
@@ -67,6 +69,8 @@ npm run build
 | 站点 | `site_title`、`site_subtitle`、`site_description`、`site_url`、`site_since` |
 | 作者与关于 | `author_name`、`author_bio`、`about_md` |
 | 页脚 | `copyright`、`footer_note` |
+| 前台文案 | `ui_copy`（JSON：导航、首页、文章列表/详情、关于页、404、页脚） |
+| 排版与主题 | `layout_style`、`theme_mode`、`theme_timezone`、`ntp_server`、`day_start`、`night_start` |
 
 备案查询链接默认指向：
 
@@ -107,14 +111,29 @@ python -m backend.manage reset-password
 
 ### 后台
 
+- `/admin/dashboard` 仪表盘：已发布、草稿、标签、全站字数、最近编辑、站点就绪状态、当前排版与昼夜主题、NTP 状态、常用标签。
 - `/admin` 管理员账号密码验证；无注册、无找回密码入口、无公开链接。
 - 文章新建、编辑、删除、草稿/发布、标签、摘要、Slug、Markdown 实时预览。
+- `/admin/appearance` 外观与文案：
+  - 两套排版：纸本手绘 / 素纸极简；
+  - 白天 / 黑夜模式：自动（NTP 校时 + 可配置昼夜时段）、始终白天、始终黑夜；
+  - 可配置时区、NTP 服务器、白天开始/黑夜开始时间；
+  - 公开页面的导航、首页、页脚、文章列表、文章详情、关于页、404 页固定文案均可在后台编辑；
+  - 所有字段写入 SQLite，保存后立即应用。
 - SEO：首页标题、描述、关键词。
 - 备案：ICP 备案号与官方查询链接、公安备案号与官方查询链接。
-- 站点外观文字、关于页 Markdown、页脚版权、站点地址。
+- 站点信息、关于页 Markdown、页脚版权、站点地址。
 - 修改密码后自动注销全部后台会话。
 - 所有写操作需要 CSRF Header；接口不返回密码哈希。
 - 后台页面 `noindex`、`X-Robots-Tag: noindex`、`Cache-Control: no-store`。
+
+### 自动昼夜模式
+
+- 自动模式通过 UDP 123 查询配置的 NTP 服务器（默认 `ntp.aliyun.com`），按所选时区判断当前处于白天还是黑夜。
+- 昼夜时间默认 `07:00`–`19:00`，可在后台修改；时间窗口支持跨午夜。
+- NTP 查询结果缓存 5 分钟；NTP 不可达时自动回退到服务器系统时间，不影响页面打开。
+- 页面首次打开时由 FastAPI 把 `data-theme` / `data-layout` 写入 HTML，避免明显的主题闪烁；页面打开期间每 5 分钟刷新一次自动状态。
+- 管理后台和公开站点共用同一套主题判断和配色变量。
 
 ## 备案前必须完成
 
@@ -135,6 +154,7 @@ python -m backend.manage reset-password
 markblog/
 ├─ backend/
 │  ├─ app.py            FastAPI 页面、公开 API、隐藏后台 API
+│  ├─ appearance.py     NTP 校时、昼夜窗口与主题解析
 │  ├─ auth.py           会话、CSRF、密码策略
 │  ├─ config.py         启动参数（.env）
 │  ├─ db.py             SQLite 连接、建表、首次初始化
@@ -143,14 +163,15 @@ markblog/
 │  ├─ repository.py     文章、设置、账号数据访问
 │  ├─ schemas.py        请求校验与官方备案链接校验
 │  ├─ security.py       scrypt、令牌、登录限流
+│  ├─ ui_copy.py        公开页面可编辑文案及默认值
 │  └─ seed_data.py      默认电脑维修文章与数据库默认设置
 ├─ frontend/
 │  ├─ src/
-│  │  ├─ admin/         隐藏后台页面
+│  │  ├─ admin/         仪表盘、文章、外观文案、设置等后台页面
 │  │  ├─ components/    页头、页脚、文章卡、手绘装饰
 │  │  ├─ views/         首页、文章、关于、404
-│  │  ├─ assets/        全局手绘风样式
-│  │  └─ lib/           API 状态、会话、SEO、格式化
+│  │  ├─ assets/        全局手绘风、深色主题、极简排版
+│  │  └─ lib/           API 状态、会话、SEO、文案字段、格式化
 │  ├─ public/           favicon、OG 图、manifest
 │  └─ dist/             已构建的静态站点
 ├─ data/                 SQLite 数据库（自动创建）
@@ -211,6 +232,7 @@ server {
 
 - 用 systemd、Windows 服务或其他进程守护工具运行 `python run.py`。
 - 建议单进程运行；登录限流保存在进程内存中，多 worker 会变成每个 worker 独立计数。
+- 自动昼夜模式需要服务器能出站访问 UDP 123；如防火墙默认拦截，可放行到 NTP 服务器的 UDP 123，或在后台把主题改成手动/固定模式。
 - 定期备份 `data/markblog.db`。SQLite 使用 WAL，在线备份建议用 `sqlite3` 的 `.backup`，或停服后复制数据库文件。
 - `.env` 不要提交到公开仓库。
 
@@ -244,14 +266,18 @@ python -m pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
-测试使用临时数据库，不会修改 `data/markblog.db`。测试覆盖公开站点、6 篇默认文章、登录保护、CSRF、文章 CRUD、Markdown 转义、SEO 字段、备案字段与官方链接校验、密码修改后会话失效。
+测试使用临时数据库，不会修改 `data/markblog.db`。测试覆盖公开站点、6 篇默认文章、仪表盘、登录保护、CSRF、文章 CRUD、Markdown 转义、SEO/备案字段与官方链接校验、前台文案保存、深色/极简外观、昼夜窗口判断、密码修改后会话失效。
 
 ## 设计说明
 
-视觉采用暖米色纸底 `#f5f0e8`、铅笔灰 `#2c2c2c`、朱红批注、湖蓝链接和少量琥珀高亮；没有纯白、渐变或玻璃模糊。卡片允许轻微倾斜，边框以虚线/波浪线为主，动态反馈控制在 150–200ms。字体使用随包分发的 Caveat 与系统中文字体（KaiTi/宋体回退），不依赖第三方字体 CDN。
+默认视觉采用暖米色纸底 `#f5f0e8`、铅笔灰 `#2c2c2c`、朱红批注、湖蓝链接和少量琥珀高亮；没有纯白、渐变或玻璃模糊。卡片允许轻微倾斜，边框以虚线/波浪线为主，动态反馈控制在 150–200ms。字体使用随包分发的 Caveat 与系统中文字体（KaiTi/宋体回退），不依赖第三方字体 CDN。
+
+第二套「素纸极简」排版去掉手绘插画、倾斜、虚线和波浪线，改用衬线标题、直线分隔与平直卡片；黑夜主题使用深纸色 `#1f1e1b`、米白铅笔字与降低对比的朱红/湖蓝，适合夜间阅读。
 
 ## 已知限制
 
 - 本项目是单管理员博客，不包含多用户、评论、点赞、服务端全文搜索、图片上传或对象存储。
 - 公开站是 Vue SPA；首屏依赖 JavaScript。后端已为常用路由注入标题、描述、canonical 与 404 状态，静态 HTML 本身不含文章正文。若对 SEO 有更高要求，可进一步接入 SSR/预渲染。
+- 自动昼夜模式依赖服务器能访问 UDP 123；若机房屏蔽 NTP，会自动使用服务器系统时间。可通过后台更换可用的 NTP 服务器。
+- 前台文案覆盖固定页面文案；加载、错误、成功等动态状态提示和表单校验信息属于交互反馈，不在文案编辑范围内。
 - 备案结果与地区政策有关，需按接入商与管局要求逐项核对。

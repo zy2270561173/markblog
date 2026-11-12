@@ -693,7 +693,7 @@ onBeforeUnmount(() => {
 }
 
 .title-input::placeholder {
-  color: rgba(44, 44, 44, 0.28);
+  color: var(--placeholder);
 }
 
 .title-input:focus {
@@ -802,7 +802,7 @@ onBeforeUnmount(() => {
 
 .toolbar-button:hover {
   border-color: var(--color-line-strong);
-  background: rgba(236, 228, 214, 0.4);
+  background: var(--surface-strong);
   color: var(--color-pencil);
 }
 
@@ -923,7 +923,7 @@ onBeforeUnmount(() => {
   padding: 18px;
   border: 1.5px dashed var(--color-line-strong);
   border-radius: 2px;
-  background: rgba(250, 247, 241, 0.24);
+  background: var(--surface-soft);
 }
 
 .meta-card__head {
@@ -960,7 +960,7 @@ onBeforeUnmount(() => {
 
 .status-option:has(input:checked) {
   border-color: var(--color-line-strong);
-  background: rgba(236, 228, 214, 0.3);
+  background: var(--surface-tint);
 }
 
 .status-option input {
@@ -1062,7 +1062,7 @@ onBeforeUnmount(() => {
   border: 1.5px dashed var(--color-line-strong);
   background-color: var(--color-paper);
   background-image: var(--paper-grain);
-  box-shadow: 4px 4px 0 rgba(44, 44, 44, 0.1);
+  box-shadow: var(--shadow-button);
 }
 
 .save-state {
