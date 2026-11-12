@@ -1,0 +1,23 @@
+{
+  "name": "Markblog · 电脑维修与使用笔记",
+  "short_name": "Markblog",
+  "description": "电脑维修、Windows 使用技巧、快捷键与数据安全的个人笔记。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "background_color": "#f5f0e8",
+  "theme_color": "#f5f0e8",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

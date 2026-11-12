@@ -1,0 +1,10 @@
+.env
+data/*.db
+data/*.db-*
+data/initial-admin.txt
+frontend/node_modules/
+.npm-cache/
+.tmp/
+__pycache__/
+*.pyc
+.pytest_cache/

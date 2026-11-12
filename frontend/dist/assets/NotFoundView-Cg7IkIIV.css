@@ -1,0 +1,96 @@
+
+.not-found[data-v-70ccd51f] {
+  position: relative;
+  max-width: 760px;
+  padding-top: 92px;
+  text-align: center;
+}
+.not-found__art[data-v-70ccd51f] {
+  position: relative;
+  display: inline-block;
+  width: 310px;
+  height: 170px;
+  margin-bottom: 22px;
+}
+.not-found__number[data-v-70ccd51f] {
+  position: relative;
+  z-index: 1;
+  color: var(--color-pencil);
+  font-family: var(--font-hand);
+  font-size: 146px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  transform: rotate(-3deg);
+  display: inline-block;
+}
+.not-found__circle[data-v-70ccd51f] {
+  position: absolute;
+  top: 38px;
+  left: 37px;
+  width: 240px;
+  height: 98px;
+  border: 2px solid var(--color-vermilion);
+  border-radius: 46% 54% 58% 42%;
+  transform: rotate(2deg);
+  opacity: 0.5;
+}
+.not-found__scribble[data-v-70ccd51f] {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 76px;
+  height: 5px;
+  background-image: var(--wavy-line);
+  background-repeat: repeat-x;
+  background-size: 12px 5px;
+  transform: rotate(-8deg);
+  opacity: 0.55;
+}
+.not-found h1[data-v-70ccd51f] {
+  margin: 0 0 18px;
+  font-size: clamp(42px, 7vw, 64px);
+}
+.not-found__text[data-v-70ccd51f] {
+  max-width: 46ch;
+  margin: 0 auto;
+  color: var(--color-ink-soft);
+  font-size: 17px;
+  line-height: 1.8;
+}
+.not-found__actions[data-v-70ccd51f] {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 34px;
+}
+.not-found__note[data-v-70ccd51f] {
+  margin-top: 42px;
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 17px;
+  transform: rotate(-1deg);
+}
+@media (max-width: 600px) {
+.not-found[data-v-70ccd51f] {
+    padding-top: 54px;
+}
+.not-found__art[data-v-70ccd51f] {
+    width: 260px;
+    height: 145px;
+}
+.not-found__number[data-v-70ccd51f] {
+    font-size: 118px;
+}
+.not-found__circle[data-v-70ccd51f] {
+    top: 32px;
+    left: 31px;
+    width: 198px;
+    height: 82px;
+}
+.not-found__actions[data-v-70ccd51f] {
+    align-items: stretch;
+    flex-direction: column;
+}
+}
