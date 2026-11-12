@@ -65,6 +65,12 @@ CSP = (
 MAX_API_BODY_BYTES = 1_500_000
 FALLBACK_SITE_URL = "http://127.0.0.1:8000"
 
+# Temporary domain-validation token for www.muysky.cn.
+# This route lets certificate authorities read their validation file directly
+# from FastAPI, without an extra Nginx location. Remove this block after the
+# certificate has been issued.
+SSL_VALIDATION_TOKEN = "jm4mlegvt7vqkfoaa3z8lt9f2l7pggdb"
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -236,6 +242,24 @@ def _client_key(request: Request) -> str:
 def health(conn: Annotated[Any, Depends(get_db)]):
     conn.execute("SELECT 1").fetchone()
     return {"status": "ok"}
+
+
+@app.get("/.well-known/pki-validation/{filename:path}", include_in_schema=False)
+def ssl_domain_validation(filename: str):
+    """Answer the CA's HTTP file validation challenge.
+
+    The verification URL uses an arbitrary file name; the token is what the
+    certificate authority checks. This is intentionally a small, temporary
+    route that can be removed once the certificate has been issued.
+    """
+
+    if not filename.strip("/"):
+        raise HTTPException(status_code=404, detail="验证文件不存在。")
+    return PlainTextResponse(
+        SSL_VALIDATION_TOKEN,
+        media_type="text/plain; charset=utf-8",
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 @app.get("/api/public/site", include_in_schema=False)

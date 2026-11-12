@@ -46,6 +46,13 @@ def current_settings(client: TestClient, headers: dict[str, str]) -> dict:
 def test_public_site_and_feeds(client: TestClient):
     assert client.get("/api/health").json()["status"] == "ok"
 
+    ssl_validation = client.get(
+        "/.well-known/pki-validation/jm4mlegvt7vqkfoaa3z8lt9f2l7pggdb.txt"
+    )
+    assert ssl_validation.status_code == 200
+    assert ssl_validation.text == "jm4mlegvt7vqkfoaa3z8lt9f2l7pggdb"
+    assert ssl_validation.headers["content-type"].startswith("text/plain")
+
     site = client.get("/api/public/site").json()
     assert site["site_title"] == "Markblog"
     assert site["seo_title"] == "Markblog · 电脑维修与使用笔记"
