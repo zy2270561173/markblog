@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/HomeView-Daz7LfwI.js","assets/TagList-BKMLOklk.js","assets/StateBlock-DK3YtAll.js","assets/HomeView-kBiMTS6h.css","assets/PostsView-YQTqVZvW.js","assets/PostsView-BP7WVy5F.css","assets/PostView-Cps-Z68F.js","assets/PostView-BULfeOgS.css","assets/AboutView-CCFziJKG.js","assets/AboutView-DKEkxtci.css","assets/AdminLoginView-CUIKHAFd.js","assets/AdminLoginView-CP5cUlzS.css","assets/AdminPostsView-BFDQVllt.js","assets/AdminLayout-C5ROEJ2H.js","assets/AdminLayout-HvKaJJo9.css","assets/AdminPostsView-CJBeCIBe.css","assets/AdminEditorView-wtWbFNuf.js","assets/AdminEditorView-CrqXaYAa.css","assets/AdminSettingsView-BqqxeJ2D.js","assets/AdminSettingsView-Cnhsyjen.css","assets/NotFoundView-D78XuCrQ.js","assets/NotFoundView-Cg7IkIIV.css"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/HomeView-p2vs1VZZ.js","assets/TagList-jvGzSmiV.js","assets/StateBlock-Cbi4YDNN.js","assets/HomeView-kBiMTS6h.css","assets/PostsView-c_ogPb-R.js","assets/PostsView-BP7WVy5F.css","assets/PostView-D2H0wV_Z.js","assets/PostView-BULfeOgS.css","assets/AboutView-C-OPXN8_.js","assets/AboutView-BEwsnVbJ.css","assets/AdminLoginView-D_GmHV3J.js","assets/AdminLoginView-CP5cUlzS.css","assets/AdminPostsView-2XwC5FfJ.js","assets/AdminLayout-DHBAnwm9.js","assets/AdminLayout-HvKaJJo9.css","assets/AdminPostsView-CJBeCIBe.css","assets/AdminEditorView-lKc05Zbq.js","assets/AdminEditorView-CrqXaYAa.css","assets/AdminSettingsView-CVyZZOcZ.js","assets/AdminSettingsView-Cnhsyjen.css","assets/NotFoundView-ByGOleCG.js","assets/NotFoundView-Cg7IkIIV.css"])))=>i.map(i=>d[i]);
 true              &&(function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -195,7 +195,7 @@ const fallback = {
   seo_title: '',
   seo_description: '',
   seo_keywords: '',
-  author_name: 'Mark',
+  author_name: '慕沄 (MuYun)',
   author_bio: '电脑维修爱好者，喜欢把故障排查写成可以照着做的步骤。',
   about_html: '',
   icp_number: '',
@@ -938,63 +938,63 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: () => __vitePreload(() => import('./HomeView-Daz7LfwI.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0),
+    component: () => __vitePreload(() => import('./HomeView-p2vs1VZZ.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0),
   },
   {
     path: '/posts',
     name: 'posts',
-    component: () => __vitePreload(() => import('./PostsView-YQTqVZvW.js'),true              ?__vite__mapDeps([4,2,5]):void 0),
+    component: () => __vitePreload(() => import('./PostsView-c_ogPb-R.js'),true              ?__vite__mapDeps([4,2,5]):void 0),
   },
   {
     path: '/posts/:slug',
     name: 'post',
-    component: () => __vitePreload(() => import('./PostView-Cps-Z68F.js'),true              ?__vite__mapDeps([6,2,1,7]):void 0),
+    component: () => __vitePreload(() => import('./PostView-D2H0wV_Z.js'),true              ?__vite__mapDeps([6,2,1,7]):void 0),
   },
   {
     path: '/about',
     name: 'about',
-    component: () => __vitePreload(() => import('./AboutView-CCFziJKG.js'),true              ?__vite__mapDeps([8,2,9]):void 0),
+    component: () => __vitePreload(() => import('./AboutView-C-OPXN8_.js'),true              ?__vite__mapDeps([8,2,9]):void 0),
   },
   {
     path: '/admin',
     name: 'admin-login',
-    component: () => __vitePreload(() => import('./AdminLoginView-CUIKHAFd.js'),true              ?__vite__mapDeps([10,11]):void 0),
+    component: () => __vitePreload(() => import('./AdminLoginView-D_GmHV3J.js'),true              ?__vite__mapDeps([10,11]):void 0),
     meta: { admin: true, guestOnly: true, noindex: true },
   },
   {
     path: '/admin/posts',
     name: 'admin-posts',
-    component: () => __vitePreload(() => import('./AdminPostsView-BFDQVllt.js'),true              ?__vite__mapDeps([12,13,14,2,15]):void 0),
+    component: () => __vitePreload(() => import('./AdminPostsView-2XwC5FfJ.js'),true              ?__vite__mapDeps([12,13,14,2,15]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts/new',
     name: 'admin-post-new',
-    component: () => __vitePreload(() => import('./AdminEditorView-wtWbFNuf.js'),true              ?__vite__mapDeps([16,13,14,2,17]):void 0),
+    component: () => __vitePreload(() => import('./AdminEditorView-lKc05Zbq.js'),true              ?__vite__mapDeps([16,13,14,2,17]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts/:id(\\d+)',
     name: 'admin-post-edit',
-    component: () => __vitePreload(() => import('./AdminEditorView-wtWbFNuf.js'),true              ?__vite__mapDeps([16,13,14,2,17]):void 0),
+    component: () => __vitePreload(() => import('./AdminEditorView-lKc05Zbq.js'),true              ?__vite__mapDeps([16,13,14,2,17]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/settings',
     name: 'admin-settings',
-    component: () => __vitePreload(() => import('./AdminSettingsView-BqqxeJ2D.js'),true              ?__vite__mapDeps([18,13,14,2,19]):void 0),
+    component: () => __vitePreload(() => import('./AdminSettingsView-CVyZZOcZ.js'),true              ?__vite__mapDeps([18,13,14,2,19]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/404',
     name: 'not-found',
-    component: () => __vitePreload(() => import('./NotFoundView-D78XuCrQ.js'),true              ?__vite__mapDeps([20,21]):void 0),
+    component: () => __vitePreload(() => import('./NotFoundView-ByGOleCG.js'),true              ?__vite__mapDeps([20,21]):void 0),
     meta: { noindex: true },
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'catch-all',
-    component: () => __vitePreload(() => import('./NotFoundView-D78XuCrQ.js'),true              ?__vite__mapDeps([20,21]):void 0),
+    component: () => __vitePreload(() => import('./NotFoundView-ByGOleCG.js'),true              ?__vite__mapDeps([20,21]):void 0),
     meta: { noindex: true },
   },
 ];

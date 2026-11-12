@@ -1,5 +1,5 @@
-import { _ as _export_sfc, u as useSite, i as iH, l as lS, m as ny, a as ir, b as id, g as iv, e as ea, t as tA, q as ii, n as na, d as ip, h as _t, r as r9, s as setPageMeta } from './index-BOitESPZ.js';
-import { _ as _sfc_main$1 } from './StateBlock-DK3YtAll.js';
+import { _ as _export_sfc, u as useSite, i as iH, l as lS, m as ny, a as ir, b as id, g as iv, e as ea, t as tA, q as ii, n as na, d as ip, h as _t, r as r9, s as setPageMeta } from './index-BvAI33k-.js';
+import { _ as _sfc_main$1 } from './StateBlock-Cbi4YDNN.js';
 
 const _hoisted_1 = { class: "about-page container" };
 const _hoisted_2 = { class: "about-hero" };
@@ -125,7 +125,7 @@ return (_ctx, _cache) => {
           id("div", _hoisted_13, [
             id("span", _hoisted_14, ea(initial.value), 1),
             id("div", null, [
-              id("p", _hoisted_15, ea(site.value.author_name || 'Mark'), 1),
+              id("p", _hoisted_15, ea(site.value.author_name || '慕沄 (MuYun)'), 1),
               _cache[4] || (_cache[4] = id("p", { class: "about-card__role" }, "写字的人", -1))
             ])
           ]),
@@ -192,6 +192,6 @@ return (_ctx, _cache) => {
 }
 
 };
-const AboutView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-52358b66"]]);
+const AboutView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-fda54a2e"]]);
 
 export { AboutView as default };

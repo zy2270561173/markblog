@@ -77,7 +77,7 @@ watch(site, applyMeta, { deep: true })
           <div class="about-card__author">
             <span class="about-card__initial" aria-hidden="true">{{ initial }}</span>
             <div>
-              <p class="about-card__name">{{ site.author_name || 'Mark' }}</p>
+              <p class="about-card__name">{{ site.author_name || '慕沄 (MuYun)' }}</p>
               <p class="about-card__role">写字的人</p>
             </div>
           </div>

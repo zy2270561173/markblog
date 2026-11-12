@@ -8,7 +8,7 @@ const fallback = {
   seo_title: '',
   seo_description: '',
   seo_keywords: '',
-  author_name: 'Mark',
+  author_name: '慕沄 (MuYun)',
   author_bio: '电脑维修爱好者，喜欢把故障排查写成可以照着做的步骤。',
   about_html: '',
   icp_number: '',

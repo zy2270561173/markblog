@@ -130,6 +130,41 @@ def _seed_settings(conn: sqlite3.Connection) -> None:
         )
 
 
+def _migrate_default_profile(conn: sqlite3.Connection) -> None:
+    """Move an untouched first-run profile from Mark to 慕沄 (MuYun).
+
+    Only the old default is changed. If the owner has customised either the
+    author name or the About page, both are left untouched.
+    """
+
+    marker = conn.execute(
+        "SELECT value FROM settings WHERE key = 'default_profile_version'"
+    ).fetchone()
+    if marker is not None:
+        return
+
+    current = {
+        row["key"]: row["value"]
+        for row in conn.execute("SELECT key, value FROM settings")
+    }
+    old_author = current.get("author_name", "")
+    old_about = current.get("about_md", "")
+    if old_author == "Mark" and old_about.startswith("## 你好，我是 Mark"):
+        conn.execute(
+            "UPDATE settings SET value = ? WHERE key = 'author_name'",
+            (seed_data.DEFAULT_SETTINGS["author_name"],),
+        )
+        conn.execute(
+            "UPDATE settings SET value = ? WHERE key = 'about_md'",
+            (seed_data.DEFAULT_SETTINGS["about_md"],),
+        )
+
+    conn.execute(
+        "INSERT INTO settings (key, value) VALUES ('default_profile_version', 'muyun-1') "
+        "ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+    )
+
+
 def _seed_posts(conn: sqlite3.Connection) -> None:
     count = conn.execute("SELECT COUNT(*) FROM posts").fetchone()[0]
     if count:
@@ -167,6 +202,7 @@ def init_db() -> None:
             (iso_utc(utc_now()),),
         )
         _seed_settings(conn)
+        _migrate_default_profile(conn)
         _bootstrap_admin(conn)
         _seed_posts(conn)
         conn.commit()

@@ -55,6 +55,9 @@ def test_public_site_and_feeds(client: TestClient):
 
     site = client.get("/api/public/site").json()
     assert site["site_title"] == "Markblog"
+    assert site["author_name"] == "慕沄 (MuYun)"
+    assert "慕沄 (MuYun)" in site["about_html"]
+    assert "Markblog" in site["about_html"]
     assert site["seo_title"] == "Markblog · 电脑维修与使用笔记"
     assert site["icp_number"] == ""
     assert site["icp_link"] == "https://beian.miit.gov.cn/"

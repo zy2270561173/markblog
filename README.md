@@ -12,6 +12,8 @@
 | --- | --- |
 | ![Markblog 公开首页](docs/preview-home.png) | ![Markblog 后台设置](docs/preview-admin-settings.png) |
 
+[查看关于页预览](docs/preview-about.png)
+
 ## 默认内容
 
 数据库第一次初始化时会写入 6 篇电脑维修与使用技巧文章：
