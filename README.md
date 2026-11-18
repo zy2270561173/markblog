@@ -2,7 +2,7 @@
 
 一个铅笔手绘风的中文电脑维修笔记：Vue 3 前端构建成静态文件，由 FastAPI 统一提供页面与 API；文章、SEO、备案信息、前台文案、外观和后台会话全部存放在 SQLite 中；正文使用 Markdown 编写。
 
-后台包含仪表盘、文章管理、媒体与数据、安全与运维、外观与文案、站点设置。公开站支持图片媒体库、文章封面、维修前后对比图、草稿预览链接、正文全文搜索、文章系列、相关文章、维修速览、目录 / 复制代码 / 图片灯箱 / 字号调整 / 文章二维码、阅读量与完成度统计、访客主题切换，以及「纸本手绘 / 素纸极简」两套排版和按 NTP 校时自动切换的白天 / 黑夜主题。
+后台包含仪表盘、文章管理、标签系列、媒体与数据、安全与运维、外观与文案、站点设置。公开站支持图片媒体库、文章封面、维修前后对比图、草稿预览链接、正文全文搜索、文章系列、相关文章、维修速览、FAQ、目录 / 复制代码 / 图片灯箱 / 字号调整 / 文章二维码、阅读量与完成度统计、AI 站娘助手、访客主题切换，以及 6 套主题预设和按 NTP 校时自动切换的白天 / 黑夜主题。
 
 公开页面**没有任何登录、注册、用户中心入口或相关导航**，也不提供评论、投稿等访客账号功能。唯一的管理员入口位于 `/admin`，不出现在公开页面链接中，并带有 `noindex` 响应头与 robots 屏蔽。
 
@@ -14,7 +14,7 @@
 | --- | --- |
 | ![Markblog 公开首页](docs/preview-home.png) | ![Markblog 管理仪表盘](docs/preview-admin-dashboard.png) |
 
-[文章阅读页](docs/preview-post-reading.png) · [文章二维码](docs/preview-post-qr.png) · [草稿预览与图片对比](docs/preview-draft-compare.png) · [媒体、自动备份与封面](docs/preview-admin-assets.png) · [安全与运维](docs/preview-admin-maintenance.png) · [后台外观与文案](docs/preview-admin-appearance.png) · [黑夜 + 素纸极简](docs/preview-dark-minimal.png) · [手机版首页](docs/preview-home-mobile.png) · [手机版文章](docs/preview-post-reading-mobile.png) · [后台设置](docs/preview-admin-settings.png) · [关于页](docs/preview-about.png)
+[文章阅读页](docs/preview-post-reading.png) · [文章二维码](docs/preview-post-qr.png) · [草稿预览与图片对比](docs/preview-draft-compare.png) · [站娘大肥鱼](docs/preview-pet.png) · [主题预设](docs/preview-theme-presets.png) · [标签与系列](docs/preview-admin-taxonomy.png) · [媒体、自动备份与封面](docs/preview-admin-assets.png) · [安全与运维](docs/preview-admin-maintenance.png) · [后台外观与文案](docs/preview-admin-appearance.png) · [黑夜 + 素纸极简](docs/preview-dark-minimal.png) · [手机版首页](docs/preview-home-mobile.png) · [手机版文章](docs/preview-post-reading-mobile.png) · [后台设置](docs/preview-admin-settings.png) · [关于页](docs/preview-about.png)
 
 ## 默认内容
 
@@ -78,6 +78,10 @@ npm run build
 | SEO 推送 | `baidu_push_token`、`indexnow_key` |
 | 草稿预览 | 文章表的 `preview_token`；预览页不进入 sitemap |
 | 监控告警 | `alert_webhook_url`、`uptime_ping_url` |
+| AI 站娘 | `ai_enabled`、`ai_base_url`、`ai_api_key`、`ai_model`、`ai_system_prompt`、`ai_daily_limit` |
+| 异地备份 | WebDAV 与腾讯云 COS / 阿里云 OSS 的地址、密钥和前缀 |
+| 文章 FAQ | 文章表的 `faq`，同时进入文章页和 FAQPage JSON-LD |
+| 搜索分析 | `search_logs`（只存查询词和结果数，不存 IP） |
 
 备案查询链接默认指向：
 
@@ -137,6 +141,10 @@ caption: 同一台笔记本的风扇
 :::
 ```
 - 草稿可生成只在拿到链接时可访问的预览页，页面 `noindex`，不会进入站点导航或站点地图。
+- 6 套主题预设：纸本原色、夜航手册、维修蓝图、旧报纸、终端、杂志；可与两套排版、昼夜模式自由组合。
+- 右下角站娘「大肥鱼」由 dsh-dafeiyu 插件素材提取而来，含 23 套序列帧动作、拖动、点播、大小调节、隐藏/叫回和气泡台词；右键菜单可打开 AI 助手。
+- 公开站 AI 助手会检索本站文章作为上下文；管理员可关闭、限制每日次数和更换 OpenAI 兼容接口。
+- 文章 FAQ 使用折叠问答展示，并在 HTML 中输出 FAQPage 结构化数据。
 - 页脚提供隐私说明、免责声明和 RSS 入口。
 - 访客可切换「跟随时间 / 白天 / 黑夜」，选择保存在浏览器；默认仍按 NTP 自动。
 - 动态 `sitemap.xml`、`robots.txt`、RSS、页面级标题/描述/Open Graph、Article/CollectionPage JSON-LD。
@@ -151,6 +159,9 @@ caption: 同一台笔记本的风扇
 - 文章新建、编辑、删除、草稿/发布、标签、摘要、Slug、系列、系列顺序、每篇 SEO、封面、推荐、维修速览、Markdown 实时预览。
 - 编辑器「对比图」按钮：从媒体库选两张图，填写前后标签和说明，自动插入 `:::compare` 块。
 - 「预览链接」按钮：为当前草稿生成随机 token 的预览地址，可复制、打开或撤销；预览页强制 `noindex` 和 `no-store`。
+- 写作增强：专注模式、可拖动写作/预览分栏、Ctrl / ⌘ + K 命令面板、FAQ 编辑器。
+- `/admin/taxonomy` 标签与系列管理：重命名/合并标签、解散系列、上下调整系列文章顺序。
+- `/admin/maintenance` 异地备份：WebDAV、腾讯云 COS、阿里云 OSS，可手动上传，也可在每日自动备份后同步。
 - 定时发布：选择日期时间后自动上线；自动保存每 28 秒检查一次，新文章另存本地草稿，刷新后可恢复。
 - 文章历史版本：保存时自动留快照，支持查看行级差异和恢复旧版。
 - 批量发布、转草稿、批量加标签、批量删除、复制文章。
@@ -216,7 +227,9 @@ markblog/
 │  ├─ rendering.py      Markdown → 安全 HTML、摘要、阅读时间
 │  ├─ repository.py     文章、系列、搜索、阅读量、设置、账号
 │  ├─ schemas.py        请求校验与官方备案链接校验
+│  ├─ ai.py             OpenAI 兼容站内问答代理
 │  ├─ monitor.py        健康检查、Webhook 告警、Uptime 心跳
+│  ├─ remote_backup.py WebDAV / COS / OSS 异地备份
 │  ├─ search.py         FTS5 trigram 索引
 │  ├─ seo_push.py       百度 / IndexNow 推送
 │  ├─ security.py       scrypt、令牌、登录限流
@@ -226,9 +239,10 @@ markblog/
 │  └─ seed_data.py      默认电脑维修文章与数据库默认设置
 ├─ frontend/
 │  ├─ src/
-│  │  ├─ admin/         仪表盘、文章、媒体数据、安全运维、外观文案、设置
-│  │  ├─ components/    页头、页脚、文章卡、媒体选择器、手绘装饰
+│  │  ├─ admin/         仪表盘、文章、标签系列、媒体数据、安全运维、外观文案、设置
+│  │  ├─ components/    页头、页脚、文章卡、媒体选择器、大肥鱼站娘、AI 面板
 │  │  ├─ views/         首页、文章、系列、隐私、免责声明、关于、404
+│  │  ├─ public/pet/    站娘 23 套 WebP 序列帧与授权说明
 │  │  ├─ assets/        全局手绘风、深色主题、极简排版
 │  │  └─ lib/           API 状态、主题、图片、SEO、文案字段
 │  ├─ public/           favicon、OG 图、manifest
@@ -287,7 +301,21 @@ server {
 
 `run.py` 默认信任本机代理的 `X-Forwarded-Proto`，用于判断 HTTPS 与 Cookie 安全标记。不要把 `data/`、`.env` 或 `frontend/src` 作为静态目录暴露给外网。
 
-### 3. 进程与备份
+### 3. AI 站娘
+
+在后台「安全运维 → AI 助手」中开启，填写 OpenAI 兼容接口、模型和 API Key，并设置每人每天次数。接口会先检索本站文章，再把标题、摘要和链接作为上下文；默认关闭，首次启用前请确认模型服务商的价格与数据政策。
+
+### 4. 异地备份
+
+同一页的「异地备份」支持：
+
+- WebDAV（Nextcloud、群晖、坚果云等）；
+- 腾讯云 COS（需要 `cos-python-sdk-v5`）；
+- 阿里云 OSS（需要 `oss2`）。
+
+可以手动上传当前完整备份，也可以勾选「每天自动备份后同步」。远程上传失败不会影响本地备份。
+
+### 5. 进程与备份
 
 - 用 systemd、Windows 服务或其他进程守护工具运行 `python run.py`。
 - 建议单进程运行；登录限流保存在进程内存中，多 worker 会变成每个 worker 独立计数。
@@ -295,6 +323,9 @@ server {
 - 上传图片位于 `data/media/`，自动备份位于 `data/backups/`（保留 7 份）。备份时请同时保留 `data/markblog.db`、`data/media/` 和 `data/backups/`；也可以直接在「媒体数据 → 下载完整备份」导出 ZIP。
 - 单张上传图片上限 6 MB；编辑器会先在浏览器端缩放并压缩，超过限制会提示。
 - 恢复备份会覆盖数据库和媒体并退出全部后台会话，建议恢复前再下载一份当前备份。
+- 异地备份：WebDAV 直接使用 HTTP Basic；腾讯云 COS / 阿里云 OSS 由可选 SDK 上传。`requirements.txt` 默认包含两个 SDK，若部署环境不需要可移除，运维页会给出清晰的缺依赖提示。
+- AI 助手在「安全运维 → AI 助手」配置，兼容 OpenAI `chat/completions`；默认关闭，建议同时设置每日次数上限。
+- 站娘素材来自 MIT 许可的 dsh-dafeiyu，已转换为 WebP 并保留授权说明；不需要 Node 或 Python 常驻进程。
 - 定期备份 `data/markblog.db` 和 `data/media/`。SQLite 使用 WAL，在线备份建议用 `sqlite3` 的 `.backup`，或停服后复制数据库文件。
 - `.env` 不要提交到公开仓库。
 
@@ -305,6 +336,8 @@ server {
 - 会话令牌为随机不透明串，数据库只保存 SHA-256 哈希；Cookie 为 `HttpOnly`、`SameSite=Lax`，HTTPS 下自动加 `Secure`。
 - 后台所有写操作要求 `X-CSRF-Token`，前端令牌来自登录/会话接口；登录、发布、设置、2FA、备份恢复等操作写入审计日志。
 - Markdown 渲染关闭原始 HTML，避免文章内嵌脚本；预览与公开文章使用同一渲染器。
+- AI 密钥、WebDAV 密码和对象存储 SecretKey 只通过管理员接口读取，不进入公开站点响应。
+- AI 对话按 IP 做每日次数限制；不保存对话内容。搜索分析只保存查询词和结果数。
 - 上传图片只接受 JPG/PNG/WebP/GIF，校验文件签名并限制大小，文件名由服务端随机生成。
 - 草稿预览使用随机 token，API 与页面均返回 `noindex` / `no-store`，robots 也屏蔽 `/preview/`。
 - 备份恢复支持自动备份或管理员上传的 ZIP；恢复后强制注销全部会话。
@@ -331,7 +364,11 @@ python -m pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
-测试使用临时数据库，不会修改 `data/markblog.db`。当前 **8 项测试全部通过**，覆盖公开站点、6 篇默认文章、仪表盘、登录保护、CSRF、文章 CRUD、Markdown 转义、图片对比块、SEO/备案字段与官方链接校验、前台文案保存、深色/极简外观、昼夜窗口判断、图片上传与删除、全文搜索、系列/相关文章、阅读量/完成度、定时发布、文章封面/维修速览、历史版本恢复、批量操作、草稿预览 token、TOTP 两步验证、重定向、404 记录、自动备份下载、监控健康、Markdown 导入、密码修改后会话失效。
+测试使用临时数据库，不会修改 `data/markblog.db`。当前 **9 项测试全部通过**，覆盖公开站点、6 篇默认文章、仪表盘、登录保护、CSRF、文章 CRUD、Markdown 转义、图片对比块、SEO/备案字段与官方链接校验、主题预设、FAQPage、前台文案保存、深色/极简外观、昼夜窗口判断、图片上传与删除、全文搜索、搜索词分析、系列/相关文章、阅读量/完成度、定时发布、文章封面/维修速览、历史版本恢复、批量操作、草稿预览 token、TOTP 两步验证、标签/系列管理、WebDAV 上传、AI 未配置保护、重定向、404 记录、自动备份下载、监控健康、Markdown 导入、密码修改后会话失效。
+
+## 素材与许可
+
+站娘序列帧提取自 [dsh-dafeiyu](https://github.com/minghaoxia61-web/dsh-dafeiyu)（MIT），原 Web 动作实现来自 [dsh-client-ui-pet](https://github.com/xituisuany-max/dsh-client-ui-pet)（MIT）。本项目把 PNG 帧转换为 WebP，并改写成 Vue 组件；原始许可文本保存在 `frontend/public/pet/LICENSE.txt`，来源说明在 `frontend/public/pet/SOURCE.txt`。
 
 ## 设计说明
 
@@ -347,6 +384,9 @@ python -m pytest -q
 - 自动昼夜模式依赖服务器能访问 UDP 123；若机房屏蔽 NTP，会自动使用服务器系统时间。可通过后台更换可用的 NTP 服务器。
 - 站内监控每 5 分钟检查数据库、媒体目录、NTP 和备份，异常通过 Webhook 通知；进程或整机宕机需要配置 Uptime 心跳地址，由外部服务负责报警。
 - 草稿预览链接是随机 token，不自动过期；离职交接或链接外泄时，在编辑器撤销后重新生成即可。
+- AI 每日次数在使用内存计数，服务重启后会清零；需要严格预算时应在模型平台侧再设额度。
+- 站娘序列帧约 9 MB，首次打开文章页时只加载当前动作；如果更在意首屏，可把站娘改为点击后才加载。
+- 腾讯云 COS / 阿里云 OSS 需要安装对应 SDK 并配置密钥；没有配置时不会发起外部请求。
 - 前台文案覆盖固定页面文案；加载、错误、成功等动态状态提示和表单校验信息属于交互反馈，不在文案编辑范围内。
 - 定时发布依赖 FastAPI 进程运行；服务停机期间到点的文章会在下次启动/请求时补发。自动备份同样依赖进程运行。
 - SEO 主动推送需要服务器能访问百度和 IndexNow；失败会显示在运维页，不影响本地发布。

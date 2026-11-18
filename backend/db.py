@@ -61,7 +61,8 @@ CREATE TABLE IF NOT EXISTS posts (
     featured INTEGER NOT NULL DEFAULT 0,
     repair_meta TEXT NOT NULL DEFAULT '{}',
     canonical_url TEXT NOT NULL DEFAULT '',
-    preview_token TEXT NOT NULL DEFAULT ''
+    preview_token TEXT NOT NULL DEFAULT '',
+    faq TEXT NOT NULL DEFAULT '[]'
 );
 CREATE INDEX IF NOT EXISTS idx_posts_status_published
     ON posts(status, published_at DESC);
@@ -113,6 +114,7 @@ CREATE TABLE IF NOT EXISTS post_revisions (
     cover_image TEXT NOT NULL DEFAULT '',
     repair_meta TEXT NOT NULL DEFAULT '{}',
     canonical_url TEXT NOT NULL DEFAULT '',
+    faq TEXT NOT NULL DEFAULT '[]',
     created_at TEXT NOT NULL,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 );
@@ -150,6 +152,14 @@ CREATE TABLE IF NOT EXISTS app_errors (
     created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_app_errors_created ON app_errors(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS search_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    query TEXT NOT NULL,
+    results INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_search_logs_created ON search_logs(created_at DESC);
 """
 
 POST_COLUMN_MIGRATIONS = {
@@ -164,6 +174,11 @@ POST_COLUMN_MIGRATIONS = {
     "repair_meta": "TEXT NOT NULL DEFAULT '{}'",
     "canonical_url": "TEXT NOT NULL DEFAULT ''",
     "preview_token": "TEXT NOT NULL DEFAULT ''",
+    "faq": "TEXT NOT NULL DEFAULT '[]'",
+}
+
+REVISION_COLUMN_MIGRATIONS = {
+    "faq": "TEXT NOT NULL DEFAULT '[]'",
 }
 
 ADMIN_COLUMN_MIGRATIONS = {
@@ -300,6 +315,19 @@ def _migrate_post_columns(conn: sqlite3.Connection) -> None:
     )
 
 
+def _migrate_revision_columns(conn: sqlite3.Connection) -> None:
+    existing = {
+        row["name"]
+        for row in conn.execute("PRAGMA table_info(post_revisions)").fetchall()
+    }
+    for column, declaration in REVISION_COLUMN_MIGRATIONS.items():
+        if column not in existing:
+            conn.execute(
+                f"ALTER TABLE post_revisions ADD COLUMN {column} {declaration}"
+            )
+            logger.info("Added post_revisions.%s", column)
+
+
 def _migrate_admin_columns(conn: sqlite3.Connection) -> None:
     existing = {
         row["name"] for row in conn.execute("PRAGMA table_info(admin)").fetchall()
@@ -363,6 +391,7 @@ def init_db() -> None:
     try:
         conn.executescript(SCHEMA)
         _migrate_post_columns(conn)
+        _migrate_revision_columns(conn)
         _migrate_admin_columns(conn)
         _migrate_view_columns(conn)
         conn.execute(

@@ -18,6 +18,7 @@ const isDashboard = computed(() => route.path === '/admin/dashboard')
 const isPosts = computed(
   () => route.path === '/admin/posts' || route.path.startsWith('/admin/posts/'),
 )
+const isTaxonomy = computed(() => route.path === '/admin/taxonomy')
 const isAssets = computed(() => route.path === '/admin/assets')
 const isMaintenance = computed(() => route.path === '/admin/maintenance')
 const isAppearance = computed(() => route.path === '/admin/appearance')
@@ -66,6 +67,13 @@ async function handleSignOut() {
             :class="{ 'is-active': isPosts }"
           >
             文章
+          </RouterLink>
+          <RouterLink
+            to="/admin/taxonomy"
+            class="admin-nav__link"
+            :class="{ 'is-active': isTaxonomy }"
+          >
+            标签系列
           </RouterLink>
           <RouterLink
             to="/admin/assets"

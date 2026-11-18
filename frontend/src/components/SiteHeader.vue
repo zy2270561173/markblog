@@ -17,6 +17,10 @@ function chooseTheme(value) {
   if (themeMenu.value) themeMenu.value.open = false
 }
 
+function openAi() {
+  window.dispatchEvent(new CustomEvent('markblog:open-ai'))
+}
+
 const isHome = computed(() => route.name === 'home')
 const isPosts = computed(() => route.name === 'posts' || route.name === 'post')
 const isAbout = computed(() => route.name === 'about')
@@ -119,6 +123,9 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
         >
           {{ copy.nav_about }}
         </RouterLink>
+        <button type="button" class="nav-link nav-ai" title="问问站娘 AI" @click="openAi">
+          AI
+        </button>
         <details ref="themeMenu" class="theme-switcher">
           <summary class="theme-summary" :aria-label="copy.theme_menu_label">
             <svg v-if="preference === 'light'" viewBox="0 0 20 20" width="17" height="17" fill="none" aria-hidden="true">
@@ -274,6 +281,11 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 .nav-link:hover,
 .nav-link.is-active {
   color: var(--color-pencil);
+}
+
+.nav-ai {
+  border: 0;
+  background: transparent;
 }
 
 .nav-link:hover::after,

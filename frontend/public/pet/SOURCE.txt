@@ -1,0 +1,2 @@
+Web pet frames extracted from dsh-dafeiyu (MIT), adapted to WebP for Markblog.
+https://github.com/minghaoxia61-web/dsh-dafeiyu

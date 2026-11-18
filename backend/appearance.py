@@ -129,6 +129,10 @@ def compute_appearance(values: dict[str, Any]) -> dict[str, Any]:
     if layout not in {"sketch", "minimal"}:
         layout = "sketch"
 
+    preset = values.get("theme_preset") or "paper"
+    if preset not in {"paper", "night", "blueprint", "newspaper", "terminal", "magazine"}:
+        preset = "paper"
+
     mode = values.get("theme_mode") or "auto"
     if mode not in {"auto", "light", "dark"}:
         mode = "auto"
@@ -154,6 +158,7 @@ def compute_appearance(values: dict[str, Any]) -> dict[str, Any]:
         "mode": mode,
         "active": active,
         "layout": layout,
+        "preset": preset,
         "source": source,
         "timezone": timezone_name,
         "ntp_server": ntp_server,

@@ -16,13 +16,28 @@ const preference = ref(readPreference())
 const active = ref(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light')
 let latestAppearance = null
 
+const PRESET_META = {
+  paper: { light: '#f5f0e8', dark: '#1f1e1b' },
+  night: { light: '#0c1724', dark: '#0c1724' },
+  blueprint: { light: '#edf3f6', dark: '#101d25' },
+  newspaper: { light: '#f2e8d2', dark: '#211e18' },
+  terminal: { light: '#0b1210', dark: '#0b1210' },
+  magazine: { light: '#fffaf4', dark: '#1b1918' },
+}
+
 function paint(theme) {
   active.value = theme === 'dark' ? 'dark' : 'light'
   const root = document.documentElement
   root.dataset.theme = active.value
   root.style.colorScheme = active.value
   const meta = document.querySelector('meta[name="theme-color"]')
-  if (meta) meta.setAttribute('content', active.value === 'dark' ? '#1f1f1c' : '#f5f0e8')
+  if (meta) {
+    const preset = root.dataset.themePreset || 'paper'
+    meta.setAttribute(
+      'content',
+      (PRESET_META[preset] || PRESET_META.paper)[active.value],
+    )
+  }
 }
 
 function applyAppearance(appearance) {

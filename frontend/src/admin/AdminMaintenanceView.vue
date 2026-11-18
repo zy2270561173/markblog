@@ -13,6 +13,7 @@ const audit = ref([])
 const errors = ref([])
 const redirects = ref([])
 const notFound = ref([])
+const searchTerms = ref({ top: [], zero: [], recent: [], total: 0 })
 const settings = ref(null)
 const health = ref(null)
 const secret = ref('')
@@ -21,6 +22,56 @@ const busy = ref(false)
 const twoFactor = reactive({ password: '', code: '' })
 const seoForm = reactive({ baidu_push_token: '', indexnow_key: '' })
 const alertForm = reactive({ alert_webhook_url: '', uptime_ping_url: '' })
+const aiForm = reactive({
+  ai_enabled: '0',
+  ai_base_url: 'https://api.deepseek.com',
+  ai_api_key: '',
+  ai_model: 'deepseek-chat',
+  ai_system_prompt: '',
+  ai_daily_limit: '30',
+})
+const remoteForm = reactive({
+  remote_auto_backup: '0',
+  webdav_url: '',
+  webdav_username: '',
+  webdav_password: '',
+  webdav_path: 'markblog',
+  cloud_provider: 'none',
+  cloud_bucket: '',
+  cloud_region: '',
+  cloud_endpoint: '',
+  cloud_access_key: '',
+  cloud_secret_key: '',
+  cloud_prefix: 'markblog',
+})
+
+function settingsPayload() {
+  return {
+    ...settings.value,
+    baidu_push_token: seoForm.baidu_push_token.trim(),
+    indexnow_key: seoForm.indexnow_key.trim(),
+    alert_webhook_url: alertForm.alert_webhook_url.trim(),
+    uptime_ping_url: alertForm.uptime_ping_url.trim(),
+    ai_enabled: aiForm.ai_enabled,
+    ai_base_url: aiForm.ai_base_url.trim(),
+    ai_api_key: aiForm.ai_api_key.trim(),
+    ai_model: aiForm.ai_model.trim(),
+    ai_system_prompt: aiForm.ai_system_prompt.trim(),
+    ai_daily_limit: aiForm.ai_daily_limit.trim(),
+    remote_auto_backup: remoteForm.remote_auto_backup,
+    webdav_url: remoteForm.webdav_url.trim(),
+    webdav_username: remoteForm.webdav_username.trim(),
+    webdav_password: remoteForm.webdav_password,
+    webdav_path: remoteForm.webdav_path.trim(),
+    cloud_provider: remoteForm.cloud_provider,
+    cloud_bucket: remoteForm.cloud_bucket.trim(),
+    cloud_region: remoteForm.cloud_region.trim(),
+    cloud_endpoint: remoteForm.cloud_endpoint.trim(),
+    cloud_access_key: remoteForm.cloud_access_key.trim(),
+    cloud_secret_key: remoteForm.cloud_secret_key,
+    cloud_prefix: remoteForm.cloud_prefix.trim(),
+  }
+}
 const redirectForm = reactive({ path: '', target: '' })
 
 const actionLabels = {
@@ -53,6 +104,13 @@ const actionLabels = {
   monitor_alert: '监控告警',
   preview_token_created: '生成草稿预览链接',
   preview_token_revoked: '撤销草稿预览链接',
+  search_terms_cleared: '清空搜索词记录',
+  tag_renamed: '标签改名',
+  tag_deleted: '删除标签',
+  series_renamed: '系列改名',
+  series_deleted: '解散系列',
+  series_reordered: '调整系列顺序',
+  remote_backup: '上传远程备份',
 }
 
 function formatTime(value) {
@@ -75,7 +133,7 @@ async function loadPage() {
   loading.value = true
   error.value = ''
   try {
-    const [two, auditData, errorData, redirectData, notFoundData, settingData, healthData] =
+    const [two, auditData, errorData, redirectData, notFoundData, settingData, healthData, searchData] =
       await Promise.all([
         adminApi.get2fa(),
         adminApi.getAudit(),
@@ -84,18 +142,38 @@ async function loadPage() {
         adminApi.getNotFound(),
         adminApi.getSettings(),
         adminApi.getHealth(),
+        adminApi.getSearchTerms(),
       ])
     status.value = two
     audit.value = auditData.items || []
     errors.value = errorData.items || []
     redirects.value = redirectData.items || []
     notFound.value = notFoundData.items || []
+    searchTerms.value = searchData
     settings.value = settingData
     health.value = healthData
     seoForm.baidu_push_token = settingData.baidu_push_token || ''
     seoForm.indexnow_key = settingData.indexnow_key || ''
     alertForm.alert_webhook_url = settingData.alert_webhook_url || ''
     alertForm.uptime_ping_url = settingData.uptime_ping_url || ''
+    aiForm.ai_enabled = settingData.ai_enabled === '1' ? '1' : '0'
+    aiForm.ai_base_url = settingData.ai_base_url || 'https://api.deepseek.com'
+    aiForm.ai_api_key = settingData.ai_api_key || ''
+    aiForm.ai_model = settingData.ai_model || 'deepseek-chat'
+    aiForm.ai_system_prompt = settingData.ai_system_prompt || ''
+    aiForm.ai_daily_limit = settingData.ai_daily_limit || '30'
+    remoteForm.remote_auto_backup = settingData.remote_auto_backup === '1' ? '1' : '0'
+    remoteForm.webdav_url = settingData.webdav_url || ''
+    remoteForm.webdav_username = settingData.webdav_username || ''
+    remoteForm.webdav_password = settingData.webdav_password || ''
+    remoteForm.webdav_path = settingData.webdav_path || 'markblog'
+    remoteForm.cloud_provider = settingData.cloud_provider || 'none'
+    remoteForm.cloud_bucket = settingData.cloud_bucket || ''
+    remoteForm.cloud_region = settingData.cloud_region || ''
+    remoteForm.cloud_endpoint = settingData.cloud_endpoint || ''
+    remoteForm.cloud_access_key = settingData.cloud_access_key || ''
+    remoteForm.cloud_secret_key = settingData.cloud_secret_key || ''
+    remoteForm.cloud_prefix = settingData.cloud_prefix || 'markblog'
   } catch (requestError) {
     error.value = requestError.message || '运维页加载失败。'
   } finally {
@@ -170,13 +248,7 @@ async function saveSeo() {
   busy.value = true
   error.value = ''
   try {
-    settings.value = await adminApi.saveSettings({
-      ...settings.value,
-      baidu_push_token: seoForm.baidu_push_token.trim(),
-      indexnow_key: seoForm.indexnow_key.trim(),
-      alert_webhook_url: alertForm.alert_webhook_url.trim(),
-      uptime_ping_url: alertForm.uptime_ping_url.trim(),
-    })
+    settings.value = await adminApi.saveSettings(settingsPayload())
     flash('SEO 推送设置已保存。')
   } catch (requestError) {
     error.value = requestError.message || '保存失败。'
@@ -190,13 +262,7 @@ async function saveAlerts() {
   busy.value = true
   error.value = ''
   try {
-    settings.value = await adminApi.saveSettings({
-      ...settings.value,
-      baidu_push_token: seoForm.baidu_push_token.trim(),
-      indexnow_key: seoForm.indexnow_key.trim(),
-      alert_webhook_url: alertForm.alert_webhook_url.trim(),
-      uptime_ping_url: alertForm.uptime_ping_url.trim(),
-    })
+    settings.value = await adminApi.saveSettings(settingsPayload())
     const data = await adminApi.getHealth()
     health.value = data
     flash('监控告警设置已保存。')
@@ -212,19 +278,56 @@ async function testAlerts() {
   error.value = ''
   try {
     if (settings.value) {
-      settings.value = await adminApi.saveSettings({
-        ...settings.value,
-        baidu_push_token: seoForm.baidu_push_token.trim(),
-        indexnow_key: seoForm.indexnow_key.trim(),
-        alert_webhook_url: alertForm.alert_webhook_url.trim(),
-        uptime_ping_url: alertForm.uptime_ping_url.trim(),
-      })
+      settings.value = await adminApi.saveSettings(settingsPayload())
     }
     const result = await adminApi.testAlerts()
     const ok = [result.webhook, result.ping].filter(Boolean).every((item) => item.ok)
     flash(ok ? '测试告警发送成功。' : '已发送，但至少一个地址返回失败，请检查日志或地址。')
   } catch (requestError) {
     error.value = requestError.message || '测试告警失败。'
+  } finally {
+    busy.value = false
+  }
+}
+
+async function saveAi() {
+  if (!settings.value) return
+  busy.value = true
+  error.value = ''
+  try {
+    settings.value = await adminApi.saveSettings(settingsPayload())
+    flash(aiForm.ai_enabled === '1' ? 'AI 助手已保存并开启。' : 'AI 助手设置已保存，当前关闭。')
+  } catch (requestError) {
+    error.value = requestError.message || 'AI 设置保存失败。'
+  } finally {
+    busy.value = false
+  }
+}
+
+async function saveRemote() {
+  if (!settings.value) return
+  busy.value = true
+  error.value = ''
+  try {
+    settings.value = await adminApi.saveSettings(settingsPayload())
+    flash('远程备份设置已保存。')
+  } catch (requestError) {
+    error.value = requestError.message || '远程备份设置保存失败。'
+  } finally {
+    busy.value = false
+  }
+}
+
+async function uploadRemote(kind) {
+  if (!settings.value) return
+  busy.value = true
+  error.value = ''
+  try {
+    settings.value = await adminApi.saveSettings(settingsPayload())
+    const result = await adminApi.uploadRemoteBackup(kind)
+    flash(`已上传 ${result.filename || result.key || '备份文件'}。`)
+  } catch (requestError) {
+    error.value = requestError.message || '远程上传失败。'
   } finally {
     busy.value = false
   }
@@ -280,6 +383,12 @@ async function clearErrors() {
   if (!window.confirm('清空全部错误日志？')) return
   await adminApi.clearErrors()
   errors.value = []
+}
+
+async function clearSearchTerms() {
+  if (!window.confirm('清空全部搜索词记录？')) return
+  await adminApi.clearSearchTerms()
+  searchTerms.value = { top: [], zero: [], recent: [], total: 0 }
 }
 
 async function clearNotFound() {
@@ -402,6 +511,117 @@ onMounted(() => {
 
         <section class="admin-card full-span">
           <div class="admin-card__head">
+            <h2>AI 助手</h2>
+            <p>站娘右下角的站内问答</p>
+          </div>
+          <label class="ai-toggle">
+            <input v-model="aiForm.ai_enabled" type="checkbox" true-value="1" false-value="0" />
+            <span>开启公开站 AI 助手</span>
+          </label>
+          <div class="form-grid">
+            <div class="field">
+              <label for="ai-base">兼容接口地址</label>
+              <input id="ai-base" v-model="aiForm.ai_base_url" class="input" placeholder="https://api.deepseek.com" />
+            </div>
+            <div class="field">
+              <label for="ai-model">模型</label>
+              <input id="ai-model" v-model="aiForm.ai_model" class="input" placeholder="deepseek-chat" />
+            </div>
+            <div class="field">
+              <label for="ai-key">API Key</label>
+              <input id="ai-key" v-model="aiForm.ai_api_key" class="input" type="password" autocomplete="off" placeholder="只保存在本站数据库" />
+            </div>
+            <div class="field">
+              <label for="ai-limit">每人每天次数</label>
+              <input id="ai-limit" v-model="aiForm.ai_daily_limit" class="input" type="number" min="1" max="1000" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="ai-prompt">系统提示词</label>
+            <textarea id="ai-prompt" v-model="aiForm.ai_system_prompt" class="textarea" rows="3" maxlength="3000"></textarea>
+            <p class="field-hint">会自动附带本站检索到的文章标题和链接；不要把密钥写进提示词。</p>
+          </div>
+          <div class="button-row">
+            <button type="button" class="btn btn--small" :disabled="busy" @click="saveAi">保存 AI 设置</button>
+          </div>
+        </section>
+
+        <section class="admin-card full-span">
+          <div class="admin-card__head">
+            <h2>异地备份</h2>
+            <p>WebDAV / 腾讯云 COS / 阿里云 OSS</p>
+          </div>
+          <label class="ai-toggle">
+            <input v-model="remoteForm.remote_auto_backup" type="checkbox" true-value="1" false-value="0" />
+            <span>每天自动备份后同步到已配置的远程存储</span>
+          </label>
+          <h3 class="remote-subtitle">WebDAV</h3>
+          <div class="form-grid">
+            <div class="field">
+              <label for="webdav-url">WebDAV 地址</label>
+              <input id="webdav-url" v-model="remoteForm.webdav_url" class="input" placeholder="https://dav.example.com/remote.php/dav/files/user" />
+            </div>
+            <div class="field">
+              <label for="webdav-path">远程目录</label>
+              <input id="webdav-path" v-model="remoteForm.webdav_path" class="input" placeholder="markblog" />
+            </div>
+            <div class="field">
+              <label for="webdav-user">用户名</label>
+              <input id="webdav-user" v-model="remoteForm.webdav_username" class="input" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="webdav-pass">密码 / 应用密码</label>
+              <input id="webdav-pass" v-model="remoteForm.webdav_password" class="input" type="password" autocomplete="new-password" />
+            </div>
+          </div>
+          <div class="button-row">
+            <button type="button" class="btn btn--small" :disabled="busy" @click="saveRemote">保存远程设置</button>
+            <button type="button" class="btn btn--small" :disabled="busy" @click="uploadRemote('webdav')">上传到 WebDAV</button>
+          </div>
+
+          <h3 class="remote-subtitle">对象存储</h3>
+          <div class="form-grid">
+            <div class="field">
+              <label for="cloud-provider">服务商</label>
+              <select id="cloud-provider" v-model="remoteForm.cloud_provider" class="select">
+                <option value="none">不启用</option>
+                <option value="tencent">腾讯云 COS</option>
+                <option value="aliyun">阿里云 OSS</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="cloud-bucket">Bucket</label>
+              <input id="cloud-bucket" v-model="remoteForm.cloud_bucket" class="input" />
+            </div>
+            <div class="field">
+              <label for="cloud-region">地域 Region</label>
+              <input id="cloud-region" v-model="remoteForm.cloud_region" class="input" placeholder="ap-guangzhou / oss-cn-hangzhou" />
+            </div>
+            <div class="field">
+              <label for="cloud-endpoint">自定义 Endpoint</label>
+              <input id="cloud-endpoint" v-model="remoteForm.cloud_endpoint" class="input" placeholder="留空使用服务商默认地址" />
+            </div>
+            <div class="field">
+              <label for="cloud-access">AccessKey</label>
+              <input id="cloud-access" v-model="remoteForm.cloud_access_key" class="input" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="cloud-secret">SecretKey</label>
+              <input id="cloud-secret" v-model="remoteForm.cloud_secret_key" class="input" type="password" autocomplete="new-password" />
+            </div>
+            <div class="field">
+              <label for="cloud-prefix">对象前缀</label>
+              <input id="cloud-prefix" v-model="remoteForm.cloud_prefix" class="input" placeholder="markblog" />
+            </div>
+          </div>
+          <div class="button-row">
+            <button type="button" class="btn btn--small" :disabled="busy" @click="uploadRemote('cloud')">上传到对象存储</button>
+          </div>
+          <p class="field-hint">对象存储需要安装可选依赖：腾讯云 <code>cos-python-sdk-v5</code>，阿里云 <code>oss2</code>。</p>
+        </section>
+
+        <section class="admin-card full-span">
+          <div class="admin-card__head">
             <h2>301 重定向</h2>
             <p>改 slug 后自动生成，也可以手动添加</p>
           </div>
@@ -452,6 +672,34 @@ onMounted(() => {
 
         <section class="admin-card full-span">
           <div class="admin-card__head">
+            <h2>搜索词分析</h2>
+            <button type="button" class="text-link bare-button" @click="clearSearchTerms">清空</button>
+          </div>
+          <p class="admin-note">共 {{ searchTerms.total }} 次站内搜索。无结果词可以直接变成下一篇文章的选题。</p>
+          <div class="search-terms-grid">
+            <div>
+              <h3>搜得最多</h3>
+              <ul class="search-term-list">
+                <li v-for="item in searchTerms.top" :key="item.query">
+                  <span>{{ item.query }}</span><strong>{{ item.searches }}</strong>
+                </li>
+                <li v-if="!searchTerms.top.length"><span>还没有搜索记录</span></li>
+              </ul>
+            </div>
+            <div>
+              <h3>没有结果</h3>
+              <ul class="search-term-list">
+                <li v-for="item in searchTerms.zero" :key="item.query">
+                  <span>{{ item.query }}</span><strong>{{ item.searches }}</strong>
+                </li>
+                <li v-if="!searchTerms.zero.length"><span>目前没有无结果搜索</span></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-card full-span">
+          <div class="admin-card__head">
             <h2>404 记录</h2>
             <button type="button" class="text-link bare-button" @click="clearNotFound">清空</button>
           </div>
@@ -494,6 +742,28 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 14px;
+}
+
+.ai-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 12px;
+  color: var(--color-ink-soft);
+  font-family: var(--font-hand);
+  font-size: 15px;
+}
+
+.ai-toggle input {
+  accent-color: var(--color-grass);
+}
+
+.remote-subtitle {
+  margin: 18px 0 4px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--color-line);
+  font-family: var(--font-hand);
+  font-size: 22px;
 }
 
 .twofa-setup {
@@ -546,6 +816,45 @@ onMounted(() => {
 
 .redirect-list,
 .log-list,
+.search-terms-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 12px;
+}
+
+.search-terms-grid h3 {
+  margin: 0 0 6px;
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 16px;
+}
+
+.search-term-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.search-term-list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--color-line);
+  font-size: 11px;
+}
+
+.search-term-list li strong {
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 13px;
+}
+
 .notfound-list {
   display: flex;
   flex-direction: column;
@@ -633,6 +942,10 @@ onMounted(() => {
   }
 
   .notfound-list li {
+    grid-template-columns: 1fr;
+  }
+
+  .search-terms-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -42,6 +42,7 @@ const form = reactive({
   repairTools: '',
   repairModels: '',
   repairSafety: '',
+  faq: [],
 })
 
 const postId = ref(null)
@@ -61,6 +62,9 @@ const previewError = ref('')
 const activeTab = ref('write')
 const textarea = ref(null)
 const titleInput = ref(null)
+const editorPanesStyle = computed(() => ({
+  '--editor-split': `${splitPercent.value}%`,
+}))
 const imageInput = ref(null)
 const savedSnapshot = ref('')
 const uploadingImage = ref(false)
@@ -69,6 +73,11 @@ const mediaNotice = ref('')
 const localDraft = ref(null)
 const autoSavedAt = ref('')
 const postViews = ref(0)
+const focusMode = ref(false)
+const splitPercent = ref(58)
+const commandOpen = ref(false)
+const commandQuery = ref('')
+const commandIndex = ref(0)
 const previewUrl = ref('')
 const mediaPickerOpen = ref(false)
 const mediaPickerMode = ref('cover')
@@ -146,6 +155,7 @@ function snapshot() {
     repairTools: form.repairTools,
     repairModels: form.repairModels,
     repairSafety: form.repairSafety,
+    faq: JSON.parse(JSON.stringify(form.faq)),
   })
 }
 
@@ -189,6 +199,7 @@ function draftPayload() {
     repairTools: form.repairTools,
     repairModels: form.repairModels,
     repairSafety: form.repairSafety,
+    faq: JSON.parse(JSON.stringify(form.faq)),
     savedAt: new Date().toISOString(),
   }
 }
@@ -241,6 +252,7 @@ function applyLocalDraft(draft) {
     repairTools: draft.repairTools || '',
     repairModels: draft.repairModels || '',
     repairSafety: draft.repairSafety || '',
+    faq: Array.isArray(draft.faq) ? JSON.parse(JSON.stringify(draft.faq)) : [],
   })
   localDraft.value = null
 }
@@ -278,6 +290,7 @@ function checkLocalDraft() {
     repairTools: draft.repairTools || '',
     repairModels: draft.repairModels || '',
     repairSafety: draft.repairSafety || '',
+    faq: Array.isArray(draft.faq) ? JSON.parse(JSON.stringify(draft.faq)) : [],
   })
   if (draftSnapshot !== snapshot() && (draft.title || draft.content_md)) {
     localDraft.value = draft
@@ -453,6 +466,7 @@ async function restoreSelectedRevision() {
       repairTools: result.repair?.tools || '',
       repairModels: result.repair?.models || '',
       repairSafety: result.repair?.safety || '',
+      faq: Array.isArray(result.faq) ? JSON.parse(JSON.stringify(result.faq)) : [],
     })
     await nextTick()
     applyingResult = false
@@ -466,6 +480,15 @@ async function restoreSelectedRevision() {
   } finally {
     revisionBusy.value = false
   }
+}
+
+function addFaq() {
+  if (form.faq.length >= 12) return
+  form.faq.push({ question: '', answer: '' })
+}
+
+function removeFaq(index) {
+  form.faq.splice(index, 1)
 }
 
 async function sharePreview() {
@@ -547,6 +570,7 @@ function resetForNew() {
     repairTools: '',
     repairModels: '',
     repairSafety: '',
+    faq: [],
   })
   loadedAt.value = ''
   lastSavedAt.value = ''
@@ -592,6 +616,7 @@ async function loadPost(id) {
       repairTools: data.repair?.tools || '',
       repairModels: data.repair?.models || '',
       repairSafety: data.repair?.safety || '',
+      faq: Array.isArray(data.faq) ? JSON.parse(JSON.stringify(data.faq)) : [],
     })
     loadedAt.value = data.created_at
     lastSavedAt.value = data.updated_at
@@ -768,6 +793,12 @@ async function save({ silent = false } = {}) {
         models: form.repairModels.trim(),
         safety: form.repairSafety.trim(),
       },
+      faq: form.faq
+        .map((item) => ({
+          question: (item.question || '').trim(),
+          answer: (item.answer || '').trim(),
+        }))
+        .filter((item) => item.question && item.answer),
     }
     const wasNew = postId.value === null
     const result = postId.value
@@ -794,6 +825,7 @@ async function save({ silent = false } = {}) {
     form.repairTools = result.repair?.tools || ''
     form.repairModels = result.repair?.models || ''
     form.repairSafety = result.repair?.safety || ''
+    form.faq = Array.isArray(result.faq) ? JSON.parse(JSON.stringify(result.faq)) : []
     postViews.value = result.views || postViews.value
     await nextTick()
     applyingResult = false
@@ -849,11 +881,87 @@ function scheduleAutoSave() {
   }, 28_000)
 }
 
+const commands = computed(() => [
+  { label: '保存文章', hint: 'Ctrl / ⌘ + S', run: () => save() },
+  { label: '切换写作 / 预览', hint: '写作与预览', run: () => (activeTab.value = activeTab.value === 'write' ? 'preview' : 'write') },
+  { label: '历史版本', hint: '恢复旧稿', run: openRevisions },
+  { label: '生成预览链接', hint: '草稿私有链接', run: sharePreview },
+  { label: '切换专注模式', hint: '隐藏设置栏', run: toggleFocus },
+  { label: '插入对比图', hint: '前后两张图', run: openCompare },
+  { label: '添加 FAQ', hint: '常见问题', run: addFaq },
+  { label: '从媒体库插入图片', hint: '选择图片', run: () => openMediaPicker('insert') },
+  { label: '跳到正文', hint: '开始写作', run: () => textarea.value?.focus() },
+])
+
+const filteredCommands = computed(() => {
+  const needle = commandQuery.value.trim().toLowerCase()
+  return commands.value.filter(
+    (item) => !needle || item.label.toLowerCase().includes(needle) || item.hint.toLowerCase().includes(needle),
+  )
+})
+
+function toggleFocus() {
+  focusMode.value = !focusMode.value
+  try {
+    window.localStorage.setItem('markblog:editor:focus', focusMode.value ? '1' : '0')
+  } catch {
+    // Ignore private-mode storage failures.
+  }
+}
+
+function setSplit(event) {
+  splitPercent.value = Number(event.target.value)
+  try {
+    window.localStorage.setItem('markblog:editor:split', String(splitPercent.value))
+  } catch {
+    // Ignore private-mode storage failures.
+  }
+}
+
+watch(commandQuery, () => {
+  commandIndex.value = 0
+})
+
+function openCommand() {
+  commandQuery.value = ''
+  commandIndex.value = 0
+  commandOpen.value = true
+  nextTick(() => document.querySelector('#command-input')?.focus())
+}
+
+function runCommand(command) {
+  if (!command) return
+  commandOpen.value = false
+  command.run()
+}
+
+function handleCommandKey(event) {
+  if (event.key === 'Escape') {
+    commandOpen.value = false
+    return
+  }
+  if (event.key === 'ArrowDown') {
+    event.preventDefault()
+    commandIndex.value = Math.min(filteredCommands.value.length - 1, commandIndex.value + 1)
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault()
+    commandIndex.value = Math.max(0, commandIndex.value - 1)
+  } else if (event.key === 'Enter') {
+    event.preventDefault()
+    runCommand(filteredCommands.value[commandIndex.value])
+  }
+}
+
 function handleKeydown(event) {
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
     event.preventDefault()
     save()
   }
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    openCommand()
+  }
+  if (event.key === 'Escape' && commandOpen.value) commandOpen.value = false
 }
 
 function handleBeforeUnload(event) {
@@ -878,6 +986,15 @@ watch(
 )
 
 onMounted(() => {
+  try {
+    focusMode.value = window.localStorage.getItem('markblog:editor:focus') === '1'
+    const savedSplit = Number(window.localStorage.getItem('markblog:editor:split'))
+    if (Number.isFinite(savedSplit) && savedSplit >= 35 && savedSplit <= 75) {
+      splitPercent.value = savedSplit
+    }
+  } catch {
+    // Ignore private-mode storage failures.
+  }
   scheduleMeta()
   scheduleAutoSave()
   window.addEventListener('keydown', handleKeydown)
@@ -897,7 +1014,7 @@ onBeforeUnmount(() => {
 
 <template>
   <AdminLayout>
-    <div class="container admin-page editor-page">
+    <div class="container admin-page editor-page" :class="{ 'is-focus': focusMode }">
       <header class="editor-head">
         <div class="editor-head__copy">
           <RouterLink to="/admin/posts" class="editor-back">
@@ -908,6 +1025,12 @@ onBeforeUnmount(() => {
           <h1>{{ isNew ? '写新文章' : '编辑文章' }}</h1>
         </div>
         <div class="editor-head__actions">
+          <button type="button" class="text-link bare-button" @click="toggleFocus">
+            {{ focusMode ? '退出专注' : '专注模式' }}
+          </button>
+          <button type="button" class="text-link bare-button" @click="openCommand">
+            命令
+          </button>
           <a
             v-if="postId && form.status === 'published'"
             :href="`/posts/${encodeURIComponent(form.slug || '')}`"
@@ -1018,6 +1141,11 @@ onBeforeUnmount(() => {
             <section class="writing-desk" aria-labelledby="writing-label">
               <div class="writing-desk__head">
                 <h2 id="writing-label">正文</h2>
+                <label class="split-control">
+                  <span>分栏</span>
+                  <input type="range" min="35" max="75" step="1" :value="splitPercent" @input="setSplit" />
+                  <small>{{ splitPercent }} / {{ 100 - splitPercent }}</small>
+                </label>
                 <div class="mobile-tabs" role="tablist" aria-label="写作与预览">
                   <button
                     type="button"
@@ -1088,7 +1216,7 @@ onBeforeUnmount(() => {
               <p v-if="mediaError" class="editor-media-note alert alert--error">{{ mediaError }}</p>
               <p v-if="mediaNotice" class="editor-media-note alert alert--success" role="status">{{ mediaNotice }}</p>
 
-              <div class="editor-panes" :class="`is-${activeTab}`">
+              <div class="editor-panes" :class="`is-${activeTab}`" :style="editorPanesStyle">
                 <div class="editor-pane editor-pane--write">
                   <label for="post-content" class="visually-hidden">Markdown 正文</label>
                   <textarea
@@ -1318,6 +1446,29 @@ onBeforeUnmount(() => {
               </div>
             </details>
 
+            <details class="meta-card faq-editor">
+              <summary class="seo-card__summary">
+                <span>FAQ / 常见问题</span>
+                <small>{{ form.faq.length }} 条 · 生成 FAQPage</small>
+              </summary>
+              <div class="seo-card__body">
+                <button type="button" class="text-link bare-button repair-template" @click="addFaq">
+                  ＋ 添加一条问答
+                </button>
+                <div v-for="(item, index) in form.faq" :key="index" class="faq-editor__item">
+                  <div class="field">
+                    <label :for="`faq-q-${index}`">问题 {{ index + 1 }}</label>
+                    <input :id="`faq-q-${index}`" v-model="item.question" class="input" maxlength="200" />
+                  </div>
+                  <div class="field">
+                    <label :for="`faq-a-${index}`">回答</label>
+                    <textarea :id="`faq-a-${index}`" v-model="item.answer" class="textarea" rows="3" maxlength="1200"></textarea>
+                  </div>
+                  <button type="button" class="text-link bare-button is-danger" @click="removeFaq(index)">删除这一条</button>
+                </div>
+              </div>
+            </details>
+
             <section class="meta-card meta-card--stats">
               <div class="meta-card__head">
                 <h2>这一页</h2>
@@ -1358,6 +1509,36 @@ onBeforeUnmount(() => {
         </div>
       </template>
     </div>
+
+    <Teleport to="body">
+      <div v-if="commandOpen" class="command-dialog" role="dialog" aria-modal="true" aria-label="命令面板" @click.self="commandOpen = false">
+        <div class="command-panel">
+          <input
+            id="command-input"
+            v-model="commandQuery"
+            class="command-input"
+            placeholder="搜索命令…  ↑↓ 选择，Enter 执行"
+            autocomplete="off"
+            @keydown="handleCommandKey"
+          />
+          <div class="command-list">
+            <button
+              v-for="(command, index) in filteredCommands"
+              :key="command.label"
+              type="button"
+              class="command-item"
+              :class="{ 'is-active': index === commandIndex }"
+              @mouseenter="commandIndex = index"
+              @click="runCommand(command)"
+            >
+              <span>{{ command.label }}</span>
+              <small>{{ command.hint }}</small>
+            </button>
+            <p v-if="!filteredCommands.length" class="command-empty">没有匹配的命令。</p>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <MediaPicker
       :open="mediaPickerOpen"
@@ -1455,6 +1636,18 @@ onBeforeUnmount(() => {
 .container.editor-page {
   width: min(1540px, calc(100% - 48px));
   padding-top: 32px;
+}
+
+.container.editor-page.is-focus {
+  width: min(1180px, calc(100% - 48px));
+}
+
+.editor-page.is-focus .editor-layout {
+  grid-template-columns: 1fr;
+}
+
+.editor-page.is-focus .editor-side {
+  display: none;
 }
 
 .editor-layout {
@@ -1781,7 +1974,100 @@ onBeforeUnmount(() => {
 
 .editor-panes {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  grid-template-columns: minmax(0, var(--editor-split, 58%)) minmax(0, 1fr);
+}
+
+.split-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 12px;
+}
+
+.split-control input {
+  width: 82px;
+  accent-color: var(--color-vermilion);
+}
+
+.split-control small {
+  min-width: 42px;
+  font-size: 10px;
+}
+
+.command-dialog {
+  position: fixed;
+  z-index: 240;
+  inset: 0;
+  display: grid;
+  padding: 80px 20px 20px;
+  place-items: start center;
+  background: rgba(15, 14, 12, 0.6);
+}
+
+.command-panel {
+  width: min(620px, 100%);
+  border: 2px solid var(--color-pencil);
+  background-color: var(--color-paper);
+  background-image: var(--paper-grain);
+  box-shadow: var(--shadow-sketch-hover);
+}
+
+.command-input {
+  display: block;
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  border-bottom: 1.5px dashed var(--color-line);
+  background: transparent;
+  color: var(--color-pencil);
+  font-family: var(--font-hand);
+  font-size: 22px;
+  outline: none;
+}
+
+.command-list {
+  display: flex;
+  max-height: 52vh;
+  flex-direction: column;
+  padding: 6px;
+  overflow-y: auto;
+}
+
+.command-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 10px;
+  border: 1px dashed transparent;
+  background: transparent;
+  color: var(--color-ink-soft);
+  font-family: var(--font-hand);
+  font-size: 16px;
+  text-align: left;
+}
+
+.command-item small {
+  color: var(--color-ink-faint);
+  font-family: var(--font-serif);
+  font-size: 10px;
+}
+
+.command-item:hover,
+.command-item.is-active {
+  border-color: var(--color-line);
+  background: var(--surface-tint);
+  color: var(--color-pencil);
+}
+
+.command-empty {
+  margin: 0;
+  padding: 22px;
+  color: var(--color-ink-faint);
+  text-align: center;
 }
 
 .editor-pane {
@@ -2087,6 +2373,18 @@ onBeforeUnmount(() => {
   font-size: 14px;
 }
 
+.faq-editor__item {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--color-line);
+}
+
+.faq-editor__item .is-danger {
+  color: var(--color-vermilion);
+  font-family: var(--font-hand);
+  font-size: 13px;
+}
+
 .compare-dialog {
   position: fixed;
   z-index: 195;
@@ -2285,12 +2583,16 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 1300px) {
+  .split-control {
+    display: none;
+  }
+
   .mobile-tabs {
     display: flex;
   }
 
   .editor-panes {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
   .editor-pane--write {

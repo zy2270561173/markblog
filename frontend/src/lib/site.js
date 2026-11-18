@@ -22,11 +22,13 @@ const fallback = {
   footer_note: '维修有风险，重要数据请先备份；本站内容为个人经验记录。',
   site_since: '2026',
   site_url: window.location.origin,
+  ai_enabled: '0',
   ui_copy: { ...UI_COPY_DEFAULTS },
   appearance: {
     mode: 'auto',
     active: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
     layout: document.documentElement.dataset.layout === 'minimal' ? 'minimal' : 'sketch',
+    preset: document.documentElement.dataset.themePreset || 'paper',
     source: 'server',
     timezone: 'Asia/Shanghai',
     ntp_server: 'ntp.aliyun.com',

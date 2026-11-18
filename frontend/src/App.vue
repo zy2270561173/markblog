@@ -1,8 +1,10 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import SiteHeader from './components/SiteHeader.vue'
 import SiteFooter from './components/SiteFooter.vue'
+import PetMascot from './components/PetMascot.vue'
+import AiAgentPanel from './components/AiAgentPanel.vue'
 import { useSite } from './lib/site'
 import { applyAppearance as applyThemePreference } from './lib/theme'
 import { setKeywords, setRobots } from './lib/meta'
@@ -15,14 +17,26 @@ const isAdmin = computed(
 )
 
 let appearanceTimer = null
+const aiOpen = ref(false)
 
 function applyAppearance(appearance) {
   const layout = appearance?.layout === 'minimal' ? 'minimal' : 'sketch'
+  const preset = ['night', 'blueprint', 'newspaper', 'terminal', 'magazine'].includes(
+    appearance?.preset,
+  )
+    ? appearance.preset
+    : 'paper'
   document.documentElement.dataset.layout = layout
+  document.documentElement.dataset.themePreset = preset
   applyThemePreference(appearance)
 }
 
+function openAiPanel() {
+  aiOpen.value = true
+}
+
 onMounted(() => {
+  window.addEventListener('markblog:open-ai', openAiPanel)
   loadSite()
   // Keep the automatic day/night state current while the tab stays open.
   appearanceTimer = window.setInterval(() => {
@@ -32,6 +46,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (appearanceTimer) window.clearInterval(appearanceTimer)
+  window.removeEventListener('markblog:open-ai', openAiPanel)
 })
 
 watch(
@@ -82,6 +97,8 @@ function retrySite() {
         <RouterView />
       </main>
       <SiteFooter />
+      <PetMascot @open-ai="aiOpen = true" />
+      <AiAgentPanel :open="aiOpen" @close="aiOpen = false" />
     </template>
 
     <RouterView v-else />

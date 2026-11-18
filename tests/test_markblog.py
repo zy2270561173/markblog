@@ -6,8 +6,10 @@ import json
 import os
 import shutil
 import tempfile
+import threading
 import time
 import zipfile
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from datetime import datetime, timezone
 from urllib.parse import quote
 
@@ -373,6 +375,9 @@ def test_revisions_cover_batch_analytics_security_and_backup(client: TestClient)
                 "models": "通用",
                 "safety": "先断电。",
             },
+            "faq": [
+                {"question": "会不会丢数据？", "answer": "先备份再操作。"},
+            ],
         }
         created = client.post("/api/admin/posts", json=payload, headers=headers)
         assert created.status_code == 201, created.text
@@ -384,6 +389,8 @@ def test_revisions_cover_batch_analytics_security_and_backup(client: TestClient)
         public_post = client.get("/api/public/posts/phase-two-test").json()
         assert public_post["repair"]["time"] == "30 分钟"
         assert public_post["cover_image"] == cover
+        assert public_post["faq"][0]["question"] == "会不会丢数据？"
+        assert "FAQPage" in client.get("/posts/phase-two-test").text
 
         compare_preview = client.post(
             "/api/admin/preview",
@@ -544,6 +551,132 @@ def test_revisions_cover_batch_analytics_security_and_backup(client: TestClient)
             client.delete(f"/api/admin/redirects/{redirect_id}", headers=headers)
 
 
+def test_theme_faq_ai_taxonomy_search_and_webdav(client: TestClient):
+    headers = login(client)
+    original = current_settings(client, headers)
+    post_ids: list[int] = []
+    server = None
+
+    class DavHandler(BaseHTTPRequestHandler):
+        puts: list[tuple[str, bytes]] = []
+
+        def do_MKCOL(self):
+            self.send_response(201)
+            self.end_headers()
+
+        def do_PUT(self):
+            size = int(self.headers.get("content-length", "0"))
+            DavHandler.puts.append((self.path, self.rfile.read(size)))
+            self.send_response(201)
+            self.end_headers()
+
+        def log_message(self, *_args):
+            return
+
+    try:
+        # AI is opt-in; the default test database must not call an external model.
+        ai_response = client.post(
+            "/api/public/ai/chat",
+            json={"message": "你好"},
+        )
+        assert ai_response.status_code == 503
+
+        night = {**original, "theme_preset": "night"}
+        saved = client.put("/api/admin/settings", json=night, headers=headers)
+        assert saved.status_code == 200, saved.text
+        assert client.get("/api/public/site").json()["appearance"]["preset"] == "night"
+
+        payload = {
+            "title": "分类管理测试",
+            "slug": "taxonomy-test-a",
+            "excerpt": "分类",
+            "content_md": "## 正文",
+            "tags": ["taxonomy-tag"],
+            "status": "published",
+            "scheduled_at": None,
+            "series": "taxonomy-series",
+            "series_order": 1,
+            "seo_title": "",
+            "seo_description": "",
+            "seo_keywords": "",
+            "cover_image": "",
+            "featured": False,
+            "canonical_url": "",
+            "repair": {"risk": "low", "time": "", "tools": "", "models": "", "safety": ""},
+            "faq": [],
+        }
+        first = client.post("/api/admin/posts", json=payload, headers=headers)
+        assert first.status_code == 201, first.text
+        post_ids.append(first.json()["id"])
+        second = client.post(
+            "/api/admin/posts",
+            json={**payload, "title": "分类管理测试 B", "slug": "taxonomy-test-b"},
+            headers=headers,
+        )
+        assert second.status_code == 201, second.text
+        post_ids.append(second.json()["id"])
+
+        taxonomy = client.get("/api/admin/taxonomy", headers=headers)
+        assert taxonomy.status_code == 200
+        assert any(tag["name"] == "taxonomy-tag" for tag in taxonomy.json()["tags"])
+        assert any(item["name"] == "taxonomy-series" for item in taxonomy.json()["series"])
+
+        renamed = client.post(
+            "/api/admin/taxonomy/tags/rename",
+            json={"old": "taxonomy-tag", "new": "taxonomy-tag-2"},
+            headers=headers,
+        )
+        assert renamed.status_code == 200
+        assert renamed.json()["updated"] == 2
+        renamed_series = client.post(
+            "/api/admin/taxonomy/series/rename",
+            json={"old": "taxonomy-series", "new": "taxonomy-series-2"},
+            headers=headers,
+        )
+        assert renamed_series.status_code == 200
+        ordered = client.post(
+            "/api/admin/taxonomy/series/order",
+            json={
+                "name": "taxonomy-series-2",
+                "post_ids": [second.json()["id"], first.json()["id"]],
+            },
+            headers=headers,
+        )
+        assert ordered.status_code == 200
+
+        client.get("/api/public/posts?q=taxonomy-zero-result")
+        terms = client.get("/api/admin/search-terms", headers=headers).json()
+        assert any(item["query"] == "taxonomy-zero-result" for item in terms["zero"])
+
+        serve = HTTPServer(("127.0.0.1", 0), DavHandler)
+        server = threading.Thread(target=serve.serve_forever, daemon=True)
+        server.start()
+        port = serve.server_address[1]
+        webdav = {
+            **night,
+            "webdav_url": f"http://127.0.0.1:{port}",
+            "webdav_path": "markblog",
+            "webdav_username": "",
+            "webdav_password": "",
+            "remote_auto_backup": "0",
+        }
+        assert client.put("/api/admin/settings", json=webdav, headers=headers).status_code == 200
+        upload = client.post(
+            "/api/admin/backups/remote?kind=webdav", headers=headers
+        )
+        assert upload.status_code == 200, upload.text
+        assert DavHandler.puts
+        assert DavHandler.puts[-1][0].endswith(".zip")
+        assert len(DavHandler.puts[-1][1]) > 1000
+    finally:
+        client.put("/api/admin/settings", json=original, headers=headers)
+        for post_id in post_ids:
+            client.delete(f"/api/admin/posts/{post_id}", headers=headers)
+        client.delete("/api/admin/search-terms", headers=headers)
+        if server is not None:
+            server.join(timeout=1)
+
+
 def test_settings_and_footer_records(client: TestClient):
     headers = login(client)
     settings = current_settings(client, headers)
@@ -561,6 +694,7 @@ def test_settings_and_footer_records(client: TestClient):
         "copyright": "© {year} Test Blog. 保留所有权利。",
         "site_url": "http://testserver",
         "layout_style": "minimal",
+        "theme_preset": "night",
         "theme_mode": "dark",
         "theme_timezone": "Asia/Shanghai",
         "ntp_server": "ntp.aliyun.com",
@@ -575,6 +709,7 @@ def test_settings_and_footer_records(client: TestClient):
     assert public_site["ui_copy"]["nav_home"] == "开始"
     assert public_site["appearance"]["active"] == "dark"
     assert public_site["appearance"]["layout"] == "minimal"
+    assert public_site["appearance"]["preset"] == "night"
     assert public_site["seo_title"] == payload["seo_title"]
     assert public_site["seo_description"] == payload["seo_description"]
     assert public_site["icp_number"] == payload["icp_number"]

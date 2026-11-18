@@ -482,6 +482,15 @@ const signoff = computed(() =>
         </RouterLink>
       </nav>
 
+      <section v-if="post.faq?.length" class="article-faq" aria-labelledby="faq-title">
+        <p class="eyebrow">FAQ / 常见问题</p>
+        <h2 id="faq-title">你可能还想问</h2>
+        <details v-for="(item, index) in post.faq" :key="index" class="faq-item">
+          <summary>{{ item.question }}</summary>
+          <p>{{ item.answer }}</p>
+        </details>
+      </section>
+
       <section v-if="related.length" class="related" aria-labelledby="related-title">
         <div class="related__head">
           <p class="eyebrow">KEEP READING</p>
@@ -1054,6 +1063,38 @@ const signoff = computed(() =>
 
 .series-box a:hover {
   color: var(--color-lake-ink);
+}
+
+.article-faq {
+  max-width: 740px;
+  margin: 36px 0 0;
+  padding-top: 24px;
+  border-top: 1.5px dashed var(--color-line);
+}
+
+.article-faq h2 {
+  font-size: 30px;
+}
+
+.faq-item {
+  border-bottom: 1px dashed var(--color-line);
+}
+
+.faq-item summary {
+  padding: 10px 0;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  font-family: var(--font-hand);
+  font-size: 17px;
+}
+
+.faq-item p {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  color: var(--color-ink-soft);
+  font-size: 13px;
+  line-height: 1.75;
+  white-space: pre-wrap;
 }
 
 .related {

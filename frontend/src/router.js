@@ -56,6 +56,12 @@ const routes = [
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
+    path: '/admin/taxonomy',
+    name: 'admin-taxonomy',
+    component: () => import('./admin/AdminTaxonomyView.vue'),
+    meta: { admin: true, requiresAdmin: true, noindex: true },
+  },
+  {
     path: '/admin/posts',
     name: 'admin-posts',
     component: () => import('./admin/AdminPostsView.vue'),

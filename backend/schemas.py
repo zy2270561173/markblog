@@ -63,6 +63,11 @@ class RepairMeta(StrictModel):
     safety: str = Field(default="", max_length=600)
 
 
+class FaqItem(StrictModel):
+    question: str = Field(min_length=1, max_length=200)
+    answer: str = Field(min_length=1, max_length=1200)
+
+
 class PostIn(StrictModel):
     title: str = Field(min_length=1, max_length=120)
     slug: str | None = Field(default=None, max_length=100)
@@ -80,6 +85,7 @@ class PostIn(StrictModel):
     featured: bool = False
     repair: RepairMeta = Field(default_factory=RepairMeta)
     canonical_url: str = Field(default="", max_length=400)
+    faq: list[FaqItem] = Field(default_factory=list, max_length=12)
 
     @field_validator("cover_image")
     @classmethod
@@ -174,6 +180,9 @@ class SettingsIn(StrictModel):
     site_url: str = Field(default="", max_length=200)
     ui_copy: str = Field(default=DEFAULT_UI_COPY_JSON, max_length=100_000)
     layout_style: Literal["sketch", "minimal"] = "sketch"
+    theme_preset: Literal[
+        "paper", "night", "blueprint", "newspaper", "terminal", "magazine"
+    ] = "paper"
     theme_mode: Literal["auto", "light", "dark"] = "auto"
     theme_timezone: str = Field(default="Asia/Shanghai", max_length=64)
     ntp_server: str = Field(default="ntp.aliyun.com", max_length=253)
@@ -183,6 +192,57 @@ class SettingsIn(StrictModel):
     indexnow_key: str = Field(default="", max_length=300)
     alert_webhook_url: str = Field(default="", max_length=500)
     uptime_ping_url: str = Field(default="", max_length=500)
+    ai_enabled: Literal["0", "1"] = "0"
+    ai_base_url: str = Field(default="https://api.deepseek.com", max_length=300)
+    ai_api_key: str = Field(default="", max_length=300)
+    ai_model: str = Field(default="deepseek-chat", max_length=100)
+    ai_system_prompt: str = Field(default="", max_length=3000)
+    ai_daily_limit: str = Field(default="30", max_length=6)
+    remote_auto_backup: Literal["0", "1"] = "0"
+    webdav_url: str = Field(default="", max_length=500)
+    webdav_username: str = Field(default="", max_length=200)
+    webdav_password: str = Field(default="", max_length=300)
+    webdav_path: str = Field(default="markblog", max_length=200)
+    cloud_provider: Literal["none", "tencent", "aliyun"] = "none"
+    cloud_bucket: str = Field(default="", max_length=200)
+    cloud_region: str = Field(default="", max_length=80)
+    cloud_endpoint: str = Field(default="", max_length=300)
+    cloud_access_key: str = Field(default="", max_length=300)
+    cloud_secret_key: str = Field(default="", max_length=300)
+    cloud_prefix: str = Field(default="markblog", max_length=200)
+
+    @field_validator("webdav_url")
+    @classmethod
+    def valid_webdav_url(cls, value: str) -> str:
+        value = value.strip().rstrip("/")
+        if not value:
+            return value
+        parsed = urlparse(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            raise ValueError("WebDAV 地址必须是完整的 http(s) URL。")
+        return value
+
+    @field_validator("ai_base_url")
+    @classmethod
+    def valid_ai_base_url(cls, value: str) -> str:
+        value = value.strip().rstrip("/")
+        if not value:
+            return "https://api.deepseek.com"
+        parsed = urlparse(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            raise ValueError("AI 接口地址必须是完整的 http(s) URL。")
+        return value
+
+    @field_validator("ai_daily_limit")
+    @classmethod
+    def valid_ai_limit(cls, value: str) -> str:
+        try:
+            number = int(value)
+        except ValueError as error:
+            raise ValueError("AI 每日次数必须是整数。") from error
+        if not 1 <= number <= 1000:
+            raise ValueError("AI 每日次数需在 1 到 1000 之间。")
+        return str(number)
 
     @field_validator("alert_webhook_url", "uptime_ping_url")
     @classmethod
@@ -281,6 +341,35 @@ class SettingsIn(StrictModel):
 class PasswordIn(StrictModel):
     current_password: str = Field(min_length=1, max_length=256)
     new_password: str = Field(min_length=1, max_length=128)
+
+
+class TagRenameIn(StrictModel):
+    old: str = Field(min_length=1, max_length=24)
+    new: str = Field(min_length=1, max_length=24)
+
+
+class SeriesRenameIn(StrictModel):
+    old: str = Field(min_length=1, max_length=60)
+    new: str = Field(min_length=1, max_length=60)
+
+
+class NameIn(StrictModel):
+    name: str = Field(min_length=1, max_length=60)
+
+
+class SeriesOrderIn(StrictModel):
+    name: str = Field(min_length=1, max_length=60)
+    post_ids: list[int] = Field(default_factory=list, max_length=200)
+
+
+class AiChatMessage(StrictModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=2000)
+
+
+class AiChatIn(StrictModel):
+    message: str = Field(min_length=1, max_length=2000)
+    history: list[AiChatMessage] = Field(default_factory=list, max_length=8)
 
 
 class PreviewIn(StrictModel):

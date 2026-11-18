@@ -38,7 +38,7 @@ from fastapi.responses import (
 )
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from . import media, monitor, repository, seo_push, totp, transfer
+from . import ai, media, monitor, remote_backup, repository, seo_push, totp, transfer
 from .appearance import compute_appearance
 from .auth import (
     create_session,
@@ -52,6 +52,7 @@ from .config import get_settings
 from .db import connect as db_connect, get_db, init_db
 from .rendering import reading_minutes, render_markdown
 from .schemas import (
+    AiChatIn,
     BatchPostsIn,
     LoginIn,
     MarkdownImportIn,
@@ -59,9 +60,13 @@ from .schemas import (
     PasswordIn,
     PostIn,
     PreviewIn,
+    NameIn,
     RedirectIn,
     RestoreBackupIn,
+    SeriesOrderIn,
+    SeriesRenameIn,
     SettingsIn,
+    TagRenameIn,
     TotpSetupIn,
 )
 from .security import dummy_password_hash, verify_password
@@ -129,12 +134,21 @@ def _notify_backup_failure(error: Exception) -> None:
         conn.close()
 
 
+def _upload_auto_remote() -> list[dict[str, Any]]:
+    conn = db_connect()
+    try:
+        return remote_backup.upload_auto_backup(conn)
+    finally:
+        conn.close()
+
+
 async def _backup_loop() -> None:
     while True:
         await asyncio.sleep(24 * 60 * 60)
         try:
             await asyncio.to_thread(_run_auto_backup)
             logger.info("Automatic Markblog backup completed")
+            await asyncio.to_thread(_upload_auto_remote)
         except Exception as error:
             logger.exception("Automatic backup failed")
             await asyncio.to_thread(_notify_backup_failure, error)
@@ -161,6 +175,7 @@ async def lifespan(_: FastAPI):
     if not backups:
         try:
             await asyncio.to_thread(_run_auto_backup)
+            await asyncio.to_thread(_upload_auto_remote)
         except Exception as error:
             logger.exception("Initial automatic backup failed")
             await asyncio.to_thread(_notify_backup_failure, error)
@@ -408,7 +423,10 @@ def public_posts(
     limit: int | None = Query(default=None, ge=1, le=50),
 ):
     repository.publish_due_posts(conn)
-    return repository.list_public_posts(conn, tag=tag, query=q, limit=limit)
+    result = repository.list_public_posts(conn, tag=tag, query=q, limit=limit)
+    if q and q.strip():
+        repository.log_search(conn, q, int(result.get("total", 0)))
+    return result
 
 
 @app.get("/api/public/posts/{slug}", include_in_schema=False)
@@ -420,6 +438,30 @@ def public_post(slug: str, conn: Annotated[Any, Depends(get_db)]):
     if post is None:
         raise HTTPException(status_code=404, detail="没有找到这篇文章。")
     return post
+
+
+@app.post("/api/public/ai/chat", include_in_schema=False)
+def public_ai_chat(
+    payload: AiChatIn,
+    request: Request,
+    conn: Annotated[Any, Depends(get_db)],
+):
+    values = repository.get_all_settings(conn)
+    if not ai.enabled(values):
+        raise HTTPException(status_code=503, detail="站娘 AI 还没有开启。")
+    allowed, remaining = ai.consume_quota(_client_key(request), values)
+    if not allowed:
+        raise HTTPException(status_code=429, detail="今天的 AI 对话次数用完了，明天再来吧。")
+    try:
+        result = ai.answer(
+            conn,
+            values,
+            message=payload.message.strip(),
+            history=[item.model_dump() for item in payload.history],
+        )
+    except ai.AiUnavailable as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
+    return {**result, "remaining": remaining}
 
 
 @app.get("/api/public/preview/{token}", include_in_schema=False)
@@ -859,6 +901,7 @@ def admin_create_post(
         featured=payload.featured,
         repair_meta=payload.repair.model_dump(),
         canonical_url=payload.canonical_url,
+        faq=[item.model_dump() for item in payload.faq],
     )
     _audit(conn, request, "post_created", f"{post['id']} {post['title'][:80]}")
     return post
@@ -891,6 +934,7 @@ def admin_update_post(
         featured=payload.featured,
         repair_meta=payload.repair.model_dump(),
         canonical_url=payload.canonical_url,
+        faq=[item.model_dump() for item in payload.faq],
     )
     if post is None:
         raise HTTPException(status_code=404, detail="文章不存在。")
@@ -963,6 +1007,74 @@ def admin_batch_posts(
         conn, payload.ids, payload.action, payload.tags
     )
     _audit(conn, request, f"posts_batch_{payload.action}", f"{count} posts")
+    return {"ok": True, "updated": count}
+
+
+@app.get("/api/admin/taxonomy", include_in_schema=False)
+def admin_taxonomy(
+    conn: Annotated[Any, Depends(get_db)],
+    _: Annotated[dict[str, Any], Depends(require_session)],
+):
+    return repository.list_taxonomy(conn)
+
+
+@app.post("/api/admin/taxonomy/tags/rename", include_in_schema=False)
+def admin_tag_rename(
+    payload: TagRenameIn,
+    request: Request,
+    conn: Annotated[Any, Depends(get_db)],
+    session: Annotated[dict[str, Any], Depends(require_csrf)],
+):
+    count = repository.rename_tag(conn, payload.old, payload.new)
+    _audit(conn, request, "tag_renamed", f"{payload.old} → {payload.new} ({count})")
+    return {"ok": True, "updated": count}
+
+
+@app.post("/api/admin/taxonomy/tags/delete", include_in_schema=False)
+def admin_tag_delete(
+    payload: NameIn,
+    request: Request,
+    conn: Annotated[Any, Depends(get_db)],
+    session: Annotated[dict[str, Any], Depends(require_csrf)],
+):
+    count = repository.delete_tag(conn, payload.name)
+    _audit(conn, request, "tag_deleted", f"{payload.name} ({count})")
+    return {"ok": True, "updated": count}
+
+
+@app.post("/api/admin/taxonomy/series/rename", include_in_schema=False)
+def admin_series_rename(
+    payload: SeriesRenameIn,
+    request: Request,
+    conn: Annotated[Any, Depends(get_db)],
+    session: Annotated[dict[str, Any], Depends(require_csrf)],
+):
+    count = repository.rename_series(conn, payload.old, payload.new)
+    _audit(conn, request, "series_renamed", f"{payload.old} → {payload.new} ({count})")
+    return {"ok": True, "updated": count}
+
+
+@app.post("/api/admin/taxonomy/series/delete", include_in_schema=False)
+def admin_series_delete(
+    payload: NameIn,
+    request: Request,
+    conn: Annotated[Any, Depends(get_db)],
+    session: Annotated[dict[str, Any], Depends(require_csrf)],
+):
+    count = repository.delete_series(conn, payload.name)
+    _audit(conn, request, "series_deleted", f"{payload.name} ({count})")
+    return {"ok": True, "updated": count}
+
+
+@app.post("/api/admin/taxonomy/series/order", include_in_schema=False)
+def admin_series_order(
+    payload: SeriesOrderIn,
+    request: Request,
+    conn: Annotated[Any, Depends(get_db)],
+    session: Annotated[dict[str, Any], Depends(require_csrf)],
+):
+    count = repository.reorder_series_posts(conn, payload.name, payload.post_ids)
+    _audit(conn, request, "series_reordered", f"{payload.name} ({count})")
     return {"ok": True, "updated": count}
 
 
@@ -1072,6 +1184,21 @@ def admin_backup_now(
     return item
 
 
+@app.post("/api/admin/backups/remote", include_in_schema=False)
+def admin_backup_remote(
+    request: Request,
+    conn: Annotated[Any, Depends(get_db)],
+    session: Annotated[dict[str, Any], Depends(require_csrf)],
+    kind: str = Query(pattern="^(webdav|cloud)$"),
+):
+    try:
+        result = remote_backup.upload_remote(conn, kind)
+    except remote_backup.RemoteError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    _audit(conn, request, "remote_backup", f"{kind}: {result}")
+    return result
+
+
 @app.post("/api/admin/backups/restore", include_in_schema=False)
 def admin_backup_restore(
     payload: RestoreBackupIn,
@@ -1127,6 +1254,25 @@ def admin_cleanup_unused_media(
     count = media.cleanup_unused_media(conn)
     _audit(conn, request, "unused_media_cleaned", f"{count} images")
     return {"ok": True, "removed": count}
+
+
+@app.get("/api/admin/search-terms", include_in_schema=False)
+def admin_search_terms(
+    conn: Annotated[Any, Depends(get_db)],
+    _: Annotated[dict[str, Any], Depends(require_session)],
+):
+    return repository.list_search_terms(conn)
+
+
+@app.delete("/api/admin/search-terms", include_in_schema=False)
+def admin_search_terms_clear(
+    request: Request,
+    conn: Annotated[Any, Depends(get_db)],
+    session: Annotated[dict[str, Any], Depends(require_csrf)],
+):
+    repository.clear_search_terms(conn)
+    _audit(conn, request, "search_terms_cleared", session["username"])
+    return {"ok": True}
 
 
 @app.get("/api/admin/redirects", include_in_schema=False)
@@ -1453,18 +1599,23 @@ def _upsert_meta(html_text: str, attribute: str, key: str, content: str) -> str:
 
 
 def _apply_html_appearance(
-    html_text: str, theme: str, layout: str
+    html_text: str, theme: str, layout: str, preset: str = "paper"
 ) -> str:
-    """Set the initial theme/layout before the Vue bundle runs."""
+    """Set the initial theme/layout/preset before the Vue bundle runs."""
 
     theme = theme if theme in {"light", "dark"} else "light"
     layout = layout if layout in {"sketch", "minimal"} else "sketch"
+    valid_presets = {"paper", "night", "blueprint", "newspaper", "terminal", "magazine"}
+    preset = preset if preset in valid_presets else "paper"
 
     def replace(match: re.Match[str]) -> str:
         attributes = re.sub(
-            r'\sdata-(?:theme|layout)="[^"]*"', "", match.group(1)
+            r'\sdata-(?:theme|layout|theme-preset)="[^"]*"', "", match.group(1)
         )
-        return f'<html{attributes} data-theme="{theme}" data-layout="{layout}">'
+        return (
+            f'<html{attributes} data-theme="{theme}" data-layout="{layout}" '
+            f'data-theme-preset="{preset}">'
+        )
 
     return re.sub(r"<html\b([^>]*)>", replace, html_text, count=1, flags=re.IGNORECASE)
 
@@ -1592,6 +1743,28 @@ def _spa_page(conn: Any, path: str) -> tuple[str, int, bool]:
                 "keywords": post.get("seo_keywords") or ", ".join(post.get("tags") or []),
                 "articleSection": "电脑维修与使用",
             }
+            faq_items = post.get("faq") or []
+            if faq_items:
+                json_ld = {
+                    "@context": "https://schema.org",
+                    "@graph": [
+                        json_ld,
+                        {
+                            "@type": "FAQPage",
+                            "mainEntity": [
+                                {
+                                    "@type": "Question",
+                                    "name": item["question"],
+                                    "acceptedAnswer": {
+                                        "@type": "Answer",
+                                        "text": item["answer"],
+                                    },
+                                }
+                                for item in faq_items
+                            ],
+                        },
+                    ],
+                }
     elif clean_path.startswith("series/"):
         series_name = unquote(clean_path[len("series/") :])
         series = repository.get_public_series(conn, series_name)
@@ -1655,6 +1828,7 @@ def _spa_page(conn: Any, path: str) -> tuple[str, int, bool]:
         html_text,
         str(appearance.get("active") or "light"),
         str(appearance.get("layout") or "sketch"),
+        str(appearance.get("preset") or "paper"),
     )
     html_text = _upsert_meta(
         html_text,

@@ -93,6 +93,9 @@ export const publicApi = {
   getPreview(token) {
     return request(`/public/preview/${encodeURIComponent(token)}`)
   },
+  aiChat(payload) {
+    return request('/public/ai/chat', { method: 'POST', body: payload })
+  },
   recordView(slug, { complete = false } = {}) {
     const suffix = complete ? '?complete=true' : ''
     return request(`/public/posts/${encodeURIComponent(slug)}/view${suffix}`, {
@@ -198,6 +201,44 @@ export const adminApi = {
   batchPosts(payload) {
     return request('/admin/posts/batch', { method: 'POST', body: payload, csrf: true })
   },
+  getTaxonomy() {
+    return request('/admin/taxonomy')
+  },
+  renameTag(oldName, newName) {
+    return request('/admin/taxonomy/tags/rename', {
+      method: 'POST',
+      body: { old: oldName, new: newName },
+      csrf: true,
+    })
+  },
+  deleteTag(name) {
+    return request('/admin/taxonomy/tags/delete', {
+      method: 'POST',
+      body: { name },
+      csrf: true,
+    })
+  },
+  renameSeries(oldName, newName) {
+    return request('/admin/taxonomy/series/rename', {
+      method: 'POST',
+      body: { old: oldName, new: newName },
+      csrf: true,
+    })
+  },
+  deleteSeries(name) {
+    return request('/admin/taxonomy/series/delete', {
+      method: 'POST',
+      body: { name },
+      csrf: true,
+    })
+  },
+  reorderSeries(name, postIds) {
+    return request('/admin/taxonomy/series/order', {
+      method: 'POST',
+      body: { name, post_ids: postIds },
+      csrf: true,
+    })
+  },
   get2fa() {
     return request('/admin/2fa')
   },
@@ -286,6 +327,12 @@ export const adminApi = {
   getNotFound() {
     return request('/admin/not-found')
   },
+  getSearchTerms() {
+    return request('/admin/search-terms')
+  },
+  clearSearchTerms() {
+    return request('/admin/search-terms', { method: 'DELETE', csrf: true })
+  },
   clearNotFound() {
     return request('/admin/not-found', { method: 'DELETE', csrf: true })
   },
@@ -294,6 +341,12 @@ export const adminApi = {
   },
   testAlerts() {
     return request('/admin/alerts/test', { method: 'POST', csrf: true })
+  },
+  uploadRemoteBackup(kind) {
+    return request(`/admin/backups/remote?kind=${encodeURIComponent(kind)}`, {
+      method: 'POST',
+      csrf: true,
+    })
   },
   analyticsCsvUrl() {
     return `${API_ROOT}/admin/analytics/export.csv`

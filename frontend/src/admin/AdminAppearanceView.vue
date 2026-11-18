@@ -19,6 +19,7 @@ const appearance = ref(null)
 
 const form = reactive({
   layout_style: 'sketch',
+  theme_preset: 'paper',
   theme_mode: 'auto',
   theme_timezone: 'Asia/Shanghai',
   ntp_server: 'ntp.aliyun.com',
@@ -35,6 +36,45 @@ const timezones = [
   { value: 'Asia/Singapore', label: '新加坡时间（Asia/Singapore）' },
   { value: 'Asia/Tokyo', label: '日本时间（Asia/Tokyo）' },
   { value: 'UTC', label: 'UTC' },
+]
+
+const presetOptions = [
+  {
+    value: 'paper',
+    label: '纸本原色',
+    note: '暖米纸、铅笔灰、朱红批注',
+    colors: ['#f5f0e8', '#2c2c2c', '#e74c3c'],
+  },
+  {
+    value: 'night',
+    label: '夜航手册',
+    note: '深海军蓝、琥珀批注、星图颗粒',
+    colors: ['#0c1724', '#e9e2d3', '#f0b95e'],
+  },
+  {
+    value: 'blueprint',
+    label: '维修蓝图',
+    note: '冷灰蓝网格、青色标注、技术感',
+    colors: ['#edf3f6', '#1e3541', '#1e7e96'],
+  },
+  {
+    value: 'newspaper',
+    label: '旧报纸',
+    note: '泛黄纸、宋体标题、细栏线',
+    colors: ['#f2e8d2', '#2d2821', '#943b2d'],
+  },
+  {
+    value: 'terminal',
+    label: '终端',
+    note: '近黑底、荧光绿、扫描线和等宽字',
+    colors: ['#0b1210', '#baf0c9', '#79e39b'],
+  },
+  {
+    value: 'magazine',
+    label: '杂志',
+    note: '暖白纸、无衬线标题、轻阴影',
+    colors: ['#fffaf4', '#191818', '#d95132'],
+  },
 ]
 
 const themeOptions = [
@@ -61,6 +101,11 @@ const themeLabel = computed(() =>
 )
 const layoutLabel = computed(() =>
   appearance.value?.layout === 'minimal' ? '素纸极简' : '纸本手绘',
+)
+const presetLabel = computed(
+  () =>
+    presetOptions.find((item) => item.value === form.theme_preset)?.label ||
+    '纸本原色',
 )
 const sourceLabel = computed(() => {
   if (appearance.value?.mode !== 'auto') return '手动固定'
@@ -135,6 +180,7 @@ async function saveAppearance() {
     const payload = {
       ...rawSettings.value,
       layout_style: form.layout_style,
+      theme_preset: form.theme_preset,
       theme_mode: form.theme_mode,
       theme_timezone: form.theme_timezone,
       ntp_server: form.ntp_server.trim(),
@@ -198,7 +244,7 @@ onMounted(() => {
           </div>
           <div>
             <p class="appearance-live__title">
-              公开站当前：{{ themeLabel }} · {{ layoutLabel }}
+              公开站当前：{{ presetLabel }} · {{ layoutLabel }} · {{ themeLabel }}
             </p>
             <p class="appearance-live__meta">
               {{ sourceLabel }} · {{ localTimeLabel }} · {{ appearance.ntp_server }}
@@ -208,6 +254,30 @@ onMounted(() => {
             查看公开站点 ↗
           </a>
         </div>
+
+        <section class="admin-card theme-preset-card">
+          <div class="admin-card__head">
+            <h2>主题预设</h2>
+            <p>六套完整纸色与配色；与排版方案、昼夜模式独立组合</p>
+          </div>
+          <div class="preset-grid">
+            <label
+              v-for="option in presetOptions"
+              :key="option.value"
+              class="preset-card"
+              :class="[{ 'is-active': form.theme_preset === option.value }, `is-${option.value}`]"
+            >
+              <input v-model="form.theme_preset" type="radio" name="theme-preset" :value="option.value" />
+              <span class="preset-card__swatches" aria-hidden="true">
+                <i v-for="color in option.colors" :key="color" :style="{ background: color }"></i>
+              </span>
+              <span class="preset-card__copy">
+                <strong>{{ option.label }}</strong>
+                <small>{{ option.note }}</small>
+              </span>
+            </label>
+          </div>
+        </section>
 
         <div class="appearance-layout-grid">
           <section class="admin-card">
@@ -427,6 +497,79 @@ onMounted(() => {
 }
 
 .choice-grid--layout,
+.theme-preset-card {
+  margin-bottom: 22px;
+  padding: 24px;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.preset-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1.5px dashed var(--color-line);
+  background: var(--surface-soft);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.preset-card:hover,
+.preset-card:has(input:checked) {
+  border-color: var(--color-pencil);
+  transform: translateY(-1px);
+}
+
+.preset-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.preset-card__swatches {
+  display: flex;
+  width: 54px;
+  height: 40px;
+  flex: 0 0 54px;
+  overflow: hidden;
+  border: 1px solid var(--color-line-strong);
+}
+
+.preset-card__swatches i {
+  flex: 1;
+}
+
+.preset-card__copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.preset-card__copy strong {
+  font-family: var(--font-hand);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.preset-card__copy small {
+  color: var(--color-ink-faint);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.preset-card:focus-within {
+  outline: 2px dashed var(--color-lake-blue);
+  outline-offset: 2px;
+}
+
 .choice-grid--theme {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -580,9 +723,14 @@ onMounted(() => {
   .appearance-layout-grid {
     grid-template-columns: 1fr;
   }
+
+  .preset-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
+  .preset-grid,
   .choice-grid--layout,
   .choice-grid--theme,
   .copy-grid {

@@ -35,6 +35,7 @@ PUBLIC_SETTING_KEYS = (
     "footer_note",
     "site_since",
     "site_url",
+    "ai_enabled",
 )
 
 ADMIN_SETTING_KEYS = PUBLIC_SETTING_KEYS + (
@@ -43,6 +44,7 @@ ADMIN_SETTING_KEYS = PUBLIC_SETTING_KEYS + (
     "disclaimer_md",
     "ui_copy",
     "layout_style",
+    "theme_preset",
     "theme_mode",
     "theme_timezone",
     "ntp_server",
@@ -52,6 +54,23 @@ ADMIN_SETTING_KEYS = PUBLIC_SETTING_KEYS + (
     "indexnow_key",
     "alert_webhook_url",
     "uptime_ping_url",
+    "ai_base_url",
+    "ai_api_key",
+    "ai_model",
+    "ai_system_prompt",
+    "ai_daily_limit",
+    "remote_auto_backup",
+    "webdav_url",
+    "webdav_username",
+    "webdav_password",
+    "webdav_path",
+    "cloud_provider",
+    "cloud_bucket",
+    "cloud_region",
+    "cloud_endpoint",
+    "cloud_access_key",
+    "cloud_secret_key",
+    "cloud_prefix",
 )
 
 
@@ -69,6 +88,24 @@ def _strip_markup(source: str) -> str:
     return re.sub(r"\s+", " ", re.sub(r"[#>*_`~\-|]", " ", source or "")).strip()
 
 
+def _faq(raw: str | None) -> list[dict[str, str]]:
+    try:
+        value = json.loads(raw or "[]")
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(value, list):
+        return []
+    result: list[dict[str, str]] = []
+    for item in value[:12]:
+        if not isinstance(item, dict):
+            continue
+        question = str(item.get("question", "")).strip()[:200]
+        answer = str(item.get("answer", "")).strip()[:1200]
+        if question and answer:
+            result.append({"question": question, "answer": answer})
+    return result
+
+
 def _summary(row: sqlite3.Row) -> dict[str, Any]:
     content = row["content_md"] or ""
     return {
@@ -84,6 +121,7 @@ def _summary(row: sqlite3.Row) -> dict[str, Any]:
         "reading_minutes": reading_minutes(content),
         "published_at": row["published_at"],
         "updated_at": row["updated_at"],
+        "faq_count": len(_faq(row["faq"])) if "faq" in row.keys() else 0,
     }
 
 
@@ -250,6 +288,7 @@ def get_public_post(conn: sqlite3.Connection, slug: str) -> dict[str, Any] | Non
     post["repair"] = _repair_meta(row["repair_meta"] or "{}")
     post["canonical_url"] = row["canonical_url"] or ""
     post["featured"] = bool(row["featured"])
+    post["faq"] = _faq(row["faq"] or "[]")
     post["toc"] = _extract_toc(post["content_html"])
     post["views"] = _post_views(conn, int(row["id"]))
     post["related"] = _related_posts(conn, row)
@@ -345,6 +384,7 @@ def get_preview_post(
     post["repair"] = _repair_meta(row["repair_meta"] or "{}")
     post["canonical_url"] = ""
     post["status"] = row["status"]
+    post["faq"] = _faq(row["faq"] or "[]")
     post["toc"] = _extract_toc(post["content_html"])
     post["views"] = 0
     post["related"] = []
@@ -527,6 +567,7 @@ def get_admin_post(conn: sqlite3.Connection, post_id: int) -> dict[str, Any] | N
         "featured": bool(row["featured"]),
         "repair": _repair_meta(row["repair_meta"] or "{}"),
         "canonical_url": row["canonical_url"] or "",
+        "faq": _faq(row["faq"] or "[]"),
         "views": _post_views(conn, int(row["id"])),
         "reading_minutes": reading_minutes(row["content_md"] or ""),
     }
@@ -582,6 +623,7 @@ def create_post(
     featured: bool = False,
     repair_meta: dict[str, Any] | None = None,
     canonical_url: str = "",
+    faq: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     now = iso_utc()
     final_slug = unique_slug(conn, slug or title)
@@ -592,8 +634,8 @@ def create_post(
         "INSERT INTO posts "
         "(slug, title, excerpt, content_md, tags, status, created_at, updated_at, "
         "published_at, scheduled_at, series, series_order, seo_title, "
-        "seo_description, seo_keywords, cover_image, featured, repair_meta, canonical_url) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "seo_description, seo_keywords, cover_image, featured, repair_meta, canonical_url, faq) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (
             final_slug,
             title.strip(),
@@ -614,6 +656,7 @@ def create_post(
             1 if featured else 0,
             json.dumps(repair_meta or {}, ensure_ascii=False),
             canonical_url.strip()[:400],
+            json.dumps(faq or [], ensure_ascii=False),
         ),
     )
     conn.commit()
@@ -645,6 +688,7 @@ def update_post(
     featured: bool = False,
     repair_meta: dict[str, Any] | None = None,
     canonical_url: str = "",
+    faq: list[dict[str, str]] | None = None,
 ) -> dict[str, Any] | None:
     existing = conn.execute("SELECT * FROM posts WHERE id = ?", (post_id,)).fetchone()
     if existing is None:
@@ -667,7 +711,8 @@ def update_post(
         "UPDATE posts SET slug = ?, title = ?, excerpt = ?, content_md = ?, tags = ?, "
         "status = ?, updated_at = ?, published_at = ?, scheduled_at = ?, series = ?, "
         "series_order = ?, seo_title = ?, seo_description = ?, seo_keywords = ?, "
-        "cover_image = ?, featured = ?, repair_meta = ?, canonical_url = ? WHERE id = ?",
+        "cover_image = ?, featured = ?, repair_meta = ?, canonical_url = ?, faq = ? "
+        "WHERE id = ?",
         (
             final_slug,
             title.strip(),
@@ -687,6 +732,7 @@ def update_post(
             1 if featured else 0,
             json.dumps(repair_meta or {}, ensure_ascii=False),
             canonical_url.strip()[:400],
+            json.dumps(faq or [], ensure_ascii=False),
             post_id,
         ),
     )
@@ -714,8 +760,8 @@ def _insert_revision(conn: sqlite3.Connection, row: sqlite3.Row) -> None:
         "INSERT INTO post_revisions "
         "(post_id, title, excerpt, content_md, tags, series, series_order, "
         "seo_title, seo_description, seo_keywords, cover_image, repair_meta, "
-        "canonical_url, created_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "canonical_url, faq, created_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (
             row["id"],
             row["title"],
@@ -730,6 +776,7 @@ def _insert_revision(conn: sqlite3.Connection, row: sqlite3.Row) -> None:
             row["cover_image"] or "",
             row["repair_meta"] or "{}",
             row["canonical_url"] or "",
+            row["faq"] or "[]",
             iso_utc(),
         ),
     )
@@ -762,6 +809,7 @@ def list_revisions(conn: sqlite3.Connection, post_id: int) -> list[dict[str, Any
             "seo_keywords": row["seo_keywords"],
             "cover_image": row["cover_image"],
             "repair": _repair_meta(row["repair_meta"] or "{}"),
+            "faq": _faq(row["faq"] or "[]"),
             "canonical_url": row["canonical_url"],
             "created_at": row["created_at"],
         }
@@ -784,7 +832,7 @@ def restore_revision(
         "UPDATE posts SET title = ?, excerpt = ?, content_md = ?, tags = ?, "
         "series = ?, series_order = ?, seo_title = ?, seo_description = ?, "
         "seo_keywords = ?, cover_image = ?, repair_meta = ?, canonical_url = ?, "
-        "updated_at = ? WHERE id = ?",
+        "faq = ?, updated_at = ? WHERE id = ?",
         (
             revision["title"],
             revision["excerpt"],
@@ -798,6 +846,7 @@ def restore_revision(
             revision["cover_image"],
             revision["repair_meta"],
             revision["canonical_url"],
+            revision["faq"] or "[]",
             iso_utc(),
             post_id,
         ),
@@ -831,6 +880,7 @@ def duplicate_post(conn: sqlite3.Connection, post_id: int) -> dict[str, Any] | N
         featured=False,
         repair_meta=repair,
         canonical_url="",
+        faq=_faq(row["faq"] or "[]"),
     )
 
 
@@ -1024,6 +1074,174 @@ def update_settings(conn: sqlite3.Connection, values: dict[str, str]) -> dict[st
         )
     conn.commit()
     return get_all_settings(conn)
+
+
+def list_taxonomy(conn: sqlite3.Connection) -> dict[str, Any]:
+    rows = conn.execute("SELECT * FROM posts ORDER BY updated_at DESC, id DESC").fetchall()
+    tag_counts: Counter[str] = Counter()
+    tag_published: Counter[str] = Counter()
+    series_map: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        tags = _loads_tags(row["tags"])
+        tag_counts.update(tags)
+        if row["status"] == "published":
+            tag_published.update(tags)
+        name = (row["series"] or "").strip()
+        if name:
+            bucket = series_map.setdefault(
+                name,
+                {"name": name, "count": 0, "published": 0, "posts": []},
+            )
+            bucket["count"] += 1
+            if row["status"] == "published":
+                bucket["published"] += 1
+            bucket["posts"].append(
+                {
+                    "id": row["id"],
+                    "title": row["title"],
+                    "slug": row["slug"],
+                    "status": row["status"],
+                    "series_order": row["series_order"] or 0,
+                }
+            )
+    tags = [
+        {"name": name, "count": count, "published": tag_published.get(name, 0)}
+        for name, count in tag_counts.most_common()
+    ]
+    for bucket in series_map.values():
+        bucket["posts"].sort(
+            key=lambda item: (item["series_order"], item["title"])
+        )
+    series = sorted(
+        series_map.values(),
+        key=lambda item: (-item["published"], item["name"]),
+    )
+    return {"tags": tags, "series": series}
+
+
+def _rename_tag_rows(
+    conn: sqlite3.Connection, old: str, new: str
+) -> int:
+    old = old.strip()
+    new = new.strip()[:24]
+    if not old or not new:
+        return 0
+    rows = conn.execute("SELECT id, tags FROM posts").fetchall()
+    changed = 0
+    for row in rows:
+        tags = _loads_tags(row["tags"])
+        if old not in tags:
+            continue
+        merged: list[str] = []
+        for tag in tags:
+            item = new if tag == old else tag
+            if item not in merged:
+                merged.append(item)
+        conn.execute(
+            "UPDATE posts SET tags = ? WHERE id = ?",
+            (json.dumps(merged[:8], ensure_ascii=False), row["id"]),
+        )
+        changed += 1
+    conn.commit()
+    return changed
+
+
+def rename_tag(conn: sqlite3.Connection, old: str, new: str) -> int:
+    return _rename_tag_rows(conn, old, new)
+
+
+def delete_tag(conn: sqlite3.Connection, tag: str) -> int:
+    target = tag.strip()
+    rows = conn.execute("SELECT id, tags FROM posts").fetchall()
+    changed = 0
+    for row in rows:
+        tags = _loads_tags(row["tags"])
+        if target not in tags:
+            continue
+        conn.execute(
+            "UPDATE posts SET tags = ? WHERE id = ?",
+            (json.dumps([item for item in tags if item != target], ensure_ascii=False), row["id"]),
+        )
+        changed += 1
+    conn.commit()
+    return changed
+
+
+def rename_series(conn: sqlite3.Connection, old: str, new: str) -> int:
+    old = old.strip()
+    new = new.strip()[:60]
+    if not old or not new:
+        return 0
+    cursor = conn.execute(
+        "UPDATE posts SET series = ?, updated_at = ? WHERE series = ?",
+        (new, iso_utc(), old),
+    )
+    conn.commit()
+    return cursor.rowcount
+
+
+def delete_series(conn: sqlite3.Connection, name: str) -> int:
+    cursor = conn.execute(
+        "UPDATE posts SET series = '', series_order = 0, updated_at = ? WHERE series = ?",
+        (iso_utc(), name.strip()),
+    )
+    conn.commit()
+    return cursor.rowcount
+
+
+def reorder_series_posts(
+    conn: sqlite3.Connection, name: str, post_ids: list[int]
+) -> int:
+    changed = 0
+    for index, post_id in enumerate(post_ids):
+        row = conn.execute(
+            "SELECT series FROM posts WHERE id = ?", (post_id,)
+        ).fetchone()
+        if row is None or (row["series"] or "") != name:
+            continue
+        conn.execute(
+            "UPDATE posts SET series_order = ? WHERE id = ?", (index + 1, post_id)
+        )
+        changed += 1
+    conn.commit()
+    return changed
+
+
+def log_search(conn: sqlite3.Connection, query: str, results: int) -> None:
+    value = query.strip()[:100]
+    if not value:
+        return
+    conn.execute(
+        "INSERT INTO search_logs (query, results, created_at) VALUES (?, ?, ?)",
+        (value, int(results), iso_utc()),
+    )
+    conn.commit()
+
+
+def list_search_terms(conn: sqlite3.Connection) -> dict[str, Any]:
+    top = conn.execute(
+        "SELECT query, COUNT(*) AS searches, MAX(created_at) AS last_at "
+        "FROM search_logs GROUP BY query ORDER BY searches DESC, last_at DESC LIMIT 25"
+    ).fetchall()
+    zero = conn.execute(
+        "SELECT query, COUNT(*) AS searches, MAX(created_at) AS last_at "
+        "FROM search_logs WHERE results = 0 GROUP BY query "
+        "ORDER BY searches DESC, last_at DESC LIMIT 25"
+    ).fetchall()
+    recent = conn.execute(
+        "SELECT query, results, created_at FROM search_logs ORDER BY id DESC LIMIT 40"
+    ).fetchall()
+    return {
+        "top": [dict(row) for row in top],
+        "zero": [dict(row) for row in zero],
+        "recent": [dict(row) for row in recent],
+        "total": conn.execute("SELECT COUNT(*) FROM search_logs").fetchone()[0],
+    }
+
+
+def clear_search_terms(conn: sqlite3.Connection) -> None:
+    conn.execute("DELETE FROM search_logs")
+    conn.commit()
 
 
 def get_dashboard_summary(conn: sqlite3.Connection) -> dict[str, Any]:
