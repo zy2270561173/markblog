@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import base64
+import io
 import json
 import os
 import shutil
 import tempfile
+import zipfile
 from datetime import datetime, timezone
+from urllib.parse import quote
 
 import pytest
 
@@ -174,6 +178,156 @@ def test_post_crud_and_markdown_safety(client: TestClient):
     deleted = client.delete(f"/api/admin/posts/{post['id']}", headers=headers)
     assert deleted.status_code == 200
     assert client.get("/api/admin/posts").json()["counts"]["all"] == 6
+
+
+def test_media_search_series_views_backup_and_schedule(client: TestClient):
+    headers = login(client)
+    post_ids: list[int] = []
+    media_id = None
+    try:
+        base = {
+            "slug": None,
+            "excerpt": "",
+            "content_md": "",
+            "tags": ["检索", "维修"],
+            "status": "published",
+            "series": "测试系列",
+            "series_order": 0,
+            "seo_title": "",
+            "seo_description": "",
+            "seo_keywords": "",
+            "scheduled_at": None,
+        }
+        first = client.post(
+            "/api/admin/posts",
+            json={
+                **base,
+                "title": "全文索引测试一",
+                "slug": "search-series-one",
+                "series_order": 1,
+                "content_md": "## 第一节\n\n这是用于全文索引测试的唯一词甲。\n\n```txt\ncopy me\n```",
+                "seo_title": "全文索引测试 SEO 标题",
+                "seo_description": "全文索引测试 SEO 描述",
+                "seo_keywords": "全文索引, 测试",
+            },
+            headers=headers,
+        )
+        assert first.status_code == 201, first.text
+        post_ids.append(first.json()["id"])
+        second = client.post(
+            "/api/admin/posts",
+            json={
+                **base,
+                "title": "全文索引测试二",
+                "slug": "search-series-two",
+                "series_order": 2,
+                "content_md": "## 第二节\n\n第二篇系列文章。",
+            },
+            headers=headers,
+        )
+        assert second.status_code == 201, second.text
+        post_ids.append(second.json()["id"])
+
+        search = client.get("/api/public/posts", params={"q": "唯一词甲"})
+        assert search.status_code == 200
+        results = search.json()["posts"]
+        assert results and results[0]["slug"] == "search-series-one"
+        assert results[0]["search_snippet"]["match"] == "唯一词甲"
+
+        series = client.get(f"/api/public/series/{quote('测试系列')}")
+        assert series.status_code == 200, series.text
+        assert [item["slug"] for item in series.json()["posts"]] == [
+            "search-series-one",
+            "search-series-two",
+        ]
+
+        detail = client.get("/api/public/posts/search-series-one")
+        assert detail.status_code == 200
+        assert detail.json()["series_info"]["total"] == 2
+        assert detail.json()["related"]
+        assert detail.json()["toc"]
+
+        view = client.post("/api/public/posts/search-series-one/view")
+        assert view.status_code == 200
+        assert view.json()["counted"] is True
+        again = client.post("/api/public/posts/search-series-one/view")
+        assert again.json()["counted"] is False
+
+        article_html = client.get("/posts/search-series-one").text
+        assert "全文索引测试 SEO 标题" in article_html
+        assert "全文索引测试 SEO 描述" in article_html
+        assert "application/ld+json" in article_html
+
+        scheduled = client.post(
+            "/api/admin/posts",
+            json={
+                **base,
+                "title": "定时发布测试",
+                "slug": "scheduled-test",
+                "status": "draft",
+                "series": "",
+                "content_md": "定时内容。",
+                "scheduled_at": "2000-01-01T00:00:00Z",
+            },
+            headers=headers,
+        )
+        assert scheduled.status_code == 201, scheduled.text
+        assert scheduled.json()["status"] == "scheduled"
+        post_ids.append(scheduled.json()["id"])
+        client.get("/api/public/posts")
+        published = client.get("/api/public/posts/scheduled-test")
+        assert published.status_code == 200, published.text
+
+        png = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z0YQAAAAASUVORK5CYII="
+        )
+        uploaded = client.post(
+            "/api/admin/media?filename=test.png&alt=测试图&width=1&height=1",
+            content=png,
+            headers={**headers, "Content-Type": "image/png"},
+        )
+        assert uploaded.status_code == 201, uploaded.text
+        media = uploaded.json()
+        media_id = media["id"]
+        assert client.get(media["url"]).status_code == 200
+        assert client.get("/api/admin/media", headers=headers).json()["media"]
+        updated_alt = client.patch(
+            f"/api/admin/media/{media_id}", json={"alt": "新的说明"}, headers=headers
+        )
+        assert updated_alt.status_code == 200
+        assert updated_alt.json()["alt"] == "新的说明"
+
+        backup = client.get("/api/admin/backup", headers=headers)
+        assert backup.status_code == 200
+        with zipfile.ZipFile(io.BytesIO(backup.content)) as archive:
+            names = archive.namelist()
+            assert "markblog.db" in names
+            assert any(name.startswith("media/") for name in names)
+        export = client.get("/api/admin/export/markdown", headers=headers)
+        assert export.status_code == 200
+        with zipfile.ZipFile(io.BytesIO(export.content)) as archive:
+            assert any(name.startswith("posts/") for name in archive.namelist())
+
+        imported = client.post(
+            "/api/admin/import/markdown",
+            json={
+                "files": [
+                    {
+                        "name": "import-test.md",
+                        "content": "---\ntitle: \"导入测试\"\nslug: \"import-test\"\nstatus: \"draft\"\ntags: [\"导入\"]\n---\n\n正文。",
+                    }
+                ]
+            },
+            headers=headers,
+        )
+        assert imported.status_code == 200, imported.text
+        for item in imported.json()["imported"]:
+            post_ids.append(item["id"])
+    finally:
+        for post_id in post_ids:
+            client.delete(f"/api/admin/posts/{post_id}", headers=headers)
+        if media_id is not None:
+            client.delete(f"/api/admin/media/{media_id}", headers=headers)
 
 
 def test_settings_and_footer_records(client: TestClient):

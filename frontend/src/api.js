@@ -87,6 +87,49 @@ export const publicApi = {
   getPost(slug) {
     return request(`/public/posts/${encodeURIComponent(slug)}`)
   },
+  getSeries(name) {
+    return request(`/public/series/${encodeURIComponent(name)}`)
+  },
+  recordView(slug) {
+    return request(`/public/posts/${encodeURIComponent(slug)}/view`, {
+      method: 'POST',
+    })
+  },
+}
+
+async function rawUpload(path, blob, { timeout = 30000 } = {}) {
+  const headers = {
+    Accept: 'application/json',
+    'Content-Type': blob.type || 'application/octet-stream',
+  }
+  if (csrfToken) headers['X-CSRF-Token'] = csrfToken
+  const controller = new AbortController()
+  const timer = window.setTimeout(() => controller.abort(), timeout)
+  let response
+  try {
+    response = await fetch(`${API_ROOT}${path}`, {
+      method: 'POST',
+      headers,
+      credentials: 'same-origin',
+      body: blob,
+      signal: controller.signal,
+    })
+  } catch (error) {
+    if (error.name === 'AbortError') throw new ApiError('图片上传超时，请重试。', 0)
+    throw new ApiError('图片上传失败，请检查网络。', 0)
+  } finally {
+    window.clearTimeout(timer)
+  }
+  let data = null
+  try {
+    data = await response.json()
+  } catch {
+    data = null
+  }
+  if (!response.ok) {
+    throw new ApiError(data?.detail || '图片上传失败。', response.status, data)
+  }
+  return data
 }
 
 export const adminApi = {
@@ -138,5 +181,40 @@ export const adminApi = {
   },
   changePassword(payload) {
     return request('/admin/password', { method: 'POST', body: payload, csrf: true })
+  },
+  listMedia() {
+    return request('/admin/media')
+  },
+  uploadMedia(blob, { filename = 'image', alt = '', width = 0, height = 0 } = {}) {
+    const params = new URLSearchParams({
+      filename,
+      alt,
+      width: String(width || 0),
+      height: String(height || 0),
+    })
+    return rawUpload(`/admin/media?${params.toString()}`, blob)
+  },
+  updateMediaAlt(id, alt) {
+    return request(`/admin/media/${id}`, {
+      method: 'PATCH',
+      body: { alt },
+      csrf: true,
+    })
+  },
+  deleteMedia(id) {
+    return request(`/admin/media/${id}`, { method: 'DELETE', csrf: true })
+  },
+  importMarkdown(files) {
+    return request('/admin/import/markdown', {
+      method: 'POST',
+      body: { files },
+      csrf: true,
+    })
+  },
+  backupUrl() {
+    return `${API_ROOT}/admin/backup`
+  },
+  markdownExportUrl() {
+    return `${API_ROOT}/admin/export/markdown`
   },
 }

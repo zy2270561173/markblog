@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import datetime, timezone
 from typing import Literal
 from urllib.parse import urlparse
 
@@ -60,6 +61,30 @@ class PostIn(StrictModel):
     content_md: str = Field(default="", max_length=200_000)
     tags: list[str] = Field(default_factory=list)
     status: Literal["draft", "published"] = "draft"
+    scheduled_at: str | None = Field(default=None, max_length=40)
+    series: str = Field(default="", max_length=60)
+    series_order: int = Field(default=0, ge=0, le=999)
+    seo_title: str = Field(default="", max_length=120)
+    seo_description: str = Field(default="", max_length=300)
+    seo_keywords: str = Field(default="", max_length=300)
+
+    @field_validator("scheduled_at")
+    @classmethod
+    def normalize_scheduled_at(cls, value: str | None) -> str | None:
+        value = (value or "").strip()
+        if not value:
+            return None
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as error:
+            raise ValueError("定时发布时间格式不正确。") from error
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return (
+            parsed.astimezone(timezone.utc)
+            .isoformat(timespec="seconds")
+            .replace("+00:00", "Z")
+        )
 
     @field_validator("title")
     @classmethod
@@ -120,6 +145,15 @@ class SettingsIn(StrictModel):
     ntp_server: str = Field(default="ntp.aliyun.com", max_length=253)
     day_start: str = Field(default="07:00", max_length=5)
     night_start: str = Field(default="19:00", max_length=5)
+    mascot_enabled: str = Field(default="1", max_length=8)
+    mascot_name: str = Field(default="小铅", max_length=20)
+    mascot_greeting: str = Field(default="修电脑之前，先备份。", max_length=120)
+    mascot_position: Literal["left", "right"] = "right"
+
+    @field_validator("mascot_enabled")
+    @classmethod
+    def valid_mascot_enabled(cls, value: str) -> str:
+        return "1" if value.strip().lower() in {"1", "true", "yes", "on"} else "0"
 
     @field_validator("ui_copy")
     @classmethod
@@ -211,3 +245,16 @@ class PasswordIn(StrictModel):
 
 class PreviewIn(StrictModel):
     content_md: str = Field(default="", max_length=200_000)
+
+
+class MediaAltIn(StrictModel):
+    alt: str = Field(default="", max_length=200)
+
+
+class MarkdownImportFile(StrictModel):
+    name: str = Field(default="untitled.md", max_length=200)
+    content: str = Field(default="", max_length=200_000)
+
+
+class MarkdownImportIn(StrictModel):
+    files: list[MarkdownImportFile] = Field(min_length=1, max_length=100)

@@ -23,6 +23,11 @@ const routes = [
     component: () => import('./views/AboutView.vue'),
   },
   {
+    path: '/series/:name',
+    name: 'series',
+    component: () => import('./views/SeriesView.vue'),
+  },
+  {
     path: '/admin',
     name: 'admin-login',
     component: () => import('./admin/AdminLoginView.vue'),
@@ -38,6 +43,12 @@ const routes = [
     path: '/admin/posts',
     name: 'admin-posts',
     component: () => import('./admin/AdminPostsView.vue'),
+    meta: { admin: true, requiresAdmin: true, noindex: true },
+  },
+  {
+    path: '/admin/assets',
+    name: 'admin-assets',
+    component: () => import('./admin/AdminAssetsView.vue'),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {

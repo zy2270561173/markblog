@@ -18,6 +18,7 @@ const isDashboard = computed(() => route.path === '/admin/dashboard')
 const isPosts = computed(
   () => route.path === '/admin/posts' || route.path.startsWith('/admin/posts/'),
 )
+const isAssets = computed(() => route.path === '/admin/assets')
 const isAppearance = computed(() => route.path === '/admin/appearance')
 const isSettings = computed(() => route.path === '/admin/settings')
 
@@ -64,6 +65,13 @@ async function handleSignOut() {
             :class="{ 'is-active': isPosts }"
           >
             文章
+          </RouterLink>
+          <RouterLink
+            to="/admin/assets"
+            class="admin-nav__link"
+            :class="{ 'is-active': isAssets }"
+          >
+            媒体数据
           </RouterLink>
           <RouterLink
             to="/admin/appearance"
@@ -271,12 +279,35 @@ async function handleSignOut() {
   font-size: 14px;
 }
 
+@media (max-width: 980px) {
+  .admin-nav {
+    gap: 14px;
+  }
+
+  .admin-nav__link {
+    font-size: 17px;
+  }
+}
+
 @media (max-width: 760px) {
   .admin-header__inner {
+    display: grid;
     min-height: 68px;
-    flex-wrap: wrap;
+    grid-template-columns: 1fr auto;
+    align-items: center;
     gap: 10px 16px;
     padding-block: 12px;
+  }
+
+  .admin-brand-wrap {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .admin-actions {
+    grid-row: 1;
+    grid-column: 2;
+    justify-self: end;
   }
 
   .admin-brand__label {
@@ -286,13 +317,14 @@ async function handleSignOut() {
   .admin-nav {
     grid-row: 2;
     grid-column: 1 / -1;
-    gap: 22px;
+    flex-wrap: wrap;
+    gap: 7px 16px;
     padding-top: 9px;
     border-top: 1px dashed var(--color-line);
   }
 
   .admin-nav__link {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .admin-actions__site {

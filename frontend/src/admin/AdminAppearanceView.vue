@@ -16,6 +16,10 @@ const saveError = ref('')
 const saveSuccess = ref('')
 const rawSettings = ref(null)
 const appearance = ref(null)
+const mascotEnabled = ref(true)
+const mascotName = ref('小铅')
+const mascotGreeting = ref('修电脑之前，先备份。')
+const mascotPosition = ref('right')
 
 const form = reactive({
   layout_style: 'sketch',
@@ -98,6 +102,10 @@ async function loadPage() {
     for (const key of Object.keys(form)) {
       if (typeof settings[key] === 'string') form[key] = settings[key]
     }
+    mascotEnabled.value = settings.mascot_enabled !== '0'
+    mascotName.value = settings.mascot_name || '小铅'
+    mascotGreeting.value = settings.mascot_greeting || '修电脑之前，先备份。'
+    mascotPosition.value = settings.mascot_position === 'left' ? 'left' : 'right'
     Object.assign(copy, UI_COPY_DEFAULTS, parseCopy(settings.ui_copy))
     appearance.value = currentAppearance
   } catch (requestError) {
@@ -140,10 +148,18 @@ async function saveAppearance() {
       ntp_server: form.ntp_server.trim(),
       day_start: form.day_start,
       night_start: form.night_start,
+      mascot_enabled: mascotEnabled.value ? '1' : '0',
+      mascot_name: mascotName.value.trim() || '小铅',
+      mascot_greeting: mascotGreeting.value.trim() || '修电脑之前，先备份。',
+      mascot_position: mascotPosition.value === 'left' ? 'left' : 'right',
       ui_copy: JSON.stringify(copy),
     }
     const settings = await adminApi.saveSettings(payload)
     rawSettings.value = settings
+    mascotEnabled.value = settings.mascot_enabled !== '0'
+    mascotName.value = settings.mascot_name || '小铅'
+    mascotGreeting.value = settings.mascot_greeting || '修电脑之前，先备份。'
+    mascotPosition.value = settings.mascot_position === 'left' ? 'left' : 'right'
     Object.assign(copy, UI_COPY_DEFAULTS, parseCopy(settings.ui_copy))
     await loadSite(true)
     appearance.value = await adminApi.getAppearance()
@@ -302,6 +318,45 @@ onMounted(() => {
             </p>
           </section>
         </div>
+
+        <section class="admin-card mascot-card" aria-labelledby="mascot-title">
+          <div class="admin-card__head">
+            <h2 id="mascot-title">站娘</h2>
+            <p>手绘动画小人，会跟随鼠标轻轻转头、呼吸和眨眼；不加载外部模型文件。</p>
+          </div>
+          <label class="mascot-switch">
+            <input v-model="mascotEnabled" type="checkbox" />
+            <span>
+              <strong>在公开页面显示站娘</strong>
+              <small>访客可以点右上角收起，本次会话内不再出现。</small>
+            </span>
+          </label>
+          <div class="form-grid mascot-fields" :class="{ 'is-disabled': !mascotEnabled }">
+            <div class="field">
+              <label for="mascot-name">名字</label>
+              <input id="mascot-name" v-model="mascotName" class="input" maxlength="20" :disabled="!mascotEnabled" />
+            </div>
+            <div class="field">
+              <label for="mascot-position">位置</label>
+              <select id="mascot-position" v-model="mascotPosition" class="select" :disabled="!mascotEnabled">
+                <option value="right">右下角</option>
+                <option value="left">左下角</option>
+              </select>
+            </div>
+            <div class="field field--wide">
+              <label for="mascot-greeting">想说的话</label>
+              <textarea
+                id="mascot-greeting"
+                v-model="mascotGreeting"
+                class="textarea"
+                rows="2"
+                maxlength="120"
+                :disabled="!mascotEnabled"
+              ></textarea>
+              <p class="field-hint">会显示在站娘旁边的对话气泡里，最多 120 字。</p>
+            </div>
+          </div>
+        </section>
 
         <div class="copy-intro">
           <p class="eyebrow">PUBLIC COPY / 前台文案</p>
@@ -516,6 +571,50 @@ onMounted(() => {
 }
 
 .auto-theme-fields.is-disabled {
+  opacity: 0.45;
+}
+
+.mascot-card {
+  margin-top: 22px;
+  padding: 24px;
+}
+
+.mascot-switch {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  cursor: pointer;
+}
+
+.mascot-switch input {
+  margin-top: 4px;
+  accent-color: var(--color-vermilion);
+}
+
+.mascot-switch strong,
+.mascot-switch small {
+  display: block;
+}
+
+.mascot-switch strong {
+  font-family: var(--font-hand);
+  font-size: 17px;
+}
+
+.mascot-switch small {
+  margin-top: 2px;
+  color: var(--color-ink-faint);
+  font-size: 10px;
+}
+
+.mascot-fields {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--color-line);
+  transition: opacity var(--transition-fast);
+}
+
+.mascot-fields.is-disabled {
   opacity: 0.45;
 }
 

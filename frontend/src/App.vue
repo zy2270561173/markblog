@@ -3,7 +3,9 @@ import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import SiteHeader from './components/SiteHeader.vue'
 import SiteFooter from './components/SiteFooter.vue'
+import MascotWidget from './components/MascotWidget.vue'
 import { useSite } from './lib/site'
+import { applyAppearance as applyThemePreference } from './lib/theme'
 import { setKeywords, setRobots } from './lib/meta'
 
 const route = useRoute()
@@ -16,16 +18,9 @@ const isAdmin = computed(
 let appearanceTimer = null
 
 function applyAppearance(appearance) {
-  const theme = appearance?.active === 'dark' ? 'dark' : 'light'
   const layout = appearance?.layout === 'minimal' ? 'minimal' : 'sketch'
-  const root = document.documentElement
-  root.dataset.theme = theme
-  root.dataset.layout = layout
-  root.style.colorScheme = theme
-  const themeColor = document.querySelector('meta[name="theme-color"]')
-  if (themeColor) {
-    themeColor.setAttribute('content', theme === 'dark' ? '#1f1f1c' : '#f5f0e8')
-  }
+  document.documentElement.dataset.layout = layout
+  applyThemePreference(appearance)
 }
 
 onMounted(() => {
@@ -88,6 +83,7 @@ function retrySite() {
         <RouterView />
       </main>
       <SiteFooter />
+      <MascotWidget />
     </template>
 
     <RouterView v-else />

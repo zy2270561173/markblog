@@ -15,6 +15,11 @@ const counts = computed(() => data.value?.counts || {})
 const site = computed(() => data.value?.site || {})
 const appearance = computed(() => data.value?.appearance || {})
 const recent = computed(() => data.value?.recent || [])
+const trend = computed(() => data.value?.views_trend || [])
+const topPosts = computed(() => data.value?.top_posts || [])
+const trendMax = computed(() =>
+  Math.max(1, ...trend.value.map((item) => Number(item.views) || 0)),
+)
 
 const greeting = computed(() => {
   const raw = appearance.value.local_time
@@ -140,7 +145,7 @@ onMounted(() => {
           <article class="dashboard-stat">
             <p class="dashboard-stat__label">草稿</p>
             <p class="dashboard-stat__value">{{ compactNumber(counts.draft) }}</p>
-            <p class="dashboard-stat__note">还没有见人的文字</p>
+            <p class="dashboard-stat__note">草稿 {{ compactNumber(counts.draft) }} · 定时 {{ compactNumber(counts.scheduled) }}</p>
             <span class="dashboard-stat__mark" aria-hidden="true">…</span>
           </article>
           <article class="dashboard-stat">
@@ -168,6 +173,10 @@ onMounted(() => {
               <span class="quick-action__mark" aria-hidden="true">✎</span>
               <span>写新文章<small>新建一页草稿</small></span>
             </RouterLink>
+            <RouterLink to="/admin/assets" class="quick-action">
+              <span class="quick-action__mark" aria-hidden="true">▣</span>
+              <span>媒体与数据<small>图片、备份与导入</small></span>
+            </RouterLink>
             <RouterLink to="/admin/appearance" class="quick-action">
               <span class="quick-action__mark" aria-hidden="true">◐</span>
               <span>外观与文案<small>排版、主题和前台文字</small></span>
@@ -183,6 +192,44 @@ onMounted(() => {
           </nav>
         </section>
 
+        <section class="admin-card analytics-card" aria-labelledby="analytics-title">
+          <div class="admin-card__head">
+            <div>
+              <h2 id="analytics-title">阅读趋势</h2>
+              <p>只记录文章页访问，不存访客 IP。</p>
+            </div>
+            <div class="analytics-totals">
+              <span>今日 <strong>{{ compactNumber(counts.views_today) }}</strong></span>
+              <span>累计 <strong>{{ compactNumber(counts.views_total) }}</strong></span>
+            </div>
+          </div>
+          <div class="analytics-body">
+            <div class="views-chart" role="img" aria-label="最近七天阅读量">
+              <div v-for="item in trend" :key="item.day" class="views-bar">
+                <span class="views-bar__value">{{ item.views }}</span>
+                <span
+                  class="views-bar__fill"
+                  :style="{ height: `${Math.max(4, (item.views / trendMax) * 100)}%` }"
+                ></span>
+                <span class="views-bar__label">{{ item.label }}</span>
+              </div>
+            </div>
+            <div class="top-posts">
+              <p class="top-posts__title">读得最多</p>
+              <ol>
+                <li v-for="(item, index) in topPosts" :key="item.id">
+                  <span class="top-posts__index">{{ String(index + 1).padStart(2, '0') }}</span>
+                  <RouterLink :to="{ name: 'admin-post-edit', params: { id: item.id } }">
+                    {{ item.title }}
+                  </RouterLink>
+                  <span class="top-posts__views">{{ item.views }}</span>
+                </li>
+              </ol>
+              <p v-if="!topPosts.length" class="appearance-card__detail">还没有阅读数据。</p>
+            </div>
+          </div>
+        </section>
+
         <div class="dashboard-columns">
           <section class="admin-card recent-card" aria-labelledby="recent-title">
             <div class="admin-card__head">
@@ -193,7 +240,7 @@ onMounted(() => {
               <article v-for="post in recent" :key="post.id" class="recent-row">
                 <div class="recent-row__main">
                   <span class="status-chip" :class="`status-chip--${post.status}`">
-                    {{ post.status === 'published' ? '已发布' : '草稿' }}
+                    {{ post.status === 'published' ? '已发布' : post.status === 'scheduled' ? '定时' : '草稿' }}
                   </span>
                   <RouterLink
                     :to="{ name: 'admin-post-edit', params: { id: post.id } }"
@@ -454,6 +501,124 @@ onMounted(() => {
   font-size: 10px;
 }
 
+.analytics-card {
+  margin: 0 0 28px;
+  padding: 24px;
+}
+
+.analytics-totals {
+  display: flex;
+  gap: 16px;
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 14px;
+}
+
+.analytics-totals strong {
+  margin-left: 3px;
+  color: var(--color-pencil);
+  font-size: 20px;
+}
+
+.analytics-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(240px, 0.65fr);
+  gap: 30px;
+}
+
+.views-chart {
+  display: flex;
+  height: 150px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 18px;
+}
+
+.views-bar {
+  display: flex;
+  height: 100%;
+  flex: 1;
+  align-items: center;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.views-bar__fill {
+  width: min(34px, 70%);
+  min-height: 3px;
+  background: var(--color-lake-blue);
+  opacity: 0.55;
+  order: 2;
+}
+
+.views-bar:hover .views-bar__fill {
+  opacity: 0.85;
+}
+
+.views-bar__value {
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 11px;
+  order: 1;
+}
+
+.views-bar__label {
+  color: var(--color-ink-faint);
+  font-size: 9px;
+  order: 3;
+}
+
+.top-posts__title {
+  margin: 0 0 8px;
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 14px;
+}
+
+.top-posts ol {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.top-posts li {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.top-posts__index {
+  color: var(--color-vermilion);
+  font-family: var(--font-hand);
+  font-size: 12px;
+}
+
+.top-posts a {
+  overflow: hidden;
+  flex: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-posts__views {
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 12px;
+}
+
+.status-chip--scheduled {
+  color: var(--color-lake-ink);
+  border-color: rgba(52, 152, 219, 0.5);
+  background: rgba(52, 152, 219, 0.07);
+}
+
 .dashboard-columns {
   display: grid;
   grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.85fr);
@@ -681,6 +846,10 @@ onMounted(() => {
   }
 
   .dashboard-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-body {
     grid-template-columns: 1fr;
   }
 

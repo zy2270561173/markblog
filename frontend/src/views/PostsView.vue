@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import StateBlock from '../components/StateBlock.vue'
 import { publicApi } from '../api'
@@ -15,9 +15,14 @@ const copy = useCopy()
 
 const posts = ref([])
 const tags = ref([])
+const series = ref([])
 const loading = ref(true)
 const error = ref('')
-const searchDraft = ref('')
+const searchDraft = ref(typeof route.query.q === 'string' ? route.query.q : '')
+const searchLoading = ref(false)
+const searchError = ref('')
+const searchTotal = ref(0)
+let searchTimer = null
 
 const activeTag = computed(() => (typeof route.query.tag === 'string' ? route.query.tag : ''))
 const searchTerm = computed(() => searchDraft.value.trim().toLowerCase())
@@ -25,9 +30,7 @@ const searchTerm = computed(() => searchDraft.value.trim().toLowerCase())
 const filteredPosts = computed(() => {
   return posts.value.filter((post) => {
     if (activeTag.value && !post.tags.includes(activeTag.value)) return false
-    if (!searchTerm.value) return true
-    const haystack = `${post.title} ${post.excerpt} ${post.tags.join(' ')}`.toLowerCase()
-    return haystack.includes(searchTerm.value)
+    return true
   })
 })
 
@@ -44,19 +47,53 @@ function postsCountText(count) {
   return copy.value.posts_count_template.replace('{count}', String(count))
 }
 
+function applyResult(data) {
+  posts.value = data.posts || []
+  tags.value = data.tags || []
+  series.value = data.series || []
+  searchTotal.value = data.total || 0
+}
+
 async function loadPosts() {
   loading.value = true
   error.value = ''
+  searchError.value = ''
   try {
     const data = await publicApi.getPosts()
-    posts.value = data.posts || []
-    tags.value = data.tags || []
+    applyResult(data)
   } catch (requestError) {
     error.value = requestError.message || '文章加载失败，请稍后再试。'
   } finally {
     loading.value = false
   }
 }
+
+async function runSearch(term) {
+  if (!term) {
+    searchLoading.value = false
+    loadPosts()
+    return
+  }
+  searchLoading.value = true
+  searchError.value = ''
+  if (!posts.value.length) loading.value = true
+  try {
+    const data = await publicApi.getPosts({ q: term })
+    applyResult(data)
+  } catch (requestError) {
+    searchError.value = requestError.message || '搜索暂时不可用。'
+  } finally {
+    searchLoading.value = false
+    loading.value = false
+  }
+}
+
+watch(searchTerm, (term) => {
+  window.clearTimeout(searchTimer)
+  searchTimer = window.setTimeout(() => runSearch(term), 280)
+})
+
+onBeforeUnmount(() => window.clearTimeout(searchTimer))
 
 function setTag(tag) {
   const query = { ...route.query }
@@ -67,6 +104,7 @@ function setTag(tag) {
 
 function clearFilters() {
   searchDraft.value = ''
+  searchError.value = ''
   router.replace({ name: 'posts' })
 }
 
@@ -84,11 +122,20 @@ function applyMeta() {
 }
 
 onMounted(() => {
-  loadPosts()
   applyMeta()
+  if (searchDraft.value.trim()) runSearch(searchDraft.value.trim())
+  else loadPosts()
 })
 
 watch(activeTag, applyMeta)
+
+watch(
+  () => route.query.q,
+  (value) => {
+    const next = typeof value === 'string' ? value : ''
+    if (next !== searchDraft.value) searchDraft.value = next
+  },
+)
 </script>
 
 <template>
@@ -156,11 +203,28 @@ watch(activeTag, applyMeta)
       </div>
     </section>
 
+    <div v-if="series.length" class="series-row" aria-label="文章系列">
+      <span class="series-row__label">{{ copy.series_title }}</span>
+      <RouterLink
+        v-for="item in series"
+        :key="item.name"
+        :to="{ name: 'series', params: { name: item.name } }"
+        class="series-chip"
+      >
+        {{ item.name }} <span>{{ item.count }}</span>
+      </RouterLink>
+    </div>
+
+    <p v-if="searchError" class="alert alert--warning search-alert" role="status">
+      {{ searchError }}
+    </p>
+
     <div class="result-line">
       <p>
         <span v-if="activeTag" class="result-tag"># {{ activeTag }}</span>
         <span v-if="searchTerm" class="result-query">“{{ searchDraft.trim() }}”</span>
-        <span v-if="!loading" class="result-number">
+        <span v-if="searchLoading" class="result-number">正在搜索正文…</span>
+        <span v-else-if="!loading" class="result-number">
           {{ filteredPosts.length }} {{ copy.posts_unit }}
         </span>
       </p>
@@ -210,7 +274,12 @@ watch(activeTag, applyMeta)
               {{ post.title }}
             </RouterLink>
           </h2>
-          <p class="ledger-row__excerpt">{{ post.excerpt }}</p>
+          <p v-if="post.search_snippet" class="ledger-row__excerpt">
+            <span class="search-snippet__field">{{ post.search_snippet.field }}</span>
+            {{ post.search_snippet.before
+            }}<mark>{{ post.search_snippet.match }}</mark>{{ post.search_snippet.after }}
+          </p>
+          <p v-else class="ledger-row__excerpt">{{ post.excerpt }}</p>
           <ul class="ledger-row__tags">
             <li v-for="tag in post.tags" :key="tag">{{ tag }}</li>
           </ul>
@@ -347,6 +416,61 @@ watch(activeTag, applyMeta)
   font-family: var(--font-serif);
   font-size: 10px;
   vertical-align: super;
+}
+
+.series-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 0;
+  border-bottom: 1px dashed var(--color-line);
+}
+
+.series-row__label {
+  margin-right: 3px;
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 13px;
+}
+
+.series-chip {
+  padding: 3px 8px;
+  border: 1px solid var(--color-line);
+  color: var(--color-ink-soft);
+  font-family: var(--font-hand);
+  font-size: 13px;
+}
+
+.series-chip:hover {
+  border-color: var(--color-line-strong);
+  color: var(--color-lake-ink);
+}
+
+.series-chip span {
+  color: var(--color-ink-faint);
+  font-size: 10px;
+  vertical-align: super;
+}
+
+.search-alert {
+  margin: 0 0 6px;
+  font-size: 12px;
+}
+
+.search-snippet__field {
+  margin-right: 5px;
+  padding: 1px 5px;
+  border: 1px solid var(--color-line);
+  color: var(--color-ink-faint);
+  font-family: var(--font-serif);
+  font-size: 10px;
+}
+
+.ledger-row__excerpt mark {
+  padding: 0 2px;
+  background: rgba(243, 156, 18, 0.3);
+  color: var(--color-pencil);
 }
 
 .result-line {

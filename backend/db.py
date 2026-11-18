@@ -9,7 +9,7 @@ import secrets
 import sqlite3
 from typing import Iterator
 
-from . import seed_data
+from . import search, seed_data
 from .config import get_settings
 from .security import hash_password, iso_utc, utc_now
 
@@ -48,12 +48,48 @@ CREATE TABLE IF NOT EXISTS posts (
     status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
-    published_at TEXT
+    published_at TEXT,
+    scheduled_at TEXT,
+    series TEXT NOT NULL DEFAULT '',
+    series_order INTEGER NOT NULL DEFAULT 0,
+    seo_title TEXT NOT NULL DEFAULT '',
+    seo_description TEXT NOT NULL DEFAULT '',
+    seo_keywords TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_posts_status_published
     ON posts(status, published_at DESC);
 CREATE INDEX IF NOT EXISTS idx_posts_updated ON posts(updated_at DESC);
+
+CREATE TABLE IF NOT EXISTS media (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    filename TEXT NOT NULL UNIQUE,
+    original_name TEXT NOT NULL DEFAULT '',
+    mime TEXT NOT NULL,
+    size INTEGER NOT NULL DEFAULT 0,
+    width INTEGER NOT NULL DEFAULT 0,
+    height INTEGER NOT NULL DEFAULT 0,
+    alt TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS post_views (
+    post_id INTEGER NOT NULL,
+    day TEXT NOT NULL,
+    views INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (post_id, day),
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_post_views_day ON post_views(day);
 """
+
+POST_COLUMN_MIGRATIONS = {
+    "scheduled_at": "TEXT",
+    "series": "TEXT NOT NULL DEFAULT ''",
+    "series_order": "INTEGER NOT NULL DEFAULT 0",
+    "seo_title": "TEXT NOT NULL DEFAULT ''",
+    "seo_description": "TEXT NOT NULL DEFAULT ''",
+    "seo_keywords": "TEXT NOT NULL DEFAULT ''",
+}
 
 
 def connect() -> sqlite3.Connection:
@@ -165,6 +201,22 @@ def _migrate_default_profile(conn: sqlite3.Connection) -> None:
     )
 
 
+def _migrate_post_columns(conn: sqlite3.Connection) -> None:
+    existing = {
+        row["name"] for row in conn.execute("PRAGMA table_info(posts)").fetchall()
+    }
+    for column, declaration in POST_COLUMN_MIGRATIONS.items():
+        if column not in existing:
+            conn.execute(f"ALTER TABLE posts ADD COLUMN {column} {declaration}")
+            logger.info("Added posts.%s", column)
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_posts_series ON posts(series, series_order)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_posts_scheduled ON posts(scheduled_at)"
+    )
+
+
 def _seed_posts(conn: sqlite3.Connection) -> None:
     count = conn.execute("SELECT COUNT(*) FROM posts").fetchone()[0]
     if count:
@@ -197,6 +249,7 @@ def init_db() -> None:
     conn = connect()
     try:
         conn.executescript(SCHEMA)
+        _migrate_post_columns(conn)
         conn.execute(
             "DELETE FROM sessions WHERE expires_at < ?",
             (iso_utc(utc_now()),),
@@ -205,6 +258,8 @@ def init_db() -> None:
         _migrate_default_profile(conn)
         _bootstrap_admin(conn)
         _seed_posts(conn)
+        if search.ensure_schema(conn):
+            search.rebuild(conn)
         conn.commit()
     finally:
         conn.close()

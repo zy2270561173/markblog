@@ -7,15 +7,20 @@ area. The single administrator entry is available only at /admin.
 
 from __future__ import annotations
 
+import asyncio
 import hmac
 import html
+import json
 import logging
 import re
-from contextlib import asynccontextmanager
+import threading
+import time
+from contextlib import asynccontextmanager, suppress
 from datetime import datetime, timezone
 from email.utils import format_datetime
+from pathlib import Path
 from typing import Annotated, Any
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 from xml.sax.saxutils import escape as xml_escape
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response, status
@@ -31,7 +36,7 @@ from fastapi.responses import (
 )
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from . import repository
+from . import media, repository, transfer
 from .appearance import compute_appearance
 from .auth import (
     create_session,
@@ -42,9 +47,17 @@ from .auth import (
     read_session,
 )
 from .config import get_settings
-from .db import get_db, init_db
+from .db import connect as db_connect, get_db, init_db
 from .rendering import reading_minutes, render_markdown
-from .schemas import LoginIn, PasswordIn, PostIn, PreviewIn, SettingsIn
+from .schemas import (
+    LoginIn,
+    MarkdownImportIn,
+    MediaAltIn,
+    PasswordIn,
+    PostIn,
+    PreviewIn,
+    SettingsIn,
+)
 from .security import dummy_password_hash, verify_password
 
 logger = logging.getLogger("markblog")
@@ -63,7 +76,7 @@ CSP = (
     "form-action 'self'; "
     "frame-ancestors 'none'"
 )
-MAX_API_BODY_BYTES = 1_500_000
+MAX_API_BODY_BYTES = 6_500_000
 FALLBACK_SITE_URL = "http://127.0.0.1:8000"
 
 # Temporary domain-validation token for www.muysky.cn.
@@ -73,15 +86,42 @@ FALLBACK_SITE_URL = "http://127.0.0.1:8000"
 SSL_VALIDATION_TOKEN = "jm4mlegvt7vqkfoaa3z8lt9f2l7pggdb"
 
 
+def _publish_due() -> int:
+    conn = db_connect()
+    try:
+        return repository.publish_due_posts(conn)
+    finally:
+        conn.close()
+
+
+async def _publish_loop() -> None:
+    while True:
+        await asyncio.sleep(30)
+        try:
+            await asyncio.to_thread(_publish_due)
+        except Exception:
+            logger.exception("Scheduled publishing check failed")
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    try:
+        await asyncio.to_thread(_publish_due)
+    except Exception:
+        logger.exception("Initial scheduled publishing check failed")
+    publisher = asyncio.create_task(_publish_loop())
     if not (settings.frontend_dist / "index.html").is_file():
         logger.warning(
             "Frontend build not found at %s. Run the frontend build before serving.",
             settings.frontend_dist,
         )
-    yield
+    try:
+        yield
+    finally:
+        publisher.cancel()
+        with suppress(asyncio.CancelledError):
+            await publisher
 
 
 app = FastAPI(
@@ -275,6 +315,7 @@ def public_posts(
     q: str | None = Query(default=None, max_length=100),
     limit: int | None = Query(default=None, ge=1, le=50),
 ):
+    repository.publish_due_posts(conn)
     return repository.list_public_posts(conn, tag=tag, query=q, limit=limit)
 
 
@@ -282,10 +323,50 @@ def public_posts(
 def public_post(slug: str, conn: Annotated[Any, Depends(get_db)]):
     if len(slug) > 120:
         raise HTTPException(status_code=404, detail="没有找到这篇文章。")
+    repository.publish_due_posts(conn)
     post = repository.get_public_post(conn, slug)
     if post is None:
         raise HTTPException(status_code=404, detail="没有找到这篇文章。")
     return post
+
+
+@app.get("/api/public/series/{name:path}", include_in_schema=False)
+def public_series(name: str, conn: Annotated[Any, Depends(get_db)]):
+    repository.publish_due_posts(conn)
+    series = repository.get_public_series(conn, unquote(name))
+    if series is None:
+        raise HTTPException(status_code=404, detail="没有找到这个系列。")
+    return series
+
+
+_VIEW_LOCK = threading.Lock()
+_VIEW_SEEN: dict[tuple[str, str], float] = {}
+_VIEW_WINDOW_SECONDS = 30 * 60
+
+
+@app.post("/api/public/posts/{slug}/view", include_in_schema=False)
+def public_record_view(
+    slug: str,
+    request: Request,
+    conn: Annotated[Any, Depends(get_db)],
+):
+    repository.publish_due_posts(conn)
+    key = (_client_key(request), slug)
+    now = time.monotonic()
+    with _VIEW_LOCK:
+        stale = [item for item, seen in _VIEW_SEEN.items() if now - seen > _VIEW_WINDOW_SECONDS]
+        for item in stale:
+            _VIEW_SEEN.pop(item, None)
+        if key in _VIEW_SEEN and now - _VIEW_SEEN[key] < _VIEW_WINDOW_SECONDS:
+            post = repository.get_public_post(conn, slug)
+            return {"counted": False, "views": post["views"] if post else 0}
+        _VIEW_SEEN[key] = now
+        if len(_VIEW_SEEN) > 5000:
+            _VIEW_SEEN.clear()
+    if not repository.record_view(conn, slug):
+        raise HTTPException(status_code=404, detail="没有找到这篇文章。")
+    post = repository.get_public_post(conn, slug)
+    return {"counted": True, "views": post["views"] if post else 1}
 
 
 # ---------------------------------------------------------------------------
@@ -394,6 +475,7 @@ def admin_dashboard(
         "seo_ready": bool(
             settings.get("seo_title") and settings.get("seo_description")
         ),
+        "mascot_enabled": settings.get("mascot_enabled") == "1",
         "icp_ready": bool(settings.get("icp_number")),
         "police_ready": bool(settings.get("police_number")),
         "about_characters": len(settings.get("about_md", "")),
@@ -446,6 +528,12 @@ def admin_create_post(
         content_md=payload.content_md,
         tags=payload.tags,
         status=payload.status,
+        scheduled_at=payload.scheduled_at,
+        series=payload.series,
+        series_order=payload.series_order,
+        seo_title=payload.seo_title,
+        seo_description=payload.seo_description,
+        seo_keywords=payload.seo_keywords,
     )
     return post
 
@@ -466,6 +554,12 @@ def admin_update_post(
         content_md=payload.content_md,
         tags=payload.tags,
         status=payload.status,
+        scheduled_at=payload.scheduled_at,
+        series=payload.series,
+        series_order=payload.series_order,
+        seo_title=payload.seo_title,
+        seo_description=payload.seo_description,
+        seo_keywords=payload.seo_keywords,
     )
     if post is None:
         raise HTTPException(status_code=404, detail="文章不存在。")
@@ -492,6 +586,107 @@ def admin_preview(
         "html": render_markdown(payload.content_md),
         "reading_minutes": reading_minutes(payload.content_md),
     }
+
+
+@app.get("/api/admin/media", include_in_schema=False)
+def admin_media_list(
+    conn: Annotated[Any, Depends(get_db)],
+    _: Annotated[dict[str, Any], Depends(require_session)],
+):
+    return {"media": media.list_media(conn)}
+
+
+@app.post("/api/admin/media", status_code=status.HTTP_201_CREATED, include_in_schema=False)
+async def admin_media_upload(
+    request: Request,
+    conn: Annotated[Any, Depends(get_db)],
+    _: Annotated[dict[str, Any], Depends(require_csrf)],
+    filename: str = Query(default="image", max_length=200),
+    alt: str = Query(default="", max_length=200),
+    width: int = Query(default=0, ge=0, le=100_000),
+    height: int = Query(default=0, ge=0, le=100_000),
+):
+    data = await request.body()
+    try:
+        item = media.save_media(
+            conn,
+            data=data,
+            mime=request.headers.get("content-type", ""),
+            original_name=filename,
+            alt=alt,
+            width=width,
+            height=height,
+        )
+    except media.MediaError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    return item
+
+
+@app.patch("/api/admin/media/{media_id}", include_in_schema=False)
+def admin_media_update(
+    media_id: int,
+    payload: MediaAltIn,
+    conn: Annotated[Any, Depends(get_db)],
+    _: Annotated[dict[str, Any], Depends(require_csrf)],
+):
+    item = media.update_alt(conn, media_id, payload.alt)
+    if item is None:
+        raise HTTPException(status_code=404, detail="图片不存在。")
+    return item
+
+
+@app.delete("/api/admin/media/{media_id}", include_in_schema=False)
+def admin_media_delete(
+    media_id: int,
+    conn: Annotated[Any, Depends(get_db)],
+    _: Annotated[dict[str, Any], Depends(require_csrf)],
+):
+    if not media.delete_media(conn, media_id):
+        raise HTTPException(status_code=404, detail="图片不存在。")
+    return {"ok": True}
+
+
+@app.get("/api/admin/backup", include_in_schema=False)
+def admin_backup(
+    conn: Annotated[Any, Depends(get_db)],
+    _: Annotated[dict[str, Any], Depends(require_session)],
+):
+    payload = transfer.build_backup(conn)
+    filename = f"markblog-backup-{datetime.now():%Y%m%d-%H%M}.zip"
+    return Response(
+        payload.getvalue(),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+@app.get("/api/admin/export/markdown", include_in_schema=False)
+def admin_markdown_export(
+    conn: Annotated[Any, Depends(get_db)],
+    _: Annotated[dict[str, Any], Depends(require_session)],
+):
+    payload = transfer.build_markdown_export(conn)
+    filename = f"markblog-markdown-{datetime.now():%Y%m%d}.zip"
+    return Response(
+        payload.getvalue(),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+@app.post("/api/admin/import/markdown", include_in_schema=False)
+def admin_markdown_import(
+    payload: MarkdownImportIn,
+    conn: Annotated[Any, Depends(get_db)],
+    _: Annotated[dict[str, Any], Depends(require_csrf)],
+):
+    return transfer.import_markdown(conn, payload.files)
 
 
 @app.get("/api/admin/settings", include_in_schema=False)
@@ -569,6 +764,7 @@ def robots(conn: Annotated[Any, Depends(get_db)]):
 
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap(conn: Annotated[Any, Depends(get_db)]):
+    repository.publish_due_posts(conn)
     base = _base_url(conn)
     rows = conn.execute(
         "SELECT slug, updated_at FROM posts WHERE status = 'published' "
@@ -580,6 +776,15 @@ def sitemap(conn: Annotated[Any, Depends(get_db)]):
         (f"{base}/about", None),
     ]
     entries.extend((f"{base}/posts/{quote(row['slug'])}", row["updated_at"]) for row in rows)
+    series_rows = conn.execute(
+        "SELECT series, MAX(updated_at) AS updated_at FROM posts "
+        "WHERE status = 'published' AND published_at IS NOT NULL AND series != '' "
+        "GROUP BY series"
+    ).fetchall()
+    entries.extend(
+        (f"{base}/series/{quote(row['series'])}", row["updated_at"])
+        for row in series_rows
+    )
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
@@ -596,6 +801,7 @@ def sitemap(conn: Annotated[Any, Depends(get_db)]):
 
 @app.get("/feed.xml", include_in_schema=False)
 def feed(conn: Annotated[Any, Depends(get_db)]):
+    repository.publish_due_posts(conn)
     base = _base_url(conn)
     site = repository.get_public_site(conn)
     rows = conn.execute(
@@ -673,6 +879,16 @@ def _apply_html_appearance(
     return re.sub(r"<html\b([^>]*)>", replace, html_text, count=1, flags=re.IGNORECASE)
 
 
+def _insert_json_ld(html_text: str, payload: dict[str, Any] | None) -> str:
+    if not payload:
+        return html_text
+    serialized = json.dumps(
+        payload, ensure_ascii=False, separators=(",", ":")
+    ).replace("</", "<\\/")
+    tag = f'  <script type="application/ld+json">{serialized}</script>\n'
+    return html_text.replace("</head>", tag + "</head>", 1)
+
+
 def _upsert_canonical(html_text: str, href: str | None) -> str:
     html_text = re.sub(
         r'\s*<link\s+rel="canonical"[^>]*>\s*',
@@ -701,6 +917,7 @@ def _spa_page(conn: Any, path: str) -> tuple[str, int, bool]:
         )
         return message, 503, False
 
+    repository.publish_due_posts(conn)
     site = repository.get_public_site(conn)
     site_title = site.get("site_title") or "Markblog"
     base = (site.get("site_url") or FALLBACK_SITE_URL).rstrip("/")
@@ -714,6 +931,8 @@ def _spa_page(conn: Any, path: str) -> tuple[str, int, bool]:
     canonical: str | None = None
     title = seo_title
     description = seo_description
+    keywords = site.get("seo_keywords") or ""
+    json_ld: dict[str, Any] | None = None
 
     if is_admin:
         title = f"管理后台 · {site_title}"
@@ -721,6 +940,18 @@ def _spa_page(conn: Any, path: str) -> tuple[str, int, bool]:
         canonical = None
     elif clean_path == "":
         canonical = f"{base}/"
+        json_ld = {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": site_title,
+            "url": f"{base}/",
+            "description": seo_description,
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": f"{base}/posts?q={{search_term_string}}",
+                "query-input": "required name=search_term_string",
+            },
+        }
     elif clean_path == "posts":
         title = f"文章 · {site_title}"
         canonical = f"{base}/posts"
@@ -737,9 +968,57 @@ def _spa_page(conn: Any, path: str) -> tuple[str, int, bool]:
             description = "这一页似乎不存在，或者已经被移走了。"
         else:
             is_article = True
-            title = f"{post['title']} · {site_title}"
-            description = post["excerpt"]
+            title = post.get("seo_title") or f"{post['title']} · {site_title}"
+            description = post.get("seo_description") or post["excerpt"]
+            keywords = post.get("seo_keywords") or keywords
             canonical = f"{base}/posts/{quote(slug)}"
+            json_ld = {
+                "@context": "https://schema.org",
+                "@type": "Article",
+                "headline": post["title"],
+                "description": description,
+                "datePublished": post["published_at"],
+                "dateModified": post["updated_at"],
+                "author": {
+                    "@type": "Person",
+                    "name": site.get("author_name") or site_title,
+                },
+                "publisher": {"@type": "Organization", "name": site_title},
+                "mainEntityOfPage": {"@type": "WebPage", "@id": canonical},
+                "image": f"{base}/og-cover.png",
+                "keywords": post.get("seo_keywords") or ", ".join(post.get("tags") or []),
+                "articleSection": "电脑维修与使用",
+            }
+    elif clean_path.startswith("series/"):
+        series_name = unquote(clean_path[len("series/") :])
+        series = repository.get_public_series(conn, series_name)
+        if series is None:
+            not_found = True
+            title = f"页面未找到 · {site_title}"
+            description = "这个系列似乎不存在，或者还没有文章。"
+        else:
+            title = f"{series['name']} · 系列 · {site_title}"
+            description = f"{series['name']} 系列，共 {series['total']} 篇文章。"
+            canonical = f"{base}/series/{quote(series['name'])}"
+            json_ld = {
+                "@context": "https://schema.org",
+                "@type": "CollectionPage",
+                "name": series["name"],
+                "description": description,
+                "url": canonical,
+                "mainEntity": {
+                    "@type": "ItemList",
+                    "itemListElement": [
+                        {
+                            "@type": "ListItem",
+                            "position": index + 1,
+                            "url": f"{base}/posts/{quote(item['slug'])}",
+                            "name": item["title"],
+                        }
+                        for index, item in enumerate(series["posts"])
+                    ],
+                },
+            }
     elif clean_path == "404":
         not_found = True
         title = f"页面未找到 · {site_title}"
@@ -763,8 +1042,8 @@ def _spa_page(conn: Any, path: str) -> tuple[str, int, bool]:
         "robots",
         "noindex, nofollow, noarchive" if (is_admin or not_found) else "index, follow",
     )
-    if not is_admin and site.get("seo_keywords"):
-        html_text = _upsert_meta(html_text, "name", "keywords", site["seo_keywords"])
+    if not is_admin and keywords:
+        html_text = _upsert_meta(html_text, "name", "keywords", keywords)
     html_text = _upsert_canonical(html_text, canonical)
     appearance = site.get("appearance") or {}
     html_text = _apply_html_appearance(
@@ -790,6 +1069,25 @@ def _spa_page(conn: Any, path: str) -> tuple[str, int, bool]:
         html_text = _upsert_meta(html_text, "property", "og:url", canonical or f"{base}/")
         html_text = _upsert_meta(html_text, "property", "og:image", f"{base}/og-cover.png")
         html_text = _upsert_meta(html_text, "name", "twitter:card", "summary_large_image")
+        if is_article:
+            post = repository.get_public_post(conn, clean_path[len("posts/") :])
+            if post is not None:
+                html_text = _upsert_meta(
+                    html_text,
+                    "property",
+                    "article:published_time",
+                    post["published_at"] or "",
+                )
+                html_text = _upsert_meta(
+                    html_text,
+                    "property",
+                    "article:modified_time",
+                    post["updated_at"] or "",
+                )
+                html_text = _upsert_meta(
+                    html_text, "property", "article:section", "电脑维修与使用"
+                )
+        html_text = _insert_json_ld(html_text, json_ld)
     status_code = 404 if not_found else 200
     return html_text, status_code, is_admin
 
@@ -802,6 +1100,17 @@ def built_asset(asset_path: str):
         raise HTTPException(status_code=404, detail="资源不存在。")
     return FileResponse(
         target,
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
+
+
+@app.get("/media/{filename}", include_in_schema=False)
+def uploaded_media(filename: str):
+    path = media.resolve_media_path(filename)
+    if path is None:
+        raise HTTPException(status_code=404, detail="图片不存在。")
+    return FileResponse(
+        path,
         headers={"Cache-Control": "public, max-age=31536000, immutable"},
     )
 

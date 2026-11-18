@@ -2,7 +2,7 @@
 
 一个铅笔手绘风的中文电脑维修笔记：Vue 3 前端构建成静态文件，由 FastAPI 统一提供页面与 API；文章、SEO、备案信息、前台文案、外观和后台会话全部存放在 SQLite 中；正文使用 Markdown 编写。
 
-后台包含仪表盘、文章管理、外观与文案、站点设置。公开站支持「纸本手绘 / 素纸极简」两套排版，以及按 NTP 校时自动切换的白天 / 黑夜主题。
+后台包含仪表盘、文章管理、媒体与数据、外观与文案、站点设置。公开站支持图片媒体库、正文全文搜索、文章系列、相关文章、目录 / 复制代码 / 图片灯箱 / 字号调整、阅读量统计、访客主题切换、手绘站娘，以及「纸本手绘 / 素纸极简」两套排版和按 NTP 校时自动切换的白天 / 黑夜主题。
 
 公开页面**没有任何登录、注册、用户中心入口或相关导航**，也不提供评论、投稿等访客账号功能。唯一的管理员入口位于 `/admin`，不出现在公开页面链接中，并带有 `noindex` 响应头与 robots 屏蔽。
 
@@ -14,7 +14,7 @@
 | --- | --- |
 | ![Markblog 公开首页](docs/preview-home.png) | ![Markblog 管理仪表盘](docs/preview-admin-dashboard.png) |
 
-[后台外观与文案](docs/preview-admin-appearance.png) · [黑夜 + 素纸极简](docs/preview-dark-minimal.png) · [手机版黑夜/极简](docs/preview-dark-minimal-mobile.png) · [后台设置](docs/preview-admin-settings.png) · [关于页](docs/preview-about.png)
+[文章阅读页](docs/preview-post-reading.png) · [媒体与数据](docs/preview-admin-assets.png) · [后台外观与文案](docs/preview-admin-appearance.png) · [黑夜 + 素纸极简](docs/preview-dark-minimal.png) · [手机版首页](docs/preview-home-mobile.png) · [手机版文章](docs/preview-post-reading-mobile.png) · [后台设置](docs/preview-admin-settings.png) · [关于页](docs/preview-about.png)
 
 ## 默认内容
 
@@ -71,6 +71,8 @@ npm run build
 | 页脚 | `copyright`、`footer_note` |
 | 前台文案 | `ui_copy`（JSON：导航、首页、文章列表/详情、关于页、404、页脚） |
 | 排版与主题 | `layout_style`、`theme_mode`、`theme_timezone`、`ntp_server`、`day_start`、`night_start` |
+| 站娘 | `mascot_enabled`、`mascot_name`、`mascot_greeting`、`mascot_position` |
+| 阅读与系列 | 文章表的 `series`、`series_order`、`seo_title`、`seo_description`、`seo_keywords`、`scheduled_at` |
 
 备案查询链接默认指向：
 
@@ -93,8 +95,9 @@ python -m backend.manage reset-password
 | --- | --- |
 | 前端 | Vue 3 + Vue Router + Vite，手写 CSS（无 UI 框架） |
 | 后端 | Python 3.11+ / FastAPI / Uvicorn |
-| 数据 | SQLite（WAL 模式，单文件） |
+| 数据 | SQLite（WAL 模式，单文件；全文搜索使用 FTS5 trigram） |
 | 内容 | Markdown（markdown-it-py 渲染） |
+| 媒体 | 上传图片存 `data/media/`，浏览器端缩放压缩为 WebP |
 | 认证 | 单一管理员，scrypt 密码哈希、数据库会话、HttpOnly Cookie、CSRF Token、登录限流 |
 
 ## 已实现内容
@@ -105,15 +108,27 @@ python -m backend.manage reset-password
 - 页脚在全部公开页面显示版权信息、ICP 备案号、公安备案号及对应的官方查询链接。
 - 响应式布局、手绘虚线/波浪线、交叉排线阴影、纸张纹理、标题手写体。
 - 支持键盘导航、跳过链接、`prefers-reduced-motion`、移动端菜单。
-- 动态 `sitemap.xml`、`robots.txt`、RSS、页面级标题/描述/Open Graph 元信息。
-- 首页 SEO 标题、SEO 描述和关键词全部读取数据库；文章页描述来自文章摘要。
-- 所有公开 API 只读，不包含任何登录态接口。
+- 文章归档支持 SQLite FTS5 正文全文搜索、命中片段高亮；全文索引不可用时自动回退到 LIKE。
+- 系列合集页、文章底部系列导航、按标签自动推荐相关文章。
+- 文章页提供目录、代码复制、图片灯箱、阅读进度、字号调整。
+- 站娘会跟随鼠标轻轻转头、呼吸、眨眼，可收起；名字和问候语后台可改。
+- 访客可切换「跟随时间 / 白天 / 黑夜」，选择保存在浏览器；默认仍按 NTP 自动。
+- 动态 `sitemap.xml`、`robots.txt`、RSS、页面级标题/描述/Open Graph、Article/CollectionPage JSON-LD。
+- 首页 SEO 标题、SEO 描述和关键词全部读取数据库；文章页可单独设置 SEO 标题、描述、关键词。
+- 文章阅读量按天记录在 SQLite，不保存访客 IP。
+- 所有公开 API 只读（阅读量上报除外），不包含任何访客登录态接口。
 
 ### 后台
 
 - `/admin/dashboard` 仪表盘：已发布、草稿、标签、全站字数、最近编辑、站点就绪状态、当前排版与昼夜主题、NTP 状态、常用标签。
 - `/admin` 管理员账号密码验证；无注册、无找回密码入口、无公开链接。
-- 文章新建、编辑、删除、草稿/发布、标签、摘要、Slug、Markdown 实时预览。
+- 文章新建、编辑、删除、草稿/发布、标签、摘要、Slug、系列、系列顺序、每篇 SEO、Markdown 实时预览。
+- 定时发布：选择日期时间后自动上线；自动保存每 28 秒检查一次，新文章另存本地草稿，刷新后可恢复。
+- `/admin/assets` 媒体与数据：
+  - 图片上传、浏览器端压缩为 WebP、图片说明、复制 Markdown、删除；
+  - 编辑器工具栏上传和粘贴截图；
+  - 完整备份 ZIP（数据库 + 图片）、Markdown 导出 ZIP、Markdown 批量导入。
+- 仪表盘包含最近 7 天阅读趋势、今日/累计阅读量、热门文章。
 - `/admin/appearance` 外观与文案：
   - 两套排版：纸本手绘 / 素纸极简；
   - 白天 / 黑夜模式：自动（NTP 校时 + 可配置昼夜时段）、始终白天、始终黑夜；
@@ -157,24 +172,27 @@ markblog/
 │  ├─ appearance.py     NTP 校时、昼夜窗口与主题解析
 │  ├─ auth.py           会话、CSRF、密码策略
 │  ├─ config.py         启动参数（.env）
-│  ├─ db.py             SQLite 连接、建表、首次初始化
+│  ├─ db.py             SQLite 连接、建表、字段迁移、首次初始化
 │  ├─ manage.py         重置管理员密码等维护命令
+│  ├─ media.py          图片校验、存储、图片元数据
 │  ├─ rendering.py      Markdown → 安全 HTML、摘要、阅读时间
-│  ├─ repository.py     文章、设置、账号数据访问
+│  ├─ repository.py     文章、系列、搜索、阅读量、设置、账号
 │  ├─ schemas.py        请求校验与官方备案链接校验
+│  ├─ search.py         FTS5 trigram 索引
 │  ├─ security.py       scrypt、令牌、登录限流
+│  ├─ transfer.py       完整备份、Markdown 导入导出
 │  ├─ ui_copy.py        公开页面可编辑文案及默认值
 │  └─ seed_data.py      默认电脑维修文章与数据库默认设置
 ├─ frontend/
 │  ├─ src/
-│  │  ├─ admin/         仪表盘、文章、外观文案、设置等后台页面
-│  │  ├─ components/    页头、页脚、文章卡、手绘装饰
-│  │  ├─ views/         首页、文章、关于、404
+│  │  ├─ admin/         仪表盘、文章、媒体数据、外观文案、设置
+│  │  ├─ components/    页头、页脚、文章卡、站娘、手绘装饰
+│  │  ├─ views/         首页、文章、系列、关于、404
 │  │  ├─ assets/        全局手绘风、深色主题、极简排版
-│  │  └─ lib/           API 状态、会话、SEO、文案字段、格式化
+│  │  └─ lib/           API 状态、主题、图片、SEO、文案字段
 │  ├─ public/           favicon、OG 图、manifest
 │  └─ dist/             已构建的静态站点
-├─ data/                 SQLite 数据库（自动创建）
+├─ data/                 SQLite 数据库、上传图片（自动创建）
 ├─ docs/                 界面预览图
 ├─ tests/                API 自动化测试
 ├─ .env                  启动参数，勿提交
@@ -233,7 +251,9 @@ server {
 - 用 systemd、Windows 服务或其他进程守护工具运行 `python run.py`。
 - 建议单进程运行；登录限流保存在进程内存中，多 worker 会变成每个 worker 独立计数。
 - 自动昼夜模式需要服务器能出站访问 UDP 123；如防火墙默认拦截，可放行到 NTP 服务器的 UDP 123，或在后台把主题改成手动/固定模式。
-- 定期备份 `data/markblog.db`。SQLite 使用 WAL，在线备份建议用 `sqlite3` 的 `.backup`，或停服后复制数据库文件。
+- 上传图片位于 `data/media/`。备份时请同时保留 `data/markblog.db` 和 `data/media/`；也可以直接在「媒体数据 → 下载完整备份」导出包含两者的 ZIP。
+- 单张上传图片上限 6 MB；编辑器会先在浏览器端缩放并压缩，超过限制会提示。
+- 定期备份 `data/markblog.db` 和 `data/media/`。SQLite 使用 WAL，在线备份建议用 `sqlite3` 的 `.backup`，或停服后复制数据库文件。
 - `.env` 不要提交到公开仓库。
 
 ## 安全设计说明
@@ -266,7 +286,7 @@ python -m pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
-测试使用临时数据库，不会修改 `data/markblog.db`。测试覆盖公开站点、6 篇默认文章、仪表盘、登录保护、CSRF、文章 CRUD、Markdown 转义、SEO/备案字段与官方链接校验、前台文案保存、深色/极简外观、昼夜窗口判断、密码修改后会话失效。
+测试使用临时数据库，不会修改 `data/markblog.db`。当前 **7 项测试全部通过**，覆盖公开站点、6 篇默认文章、仪表盘、登录保护、CSRF、文章 CRUD、Markdown 转义、SEO/备案字段与官方链接校验、前台文案保存、深色/极简外观、昼夜窗口判断、图片上传与删除、全文搜索、系列/相关文章、阅读量、定时发布、完整备份、Markdown 导入、密码修改后会话失效。
 
 ## 设计说明
 
@@ -276,8 +296,11 @@ python -m pytest -q
 
 ## 已知限制
 
-- 本项目是单管理员博客，不包含多用户、评论、点赞、服务端全文搜索、图片上传或对象存储。
-- 公开站是 Vue SPA；首屏依赖 JavaScript。后端已为常用路由注入标题、描述、canonical 与 404 状态，静态 HTML 本身不含文章正文。若对 SEO 有更高要求，可进一步接入 SSR/预渲染。
+- 本项目是单管理员博客，不包含多用户、评论、点赞或对象存储。
+- 公开站是 Vue SPA；首屏依赖 JavaScript。后端已为常用路由注入标题、描述、canonical、JSON-LD 与 404 状态，静态 HTML 本身不含文章正文。若对 SEO 有更高要求，可进一步接入 SSR/预渲染。
+- 全文搜索使用 SQLite FTS5 trigram；运行环境没有 FTS5 时会自动回退到 LIKE，功能仍可用但大数据量下会慢一些。
+- 站娘是随站点分发的自绘分层 SVG 动效（呼吸、眨眼、鼠标跟随），不是外部 Live2D Cubism 模型，因此不依赖第三方模型版权、CDN 或网络；如果后续指定 Live2D 模型，可在此基础上接入 Cubism Runtime。
 - 自动昼夜模式依赖服务器能访问 UDP 123；若机房屏蔽 NTP，会自动使用服务器系统时间。可通过后台更换可用的 NTP 服务器。
 - 前台文案覆盖固定页面文案；加载、错误、成功等动态状态提示和表单校验信息属于交互反馈，不在文案编辑范围内。
+- 定时发布依赖 FastAPI 进程运行；服务停机期间到点的文章会在下次启动/请求时补发。
 - 备案结果与地区政策有关，需按接入商与管局要求逐项核对。

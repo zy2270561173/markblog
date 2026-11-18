@@ -14,6 +14,7 @@ import StateBlock from '../components/StateBlock.vue'
 import { adminApi } from '../api'
 import { setPageMeta } from '../lib/meta'
 import { formatShortDate } from '../lib/format'
+import { uploadImageFile } from '../lib/media'
 
 const route = useRoute()
 const router = useRouter()
@@ -25,6 +26,12 @@ const form = reactive({
   tagsText: '',
   content_md: '',
   status: 'draft',
+  scheduledAt: '',
+  series: '',
+  seriesOrder: 0,
+  seoTitle: '',
+  seoDescription: '',
+  seoKeywords: '',
 })
 
 const postId = ref(null)
@@ -43,11 +50,23 @@ const previewError = ref('')
 const activeTab = ref('write')
 const textarea = ref(null)
 const titleInput = ref(null)
+const imageInput = ref(null)
 const savedSnapshot = ref('')
+const uploadingImage = ref(false)
+const mediaError = ref('')
+const mediaNotice = ref('')
+const localDraft = ref(null)
+const autoSavedAt = ref('')
+const postViews = ref(0)
 let previewTimer = null
 let noticeTimer = null
 let previewSequence = 0
 let suppressNextLoad = false
+let localDraftTimer = null
+let autoSaveTimer = null
+let mediaNoticeTimer = null
+let formRevision = 0
+let applyingResult = false
 
 const routeId = computed(() => {
   const raw = route.params.id
@@ -83,7 +102,187 @@ function snapshot() {
     tagsText: form.tagsText,
     content_md: form.content_md,
     status: form.status,
+    scheduledAt: form.scheduledAt,
+    series: form.series,
+    seriesOrder: form.seriesOrder,
+    seoTitle: form.seoTitle,
+    seoDescription: form.seoDescription,
+    seoKeywords: form.seoKeywords,
   })
+}
+
+function localDraftKey() {
+  return postId.value ? `markblog:draft:${postId.value}` : 'markblog:draft:new'
+}
+
+function toLocalInput(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const pad = (number) => String(number).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+function toUtcIso(value) {
+  if (!value) return null
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
+}
+
+function draftPayload() {
+  return {
+    title: form.title,
+    slug: form.slug,
+    excerpt: form.excerpt,
+    tagsText: form.tagsText,
+    content_md: form.content_md,
+    status: form.status,
+    scheduledAt: form.scheduledAt,
+    series: form.series,
+    seriesOrder: form.seriesOrder,
+    seoTitle: form.seoTitle,
+    seoDescription: form.seoDescription,
+    seoKeywords: form.seoKeywords,
+    savedAt: new Date().toISOString(),
+  }
+}
+
+function readLocalDraft() {
+  try {
+    const raw = window.localStorage.getItem(localDraftKey())
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+function writeLocalDraft() {
+  window.clearTimeout(localDraftTimer)
+  localDraftTimer = window.setTimeout(() => {
+    if (!dirty.value) return
+    try {
+      window.localStorage.setItem(localDraftKey(), JSON.stringify(draftPayload()))
+    } catch {
+      // The server autosave still protects saved posts.
+    }
+  }, 1200)
+}
+
+function applyLocalDraft(draft) {
+  Object.assign(form, {
+    title: draft.title || '',
+    slug: draft.slug || '',
+    excerpt: draft.excerpt || '',
+    tagsText: draft.tagsText || '',
+    content_md: draft.content_md || '',
+    status: ['draft', 'published', 'scheduled'].includes(draft.status)
+      ? draft.status
+      : 'draft',
+    scheduledAt: draft.scheduledAt || '',
+    series: draft.series || '',
+    seriesOrder: draft.seriesOrder || 0,
+    seoTitle: draft.seoTitle || '',
+    seoDescription: draft.seoDescription || '',
+    seoKeywords: draft.seoKeywords || '',
+  })
+  localDraft.value = null
+}
+
+function discardLocalDraft() {
+  try {
+    window.localStorage.removeItem(localDraftKey())
+  } catch {
+    // Ignore storage failures.
+  }
+  localDraft.value = null
+}
+
+function checkLocalDraft() {
+  const draft = readLocalDraft()
+  if (!draft) return
+  const draftSnapshot = JSON.stringify({
+    title: draft.title || '',
+    slug: draft.slug || '',
+    excerpt: draft.excerpt || '',
+    tagsText: draft.tagsText || '',
+    content_md: draft.content_md || '',
+    status: draft.status || 'draft',
+    scheduledAt: draft.scheduledAt || '',
+    series: draft.series || '',
+    seriesOrder: draft.seriesOrder || 0,
+    seoTitle: draft.seoTitle || '',
+    seoDescription: draft.seoDescription || '',
+    seoKeywords: draft.seoKeywords || '',
+  })
+  if (draftSnapshot !== snapshot() && (draft.title || draft.content_md)) {
+    localDraft.value = draft
+  }
+}
+
+function clearLocalDraft() {
+  try {
+    window.localStorage.removeItem('markblog:draft:new')
+    if (postId.value) window.localStorage.removeItem(`markblog:draft:${postId.value}`)
+  } catch {
+    // Ignore.
+  }
+  localDraft.value = null
+}
+
+function showMediaNotice(message) {
+  mediaNotice.value = message
+  window.clearTimeout(mediaNoticeTimer)
+  mediaNoticeTimer = window.setTimeout(() => (mediaNotice.value = ''), 3600)
+}
+
+function insertTextAtCursor(text) {
+  const element = textarea.value
+  if (!element) {
+    form.content_md += text
+    return
+  }
+  const start = element.selectionStart ?? form.content_md.length
+  const end = element.selectionEnd ?? start
+  form.content_md =
+    form.content_md.slice(0, start) + text + form.content_md.slice(end)
+  nextTick(() => {
+    element.focus()
+    const cursor = start + text.length
+    element.setSelectionRange(cursor, cursor)
+  })
+}
+
+async function uploadAndInsert(file) {
+  if (!file || uploadingImage.value) return
+  uploadingImage.value = true
+  mediaError.value = ''
+  try {
+    const item = await uploadImageFile(file)
+    insertTextAtCursor(`\n![${item.alt || item.original_name}](${item.url})\n`)
+    showMediaNotice(`已上传并插入 ${item.filename}`)
+  } catch (error) {
+    mediaError.value = error.message || '图片上传失败。'
+  } finally {
+    uploadingImage.value = false
+  }
+}
+
+function handleImageInput(event) {
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  uploadAndInsert(file)
+}
+
+function handlePaste(event) {
+  const files = Array.from(event.clipboardData?.files || []).filter((file) =>
+    file.type.startsWith('image/'),
+  )
+  if (!files.length) return
+  event.preventDefault()
+  uploadAndInsert(files[0])
 }
 
 function parseTags() {
@@ -113,9 +312,16 @@ function resetForNew() {
     tagsText: '',
     content_md: '',
     status: 'draft',
+    scheduledAt: '',
+    series: '',
+    seriesOrder: 0,
+    seoTitle: '',
+    seoDescription: '',
+    seoKeywords: '',
   })
   loadedAt.value = ''
   lastSavedAt.value = ''
+  autoSavedAt.value = ''
   previewHtml.value = ''
   previewMinutes.value = 1
   loadError.value = ''
@@ -123,6 +329,7 @@ function resetForNew() {
   loading.value = false
   savedSnapshot.value = snapshot()
   scheduleMeta()
+  checkLocalDraft()
   nextTick(() => titleInput.value?.focus())
 }
 
@@ -141,11 +348,20 @@ async function loadPost(id) {
       tagsText: data.tags.join(', '),
       content_md: data.content_md,
       status: data.status,
+      scheduledAt: toLocalInput(data.scheduled_at),
+      series: data.series || '',
+      seriesOrder: data.series_order || 0,
+      seoTitle: data.seo_title || '',
+      seoDescription: data.seo_description || '',
+      seoKeywords: data.seo_keywords || '',
     })
     loadedAt.value = data.created_at
     lastSavedAt.value = data.updated_at
+    postViews.value = data.views || 0
+    autoSavedAt.value = ''
     savedSnapshot.value = snapshot()
     scheduleMeta()
+    checkLocalDraft()
     schedulePreview(30)
   } catch (requestError) {
     if (requestError.status === 404) {
@@ -253,43 +469,89 @@ function validate() {
     saveError.value = '每篇文章最多 8 个标签。'
     return false
   }
+  if (form.status === 'scheduled') {
+    const when = new Date(form.scheduledAt)
+    if (!form.scheduledAt || Number.isNaN(when.getTime())) {
+      saveError.value = '请选择定时发布的时间。'
+      return false
+    }
+    if (when.getTime() <= Date.now() + 30_000) {
+      saveError.value = '定时发布时间需要晚于现在。'
+      return false
+    }
+  }
   return true
 }
 
-async function save() {
+async function save({ silent = false } = {}) {
   if (saving.value) return
   saveError.value = ''
-  savedNotice.value = ''
+  if (!silent) savedNotice.value = ''
   if (!validate()) return
 
   saving.value = true
+  const beforeSave = snapshot()
+  const revisionAtStart = formRevision
   try {
     const parsed = parseTags()
+    const scheduledAt =
+      form.status === 'scheduled' ? toUtcIso(form.scheduledAt) : null
     const payload = {
       title: form.title.trim(),
       slug: form.slug.trim() || null,
       excerpt: form.excerpt.trim(),
       content_md: form.content_md,
       tags: parsed.tags,
-      status: form.status,
+      status: form.status === 'scheduled' ? 'draft' : form.status,
+      scheduled_at: scheduledAt,
+      series: form.series.trim(),
+      series_order: Number(form.seriesOrder) || 0,
+      seo_title: form.seoTitle.trim(),
+      seo_description: form.seoDescription.trim(),
+      seo_keywords: form.seoKeywords.trim(),
     }
+    const wasNew = postId.value === null
     const result = postId.value
       ? await adminApi.updatePost(postId.value, payload)
       : await adminApi.createPost(payload)
 
-    const wasNew = postId.value === null
     postId.value = result.id
+    applyingResult = true
     form.slug = result.slug
     form.excerpt = result.excerpt
     form.tagsText = result.tags.join(', ')
     form.status = result.status
+    form.scheduledAt = toLocalInput(result.scheduled_at)
+    form.series = result.series || ''
+    form.seriesOrder = result.series_order || 0
+    form.seoTitle = result.seo_title || ''
+    form.seoDescription = result.seo_description || ''
+    form.seoKeywords = result.seo_keywords || ''
+    postViews.value = result.views || postViews.value
+    await nextTick()
+    applyingResult = false
     lastSavedAt.value = result.updated_at
-    savedSnapshot.value = snapshot()
-    savedNotice.value =
-      result.status === 'published' ? '已经发布到公开页面。' : '草稿已保存。'
+    // If the author typed while the request was in flight, those newer edits
+    // must stay marked as unsaved. A brand-new post follows the server route
+    // after its first save, so its generated slug/excerpt should count as saved.
+    savedSnapshot.value =
+      wasNew || formRevision === revisionAtStart ? snapshot() : beforeSave
+    if (wasNew || formRevision === revisionAtStart) clearLocalDraft()
+    else writeLocalDraft()
     scheduleMeta()
 
-    if (wasNew) {
+    if (silent) {
+      autoSavedAt.value = new Date().toISOString()
+    } else {
+      savedNotice.value =
+        result.status === 'scheduled'
+          ? '定时发布已设置。'
+          : result.status === 'published'
+            ? '已经发布到公开页面。'
+            : '草稿已保存。'
+    }
+
+    if (wasNew && !silent) {
       suppressNextLoad = true
       await router.replace({
         name: 'admin-post-edit',
@@ -301,6 +563,23 @@ async function save() {
   } finally {
     saving.value = false
   }
+}
+
+function scheduleAutoSave() {
+  window.clearTimeout(autoSaveTimer)
+  autoSaveTimer = window.setTimeout(async () => {
+    if (
+      postId.value &&
+      dirty.value &&
+      !saving.value &&
+      !uploadingImage.value &&
+      form.title.trim() &&
+      !(form.status === 'scheduled' && !form.scheduledAt)
+    ) {
+      await save({ silent: true })
+    }
+    scheduleAutoSave()
+  }, 28_000)
 }
 
 function handleKeydown(event) {
@@ -321,8 +600,19 @@ onBeforeRouteLeave(() => {
   return window.confirm('还有没有保存的修改，确定离开吗？')
 })
 
+watch(
+  snapshot,
+  () => {
+    if (applyingResult) return
+    formRevision += 1
+    if (!loading.value) writeLocalDraft()
+  },
+  { flush: 'sync' },
+)
+
 onMounted(() => {
   scheduleMeta()
+  scheduleAutoSave()
   window.addEventListener('keydown', handleKeydown)
   window.addEventListener('beforeunload', handleBeforeUnload)
 })
@@ -332,6 +622,9 @@ onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload)
   window.clearTimeout(previewTimer)
   window.clearTimeout(noticeTimer)
+  window.clearTimeout(localDraftTimer)
+  window.clearTimeout(autoSaveTimer)
+  window.clearTimeout(mediaNoticeTimer)
 })
 </script>
 
@@ -395,6 +688,17 @@ onBeforeUnmount(() => {
         </div>
         <p v-if="saveError" class="alert alert--error" role="alert">{{ saveError }}</p>
 
+        <div v-if="localDraft" class="local-draft-banner" role="status">
+          <div>
+            <strong>发现本地草稿</strong>
+            <p>保存于 {{ formatShortDate(localDraft.savedAt) }}，比服务器上的版本更新。</p>
+          </div>
+          <div class="local-draft-banner__actions">
+            <button type="button" class="btn btn--small" @click="applyLocalDraft(localDraft)">恢复草稿</button>
+            <button type="button" class="text-link bare-button" @click="discardLocalDraft">丢弃</button>
+          </div>
+        </div>
+
         <div class="editor-layout">
           <div class="editor-main">
             <section class="title-block" aria-labelledby="editor-title-label">
@@ -411,6 +715,7 @@ onBeforeUnmount(() => {
               />
               <div class="title-meta">
                 <span>{{ form.title.length }} / 120</span>
+                <span v-if="autoSavedAt" class="auto-save-label">自动保存于 {{ formatShortDate(autoSavedAt) }}</span>
                 <span v-if="dirty" class="dirty-dot" aria-label="有未保存的修改">未保存</span>
                 <span v-else-if="lastSavedAt">上次保存 {{ formatShortDate(lastSavedAt) }}</span>
               </div>
@@ -466,8 +771,27 @@ onBeforeUnmount(() => {
                 >
                   {{ item.label }}
                 </button>
+                <button
+                  type="button"
+                  class="toolbar-button toolbar-button--image"
+                  :disabled="uploadingImage"
+                  title="上传图片"
+                  aria-label="上传图片"
+                  @click="imageInput?.click()"
+                >
+                  {{ uploadingImage ? '上传中…' : '图片' }}
+                </button>
                 <span class="toolbar-hint">Markdown</span>
               </div>
+              <input
+                ref="imageInput"
+                class="visually-hidden"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                @change="handleImageInput"
+              />
+              <p v-if="mediaError" class="editor-media-note alert alert--error">{{ mediaError }}</p>
+              <p v-if="mediaNotice" class="editor-media-note alert alert--success" role="status">{{ mediaNotice }}</p>
 
               <div class="editor-panes" :class="`is-${activeTab}`">
                 <div class="editor-pane editor-pane--write">
@@ -479,7 +803,8 @@ onBeforeUnmount(() => {
                     class="markdown-input"
                     maxlength="200000"
                     spellcheck="false"
-                    placeholder="在这里写正文。支持 Markdown：## 标题、**加粗**、> 引用、``` 代码块……"
+                    placeholder="在这里写正文。支持 Markdown：## 标题、**加粗**、> 引用、``` 代码块…… 也可以直接粘贴截图上传。"
+                    @paste="handlePaste"
                   ></textarea>
                   <div class="editor-pane__foot">
                     <span>{{ contentLength.toLocaleString('zh-CN') }} 字符</span>
@@ -529,9 +854,26 @@ onBeforeUnmount(() => {
                     <small>公开到文章列表</small>
                   </span>
                 </label>
+                <label class="status-option" :class="{ 'is-active': form.status === 'scheduled' }">
+                  <input v-model="form.status" type="radio" value="scheduled" name="status" />
+                  <span class="status-option__dot" aria-hidden="true"></span>
+                  <span>
+                    <strong>定时发布</strong>
+                    <small>到点自动上线</small>
+                  </span>
+                </label>
+              </div>
+              <div v-if="form.status === 'scheduled'" class="field schedule-field">
+                <label for="post-scheduled-at">上线时间</label>
+                <input
+                  id="post-scheduled-at"
+                  v-model="form.scheduledAt"
+                  class="input"
+                  type="datetime-local"
+                />
               </div>
               <p class="meta-card__note">
-                切换为草稿后保存，会从公开页面移除。
+                切换为草稿后保存，会从公开页面移除。自动保存每 28 秒检查一次。
               </p>
             </section>
 
@@ -569,7 +911,53 @@ onBeforeUnmount(() => {
                 />
                 <p class="field-hint">用逗号分隔，最多 8 个。当前 {{ tags.length }} 个。</p>
               </div>
+              <div class="field">
+                <label for="post-series">系列</label>
+                <input
+                  id="post-series"
+                  v-model="form.series"
+                  class="input"
+                  type="text"
+                  maxlength="60"
+                  placeholder="例如：开机故障排查"
+                  autocomplete="off"
+                />
+                <p class="field-hint">同系列文章会出现在文章底部的系列导航中，并生成系列页。</p>
+              </div>
+              <div v-if="form.series.trim()" class="field">
+                <label for="post-series-order">系列顺序</label>
+                <input
+                  id="post-series-order"
+                  v-model.number="form.seriesOrder"
+                  class="input"
+                  type="number"
+                  min="0"
+                  max="999"
+                />
+                <p class="field-hint">数字小的排在前面，同序号按发布时间。</p>
+              </div>
             </section>
+
+            <details class="meta-card seo-card">
+              <summary class="seo-card__summary">
+                <span>SEO 设置</span>
+                <small>每篇文章的标题、描述与关键词</small>
+              </summary>
+              <div class="seo-card__body">
+                <div class="field">
+                  <label for="post-seo-title">SEO 标题</label>
+                  <input id="post-seo-title" v-model="form.seoTitle" class="input" maxlength="120" placeholder="留空使用文章标题" />
+                </div>
+                <div class="field">
+                  <label for="post-seo-description">SEO 描述</label>
+                  <textarea id="post-seo-description" v-model="form.seoDescription" class="textarea" rows="3" maxlength="300" placeholder="留空使用摘要"></textarea>
+                </div>
+                <div class="field">
+                  <label for="post-seo-keywords">SEO 关键词</label>
+                  <input id="post-seo-keywords" v-model="form.seoKeywords" class="input" maxlength="300" placeholder="留空使用站点关键词" />
+                </div>
+              </div>
+            </details>
 
             <section class="meta-card meta-card--stats">
               <div class="meta-card__head">
@@ -587,6 +975,10 @@ onBeforeUnmount(() => {
                 <div>
                   <dt>正文字符</dt>
                   <dd>{{ contentLength.toLocaleString('zh-CN') }}</dd>
+                </div>
+                <div v-if="postId">
+                  <dt>阅读量</dt>
+                  <dd>{{ postViews.toLocaleString('zh-CN') }}</dd>
                 </div>
               </dl>
             </section>
@@ -669,6 +1061,105 @@ onBeforeUnmount(() => {
 
 .editor-toast {
   margin-bottom: 18px;
+}
+
+.local-draft-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 12px 15px;
+  border: 1.5px dashed var(--color-amber);
+  background: var(--surface-amber);
+}
+
+.local-draft-banner strong {
+  font-family: var(--font-hand);
+  font-size: 18px;
+}
+
+.local-draft-banner p {
+  margin: 2px 0 0;
+  color: var(--color-ink-faint);
+  font-size: 11px;
+}
+
+.local-draft-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auto-save-label {
+  color: var(--color-grass);
+  font-family: var(--font-hand);
+  font-size: 13px;
+}
+
+.editor-media-note {
+  margin: 0;
+  border-radius: 0;
+  border-width: 0 0 1px;
+  font-size: 11px;
+}
+
+.toolbar-button--image {
+  padding-inline: 9px;
+  border-color: var(--color-line);
+  font-family: var(--font-hand);
+  font-size: 14px;
+}
+
+.schedule-field {
+  margin-top: 12px;
+}
+
+.seo-card {
+  padding: 0;
+}
+
+.seo-card__summary {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 16px 18px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.seo-card__summary::-webkit-details-marker {
+  display: none;
+}
+
+.seo-card__summary span {
+  font-family: var(--font-hand);
+  font-size: 22px;
+}
+
+.seo-card__summary small {
+  color: var(--color-ink-faint);
+  font-size: 10px;
+}
+
+.seo-card__summary::after {
+  content: "＋";
+  margin-left: auto;
+  color: var(--color-ink-faint);
+}
+
+.seo-card[open] .seo-card__summary::after {
+  content: "－";
+}
+
+.seo-card__body {
+  padding: 0 18px 18px;
+  border-top: 1px dashed var(--color-line);
+}
+
+.seo-card__body .field {
+  margin-top: 14px;
 }
 
 .title-block {

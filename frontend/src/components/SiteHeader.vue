@@ -3,11 +3,19 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSite } from '../lib/site'
 import { useCopy } from '../lib/useCopy'
+import { useThemePreference } from '../lib/theme'
 
 const route = useRoute()
 const { state: siteState } = useSite()
 const copy = useCopy()
 const menuOpen = ref(false)
+const themeMenu = ref(null)
+const { preference, setPreference, options: themeOptions } = useThemePreference()
+
+function chooseTheme(value) {
+  setPreference(value)
+  if (themeMenu.value) themeMenu.value.open = false
+}
 
 const isHome = computed(() => route.name === 'home')
 const isPosts = computed(() => route.name === 'posts' || route.name === 'post')
@@ -18,6 +26,7 @@ watch(
   () => route.fullPath,
   () => {
     menuOpen.value = false
+    if (themeMenu.value) themeMenu.value.open = false
   },
 )
 
@@ -110,6 +119,37 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
         >
           {{ copy.nav_about }}
         </RouterLink>
+        <details ref="themeMenu" class="theme-switcher">
+          <summary class="theme-summary" :aria-label="copy.theme_menu_label">
+            <svg v-if="preference === 'light'" viewBox="0 0 20 20" width="17" height="17" fill="none" aria-hidden="true">
+              <circle cx="10" cy="10" r="3.4" stroke="currentColor" stroke-width="1.5" />
+              <path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M15.8 4.2l-1.4 1.4M5.6 14.4l-1.4 1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
+            <svg v-else-if="preference === 'dark'" viewBox="0 0 20 20" width="17" height="17" fill="none" aria-hidden="true">
+              <path d="M16.3 12.3A7 7 0 0 1 7.7 3.7 7.3 7.3 0 1 0 16.3 12.3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+            </svg>
+            <svg v-else viewBox="0 0 20 20" width="17" height="17" fill="none" aria-hidden="true">
+              <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5" />
+              <path d="M10 3a7 7 0 0 0 0 14Z" fill="currentColor" opacity=".55" />
+            </svg>
+            <span class="theme-summary__label">{{ copy.theme_menu_label }}</span>
+          </summary>
+          <div class="theme-menu" role="group" :aria-label="copy.theme_menu_label">
+            <p class="theme-menu__title">{{ copy.theme_menu_label }}</p>
+            <button
+              v-for="option in themeOptions"
+              :key="option.value"
+              type="button"
+              class="theme-menu__item"
+              :class="{ 'is-active': preference === option.value }"
+              @click="chooseTheme(option.value)"
+            >
+              <span aria-hidden="true">{{ option.value === 'auto' ? '◐' : option.value === 'light' ? '☀' : '☾' }}</span>
+              {{ copy[option.labelKey] }}
+              <span v-if="preference === option.value" class="theme-menu__check" aria-hidden="true">✓</span>
+            </button>
+          </div>
+        </details>
         <a class="rss-link" href="/feed.xml" aria-label="RSS 订阅">
           <svg viewBox="0 0 18 18" width="15" height="15" fill="none" aria-hidden="true">
             <circle cx="3" cy="15" r="1.7" fill="currentColor" />
@@ -242,6 +282,98 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
   transform: scaleX(1);
 }
 
+.theme-switcher {
+  position: relative;
+}
+
+.theme-switcher summary {
+  list-style: none;
+}
+
+.theme-switcher summary::-webkit-details-marker {
+  display: none;
+}
+
+.theme-summary {
+  display: inline-flex;
+  width: auto;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 9px;
+  border: 1.5px dashed var(--color-line);
+  border-radius: 2px;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.theme-summary__label {
+  display: inline;
+  font-family: var(--font-hand);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.theme-switcher[open] .theme-summary,
+.theme-summary:hover {
+  border-color: var(--color-line-strong);
+  color: var(--color-pencil);
+  transform: rotate(-4deg);
+}
+
+.theme-menu {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 184px;
+  padding: 8px;
+  border: 1.5px solid var(--color-pencil);
+  background-color: var(--color-paper);
+  background-image: var(--paper-grain);
+  box-shadow: var(--shadow-sketch);
+}
+
+.theme-menu__title {
+  margin: 0 0 5px;
+  padding: 4px 7px;
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+
+.theme-menu__item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  padding: 7px;
+  border: 1px dashed transparent;
+  background: transparent;
+  color: var(--color-ink-soft);
+  font-family: var(--font-hand);
+  font-size: 15px;
+  text-align: left;
+}
+
+.theme-menu__item:hover,
+.theme-menu__item.is-active {
+  border-color: var(--color-line);
+  background: var(--surface-soft);
+  color: var(--color-pencil);
+}
+
+.theme-menu__check {
+  margin-left: auto;
+  color: var(--color-grass);
+}
+
 .rss-link {
   display: inline-flex;
   align-items: center;
@@ -334,6 +466,32 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
     align-self: flex-start;
     margin: 16px 0 0;
     padding: 7px 12px;
+  }
+
+  .theme-switcher {
+    align-self: flex-start;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .theme-summary {
+    width: 100%;
+    height: 38px;
+    justify-content: flex-start;
+    padding: 0 10px;
+    border-radius: 2px;
+  }
+
+  .theme-summary__label {
+    display: inline;
+    font-size: 16px;
+  }
+
+  .theme-menu {
+    position: static;
+    width: 100%;
+    margin-top: 6px;
+    box-shadow: none;
   }
 }
 </style>

@@ -1,0 +1,47 @@
+
+.confirm-dialog[data-v-d481f1e7] {
+  width: min(480px, calc(100vw - 32px));
+  padding: 0;
+  border: 2px solid var(--color-pencil);
+  border-radius: 2px;
+  background-color: var(--color-paper);
+  background-image: var(--paper-grain);
+  box-shadow: var(--shadow-sketch-hover);
+  color: var(--color-pencil);
+}
+.confirm-dialog[data-v-d481f1e7]::backdrop {
+  background: rgba(44, 44, 44, 0.42);
+}
+.confirm-dialog__inner[data-v-d481f1e7] {
+  padding: 28px 30px 26px;
+}
+.confirm-dialog__eyebrow[data-v-d481f1e7] {
+  margin: 0 0 8px;
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 14px;
+  letter-spacing: 0.13em;
+}
+.confirm-dialog h2[data-v-d481f1e7] {
+  margin: 0 0 14px;
+  font-size: 34px;
+}
+.confirm-dialog__body[data-v-d481f1e7] {
+  color: var(--color-ink-soft);
+  font-size: 15px;
+}
+.confirm-dialog__actions[data-v-d481f1e7] {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+@media (max-width: 480px) {
+.confirm-dialog__inner[data-v-d481f1e7] {
+    padding: 22px 20px;
+}
+.confirm-dialog__actions[data-v-d481f1e7] {
+    align-items: stretch;
+    flex-direction: column-reverse;
+}
+}

@@ -9,7 +9,7 @@ import { setPageMeta } from '../lib/meta'
 import { formatShortDate } from '../lib/format'
 
 const posts = ref([])
-const counts = ref({ all: 0, published: 0, draft: 0 })
+const counts = ref({ all: 0, published: 0, draft: 0, scheduled: 0 })
 const loading = ref(true)
 const error = ref('')
 const actionError = ref('')
@@ -21,6 +21,7 @@ const filters = [
   { key: 'all', label: '全部' },
   { key: 'published', label: '已发布' },
   { key: 'draft', label: '草稿' },
+  { key: 'scheduled', label: '定时' },
 ]
 
 const filteredPosts = computed(() => {
@@ -36,7 +37,7 @@ async function loadPosts() {
   try {
     const data = await adminApi.listPosts()
     posts.value = data.posts || []
-    counts.value = data.counts || { all: 0, published: 0, draft: 0 }
+    counts.value = data.counts || { all: 0, published: 0, draft: 0, scheduled: 0 }
   } catch (requestError) {
     error.value = requestError.message || '文章列表加载失败。'
   } finally {
@@ -101,7 +102,7 @@ onMounted(() => {
           </button>
         </div>
         <p class="list-hint">
-          共 {{ counts.all }} 篇 · {{ counts.published }} 篇已发布 · {{ counts.draft }} 篇草稿
+          共 {{ counts.all }} 篇 · {{ counts.published }} 篇已发布 · {{ counts.draft }} 篇草稿 · {{ counts.scheduled }} 篇定时
         </p>
       </div>
 
@@ -148,13 +149,17 @@ onMounted(() => {
               </h2>
               <p class="post-row__sub">
                 /posts/{{ post.slug }} · {{ post.reading_minutes }} 分钟阅读
+                · {{ post.view_count || 0 }} 次阅读
+                <template v-if="post.status === 'scheduled'">
+                  · 定时 {{ formatShortDate(post.scheduled_at) }}
+                </template>
               </p>
             </div>
           </div>
 
           <div class="post-row__status">
             <span class="status-chip" :class="`status-chip--${post.status}`">
-              {{ post.status === 'published' ? '已发布' : '草稿' }}
+              {{ post.status === 'published' ? '已发布' : post.status === 'scheduled' ? '定时' : '草稿' }}
             </span>
           </div>
 

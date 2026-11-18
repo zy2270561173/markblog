@@ -2,17 +2,18 @@
 
 from __future__ import annotations
 
+import html
 import json
 import re
 import sqlite3
 import unicodedata
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable
 
-from . import seed_data
+from . import search, seed_data
 from .appearance import compute_appearance
-from .rendering import make_excerpt, reading_minutes, render_markdown
+from .rendering import make_excerpt, plain_text, reading_minutes, render_markdown
 from .security import hash_password, iso_utc
 from .ui_copy import DEFAULT_UI_COPY
 
@@ -33,6 +34,10 @@ PUBLIC_SETTING_KEYS = (
     "footer_note",
     "site_since",
     "site_url",
+    "mascot_enabled",
+    "mascot_name",
+    "mascot_greeting",
+    "mascot_position",
 )
 
 ADMIN_SETTING_KEYS = PUBLIC_SETTING_KEYS + (
@@ -64,14 +69,82 @@ def _strip_markup(source: str) -> str:
 def _summary(row: sqlite3.Row) -> dict[str, Any]:
     content = row["content_md"] or ""
     return {
+        "id": row["id"],
         "slug": row["slug"],
         "title": row["title"],
         "excerpt": row["excerpt"] or make_excerpt(content),
         "tags": _loads_tags(row["tags"]),
+        "series": row["series"] or "",
+        "series_order": row["series_order"] or 0,
         "reading_minutes": reading_minutes(content),
         "published_at": row["published_at"],
         "updated_at": row["updated_at"],
     }
+
+
+def _extract_toc(content_html: str) -> list[dict[str, Any]]:
+    toc: list[dict[str, Any]] = []
+    for match in re.finditer(
+        r"<h([23])\s+id=\"([^\"]+)\"[^>]*>(.*?)</h\1>",
+        content_html,
+        flags=re.DOTALL | re.IGNORECASE,
+    ):
+        text = html.unescape(re.sub(r"<[^>]+>", "", match.group(3))).strip()
+        if text:
+            toc.append(
+                {"level": int(match.group(1)), "id": match.group(2), "text": text}
+            )
+    return toc
+
+
+def _search_snippet(row: sqlite3.Row, query: str) -> dict[str, str] | None:
+    needle = query.strip()
+    if not needle:
+        return None
+    candidates = [
+        ("正文", plain_text(row["content_md"] or "")),
+        ("标题", row["title"] or ""),
+        ("摘要", row["excerpt"] or ""),
+    ]
+    lowered = needle.lower()
+    for label, text in candidates:
+        index = text.lower().find(lowered)
+        if index < 0:
+            continue
+        start = max(0, index - 68)
+        end = min(len(text), index + len(needle) + 92)
+        before = text[start:index]
+        after = text[index + len(needle) : end]
+        if start:
+            before = "…" + before
+        if end < len(text):
+            after = after + "…"
+        return {
+            "field": label,
+            "before": before,
+            "match": text[index : index + len(needle)],
+            "after": after,
+        }
+    return None
+
+
+def _published_rows(conn: sqlite3.Connection) -> list[sqlite3.Row]:
+    return conn.execute(
+        "SELECT * FROM posts WHERE status = 'published' AND published_at IS NOT NULL "
+        "ORDER BY published_at DESC, id DESC"
+    ).fetchall()
+
+
+def _series_catalog(rows: Iterable[sqlite3.Row]) -> list[dict[str, Any]]:
+    counter: Counter[str] = Counter()
+    for row in rows:
+        name = (row["series"] or "").strip()
+        if name:
+            counter[name] += 1
+    return [
+        {"name": name, "count": count}
+        for name, count in sorted(counter.items(), key=lambda item: (-item[1], item[0]))
+    ]
 
 
 def _public_tags(rows: Iterable[sqlite3.Row]) -> list[dict[str, Any]]:
@@ -91,11 +164,7 @@ def list_public_posts(
     query: str | None = None,
     limit: int | None = None,
 ) -> dict[str, Any]:
-    rows = conn.execute(
-        "SELECT * FROM posts WHERE status = 'published' AND published_at IS NOT NULL "
-        "ORDER BY published_at DESC, id DESC"
-    ).fetchall()
-
+    rows = _published_rows(conn)
     all_tags = _public_tags(rows)
     filtered = rows
     if tag:
@@ -103,25 +172,42 @@ def list_public_posts(
         filtered = [
             row for row in filtered if wanted in {item.lower() for item in _loads_tags(row["tags"])}
         ]
-    if query:
-        needle = query.strip().lower()
-        if needle:
+
+    needle = (query or "").strip()
+    if needle:
+        ranked_ids = search.search_ids(conn, needle)
+        if ranked_ids:
+            order = {post_id: index for index, post_id in enumerate(ranked_ids)}
+            filtered = [row for row in filtered if row["id"] in order]
+            filtered.sort(key=lambda row: order[row["id"]])
+        else:
+            lowered = needle.lower()
             filtered = [
                 row
                 for row in filtered
-                if needle
+                if lowered
                 in (
                     f"{row['title']} {row['excerpt']} "
-                    f"{_strip_markup(row['content_md'])} "
+                    f"{plain_text(row['content_md'] or '')} "
                     f"{' '.join(_loads_tags(row['tags']))}"
                 ).lower()
             ]
+
+    summaries = []
+    for row in filtered:
+        summary = _summary(row)
+        if needle:
+            summary["search_snippet"] = _search_snippet(row, needle)
+        summaries.append(summary)
+
     if limit is not None:
-        filtered = filtered[: max(0, limit)]
+        summaries = summaries[: max(0, limit)]
     return {
-        "posts": [_summary(row) for row in filtered],
-        "total": len(filtered),
+        "posts": summaries,
+        "total": len(summaries),
         "tags": all_tags,
+        "series": _series_catalog(rows),
+        "query": needle,
     }
 
 
@@ -136,6 +222,33 @@ def get_public_post(conn: sqlite3.Connection, slug: str) -> dict[str, Any] | Non
 
     post = _summary(row)
     post["content_html"] = render_markdown(row["content_md"] or "")
+    post["seo_title"] = row["seo_title"] or ""
+    post["seo_description"] = row["seo_description"] or ""
+    post["seo_keywords"] = row["seo_keywords"] or ""
+    post["toc"] = _extract_toc(post["content_html"])
+    post["views"] = _post_views(conn, int(row["id"]))
+    post["related"] = _related_posts(conn, row)
+    series_name = (row["series"] or "").strip()
+    post["series_info"] = None
+    if series_name:
+        series_rows = conn.execute(
+            "SELECT * FROM posts WHERE status = 'published' AND published_at IS NOT NULL "
+            "AND series = ? ORDER BY series_order ASC, published_at ASC, id ASC",
+            (series_name,),
+        ).fetchall()
+        post["series_info"] = {
+            "name": series_name,
+            "posts": [_summary(item) for item in series_rows],
+            "position": next(
+                (
+                    index + 1
+                    for index, item in enumerate(series_rows)
+                    if item["id"] == row["id"]
+                ),
+                1,
+            ),
+            "total": len(series_rows),
+        }
 
     newer = conn.execute(
         "SELECT * FROM posts WHERE status = 'published' AND published_at IS NOT NULL "
@@ -161,15 +274,108 @@ def get_public_post(conn: sqlite3.Connection, slug: str) -> dict[str, Any] | Non
     return post
 
 
+def _post_views(conn: sqlite3.Connection, post_id: int) -> int:
+    row = conn.execute(
+        "SELECT COALESCE(SUM(views), 0) AS total FROM post_views WHERE post_id = ?",
+        (post_id,),
+    ).fetchone()
+    return int(row["total"] or 0)
+
+
+def _related_posts(
+    conn: sqlite3.Connection, post: sqlite3.Row, limit: int = 3
+) -> list[dict[str, Any]]:
+    tags = {item.lower() for item in _loads_tags(post["tags"])}
+    rows = conn.execute(
+        "SELECT * FROM posts WHERE status = 'published' AND published_at IS NOT NULL "
+        "AND id != ? ORDER BY published_at DESC",
+        (post["id"],),
+    ).fetchall()
+    scored: list[tuple[int, sqlite3.Row]] = []
+    for row in rows:
+        overlap = len(tags & {item.lower() for item in _loads_tags(row["tags"])})
+        if overlap:
+            scored.append((overlap, row))
+    scored.sort(
+        key=lambda item: (item[0], item[1]["published_at"] or ""), reverse=True
+    )
+    if not scored:
+        return [_summary(row) for row in rows[:limit]]
+    return [_summary(row) for _, row in scored[:limit]]
+
+
+def get_public_series(conn: sqlite3.Connection, name: str) -> dict[str, Any] | None:
+    clean = name.strip()
+    if not clean:
+        return None
+    rows = conn.execute(
+        "SELECT * FROM posts WHERE status = 'published' AND published_at IS NOT NULL "
+        "AND series = ? ORDER BY series_order ASC, published_at ASC, id ASC",
+        (clean,),
+    ).fetchall()
+    if not rows:
+        return None
+    return {
+        "name": clean,
+        "posts": [_summary(row) for row in rows],
+        "total": len(rows),
+    }
+
+
+def record_view(conn: sqlite3.Connection, slug: str) -> bool:
+    row = conn.execute(
+        "SELECT id FROM posts WHERE slug = ? AND status = 'published' "
+        "AND published_at IS NOT NULL",
+        (slug,),
+    ).fetchone()
+    if row is None:
+        return False
+    day = datetime.now(timezone.utc).date().isoformat()
+    conn.execute(
+        "INSERT INTO post_views (post_id, day, views) VALUES (?, ?, 1) "
+        "ON CONFLICT(post_id, day) DO UPDATE SET views = views + 1",
+        (row["id"], day),
+    )
+    conn.commit()
+    return True
+
+
+def publish_due_posts(conn: sqlite3.Connection) -> int:
+    now = iso_utc()
+    rows = conn.execute(
+        "SELECT id, scheduled_at FROM posts WHERE status = 'draft' "
+        "AND scheduled_at IS NOT NULL AND scheduled_at <= ?",
+        (now,),
+    ).fetchall()
+    for row in rows:
+        published_at = row["scheduled_at"] or now
+        conn.execute(
+            "UPDATE posts SET status = 'published', published_at = ?, scheduled_at = NULL, "
+            "updated_at = ? WHERE id = ?",
+            (published_at, now, row["id"]),
+        )
+        search.index_post(conn, int(row["id"]))
+    if rows:
+        conn.commit()
+    return len(rows)
+
+
 def list_admin_posts(conn: sqlite3.Connection) -> dict[str, Any]:
     rows = conn.execute(
-        "SELECT * FROM posts ORDER BY updated_at DESC, id DESC"
+        "SELECT p.*, COALESCE((SELECT SUM(v.views) FROM post_views v "
+        "WHERE v.post_id = p.id), 0) AS view_count "
+        "FROM posts p ORDER BY p.updated_at DESC, p.id DESC"
     ).fetchall()
     posts = []
     for row in rows:
         summary = _summary(row)
-        summary["id"] = row["id"]
-        summary["status"] = row["status"]
+        summary["status"] = (
+            "scheduled"
+            if row["status"] == "draft" and row["scheduled_at"]
+            else row["status"]
+        )
+        summary["scheduled_at"] = row["scheduled_at"]
+        summary["view_count"] = int(row["view_count"] or 0)
         summary["created_at"] = row["created_at"]
         posts.append(summary)
     return {
@@ -178,6 +384,7 @@ def list_admin_posts(conn: sqlite3.Connection) -> dict[str, Any]:
             "all": len(posts),
             "published": sum(1 for post in posts if post["status"] == "published"),
             "draft": sum(1 for post in posts if post["status"] == "draft"),
+            "scheduled": sum(1 for post in posts if post["status"] == "scheduled"),
         },
     }
 
@@ -193,10 +400,21 @@ def get_admin_post(conn: sqlite3.Connection, post_id: int) -> dict[str, Any] | N
         "excerpt": row["excerpt"],
         "content_md": row["content_md"],
         "tags": _loads_tags(row["tags"]),
-        "status": row["status"],
+        "status": (
+            "scheduled"
+            if row["status"] == "draft" and row["scheduled_at"]
+            else row["status"]
+        ),
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
         "published_at": row["published_at"],
+        "scheduled_at": row["scheduled_at"],
+        "series": row["series"] or "",
+        "series_order": row["series_order"] or 0,
+        "seo_title": row["seo_title"] or "",
+        "seo_description": row["seo_description"] or "",
+        "seo_keywords": row["seo_keywords"] or "",
+        "views": _post_views(conn, int(row["id"])),
         "reading_minutes": reading_minutes(row["content_md"] or ""),
     }
 
@@ -241,15 +459,24 @@ def create_post(
     content_md: str,
     tags: list[str],
     status: str,
+    scheduled_at: str | None = None,
+    series: str = "",
+    series_order: int = 0,
+    seo_title: str = "",
+    seo_description: str = "",
+    seo_keywords: str = "",
 ) -> dict[str, Any]:
     now = iso_utc()
     final_slug = unique_slug(conn, slug or title)
     final_excerpt = excerpt.strip() or make_excerpt(content_md)
     published_at = now if status == "published" else None
+    final_scheduled = scheduled_at if status == "draft" else None
     cursor = conn.execute(
         "INSERT INTO posts "
-        "(slug, title, excerpt, content_md, tags, status, created_at, updated_at, published_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "(slug, title, excerpt, content_md, tags, status, created_at, updated_at, "
+        "published_at, scheduled_at, series, series_order, seo_title, "
+        "seo_description, seo_keywords) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (
             final_slug,
             title.strip(),
@@ -260,10 +487,18 @@ def create_post(
             now,
             now,
             published_at,
+            final_scheduled,
+            series.strip()[:60],
+            series_order,
+            seo_title.strip()[:120],
+            seo_description.strip()[:300],
+            seo_keywords.strip()[:300],
         ),
     )
     conn.commit()
     post_id = int(cursor.lastrowid)
+    search.index_post(conn, post_id)
+    conn.commit()
     post = get_admin_post(conn, post_id)
     assert post is not None
     return post
@@ -279,6 +514,12 @@ def update_post(
     content_md: str,
     tags: list[str],
     status: str,
+    scheduled_at: str | None = None,
+    series: str = "",
+    series_order: int = 0,
+    seo_title: str = "",
+    seo_description: str = "",
+    seo_keywords: str = "",
 ) -> dict[str, Any] | None:
     existing = conn.execute("SELECT * FROM posts WHERE id = ?", (post_id,)).fetchone()
     if existing is None:
@@ -290,10 +531,13 @@ def update_post(
     published_at = existing["published_at"]
     if status == "published" and not published_at:
         published_at = now
+    final_scheduled = scheduled_at if status == "draft" else None
 
     conn.execute(
         "UPDATE posts SET slug = ?, title = ?, excerpt = ?, content_md = ?, tags = ?, "
-        "status = ?, updated_at = ?, published_at = ? WHERE id = ?",
+        "status = ?, updated_at = ?, published_at = ?, scheduled_at = ?, series = ?, "
+        "series_order = ?, seo_title = ?, seo_description = ?, seo_keywords = ? "
+        "WHERE id = ?",
         (
             final_slug,
             title.strip(),
@@ -303,9 +547,17 @@ def update_post(
             status,
             now,
             published_at,
+            final_scheduled,
+            series.strip()[:60],
+            series_order,
+            seo_title.strip()[:120],
+            seo_description.strip()[:300],
+            seo_keywords.strip()[:300],
             post_id,
         ),
     )
+    conn.commit()
+    search.index_post(conn, post_id)
     conn.commit()
     return get_admin_post(conn, post_id)
 
@@ -313,6 +565,9 @@ def update_post(
 def delete_post(conn: sqlite3.Connection, post_id: int) -> bool:
     cursor = conn.execute("DELETE FROM posts WHERE id = ?", (post_id,))
     conn.commit()
+    if cursor.rowcount > 0:
+        search.remove_post(conn, post_id)
+        conn.commit()
     return cursor.rowcount > 0
 
 
@@ -378,23 +633,75 @@ def get_dashboard_summary(conn: sqlite3.Connection) -> dict[str, Any]:
                 "id": row["id"],
                 "title": row["title"],
                 "slug": row["slug"],
-                "status": row["status"],
+                "status": (
+                    "scheduled"
+                    if row["status"] == "draft" and row["scheduled_at"]
+                    else row["status"]
+                ),
                 "updated_at": row["updated_at"],
                 "published_at": row["published_at"],
+                "scheduled_at": row["scheduled_at"],
+                "views": _post_views(conn, int(row["id"])),
                 "reading_minutes": reading_minutes(row["content_md"] or ""),
             }
         )
+
+    today = datetime.now(timezone.utc).date()
+    trend_days = [today - timedelta(days=offset) for offset in range(6, -1, -1)]
+    trend_rows = conn.execute(
+        "SELECT day, SUM(views) AS total FROM post_views WHERE day >= ? "
+        "GROUP BY day ORDER BY day",
+        (trend_days[0].isoformat(),),
+    ).fetchall()
+    trend_lookup = {row["day"]: int(row["total"] or 0) for row in trend_rows}
+    views_today = trend_lookup.get(today.isoformat(), 0)
+    views_total = int(
+        conn.execute("SELECT COALESCE(SUM(views), 0) FROM post_views").fetchone()[0]
+    )
+    top_posts = conn.execute(
+        "SELECT p.id, p.title, p.slug, COALESCE(SUM(v.views), 0) AS views "
+        "FROM posts p LEFT JOIN post_views v ON v.post_id = p.id "
+        "WHERE p.status = 'published' GROUP BY p.id ORDER BY views DESC, p.id DESC LIMIT 5"
+    ).fetchall()
 
     return {
         "counts": {
             "all": len(rows),
             "published": sum(1 for row in rows if row["status"] == "published"),
-            "draft": sum(1 for row in rows if row["status"] == "draft"),
+            "draft": sum(
+                1
+                for row in rows
+                if row["status"] == "draft" and not row["scheduled_at"]
+            ),
+            "scheduled": sum(
+                1
+                for row in rows
+                if row["status"] == "draft" and row["scheduled_at"]
+            ),
             "tags": len(tag_counter),
             "characters": total_characters,
             "reading_minutes": total_reading,
+            "views_total": views_total,
+            "views_today": views_today,
         },
         "recent": recent,
+        "views_trend": [
+            {
+                "day": day.isoformat(),
+                "label": f"{day.month}/{day.day}",
+                "views": trend_lookup.get(day.isoformat(), 0),
+            }
+            for day in trend_days
+        ],
+        "top_posts": [
+            {
+                "id": row["id"],
+                "title": row["title"],
+                "slug": row["slug"],
+                "views": int(row["views"] or 0),
+            }
+            for row in top_posts
+        ],
         "top_tags": [
             {"name": name, "count": count}
             for name, count in sorted(
