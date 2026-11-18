@@ -94,7 +94,7 @@ onMounted(() => {
 <style scoped>
 .media-picker {
   position: fixed;
-  z-index: 180;
+  z-index: 260;
   inset: 0;
   display: grid;
   padding: 24px;

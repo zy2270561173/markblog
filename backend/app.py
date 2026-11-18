@@ -38,7 +38,7 @@ from fastapi.responses import (
 )
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from . import media, repository, seo_push, totp, transfer
+from . import media, monitor, repository, seo_push, totp, transfer
 from .appearance import compute_appearance
 from .auth import (
     create_session,
@@ -118,14 +118,35 @@ def _run_auto_backup() -> dict[str, Any]:
         conn.close()
 
 
+def _notify_backup_failure(error: Exception) -> None:
+    conn = db_connect()
+    try:
+        values = repository.get_all_settings(conn)
+        monitor.report_backup_failure(values, error)
+    except Exception:
+        logger.exception("Could not send backup failure alert")
+    finally:
+        conn.close()
+
+
 async def _backup_loop() -> None:
     while True:
         await asyncio.sleep(24 * 60 * 60)
         try:
             await asyncio.to_thread(_run_auto_backup)
             logger.info("Automatic Markblog backup completed")
-        except Exception:
+        except Exception as error:
             logger.exception("Automatic backup failed")
+            await asyncio.to_thread(_notify_backup_failure, error)
+
+
+async def _monitor_loop() -> None:
+    while True:
+        await asyncio.sleep(5 * 60)
+        try:
+            await asyncio.to_thread(monitor.run_cycle)
+        except Exception:
+            logger.exception("Health monitor cycle failed")
 
 
 @asynccontextmanager
@@ -140,9 +161,15 @@ async def lifespan(_: FastAPI):
     if not backups:
         try:
             await asyncio.to_thread(_run_auto_backup)
-        except Exception:
+        except Exception as error:
             logger.exception("Initial automatic backup failed")
+            await asyncio.to_thread(_notify_backup_failure, error)
     backuper = asyncio.create_task(_backup_loop())
+    try:
+        await asyncio.to_thread(monitor.run_cycle)
+    except Exception:
+        logger.exception("Initial health monitor cycle failed")
+    watcher = asyncio.create_task(_monitor_loop())
     if not (settings.frontend_dist / "index.html").is_file():
         logger.warning(
             "Frontend build not found at %s. Run the frontend build before serving.",
@@ -151,9 +178,9 @@ async def lifespan(_: FastAPI):
     try:
         yield
     finally:
-        for task in (publisher, backuper):
+        for task in (publisher, backuper, watcher):
             task.cancel()
-        for task in (publisher, backuper):
+        for task in (publisher, backuper, watcher):
             with suppress(asyncio.CancelledError):
                 await task
 
@@ -395,6 +422,18 @@ def public_post(slug: str, conn: Annotated[Any, Depends(get_db)]):
     return post
 
 
+@app.get("/api/public/preview/{token}", include_in_schema=False)
+def public_preview(token: str, response: Response, conn: Annotated[Any, Depends(get_db)]):
+    if len(token) < 16 or len(token) > 200:
+        raise HTTPException(status_code=404, detail="草稿预览链接无效。")
+    post = repository.get_preview_post(conn, token)
+    if post is None:
+        raise HTTPException(status_code=404, detail="草稿预览链接无效。")
+    response.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive"
+    response.headers["Cache-Control"] = "no-store"
+    return post
+
+
 @app.get("/api/public/series/{name:path}", include_in_schema=False)
 def public_series(name: str, conn: Annotated[Any, Depends(get_db)]):
     repository.publish_due_posts(conn)
@@ -619,6 +658,32 @@ def admin_appearance(
     return compute_appearance(repository.get_all_settings(conn))
 
 
+@app.post("/api/admin/posts/{post_id}/preview-token", include_in_schema=False)
+def admin_preview_token(
+    post_id: int,
+    request: Request,
+    conn: Annotated[Any, Depends(get_db)],
+    session: Annotated[dict[str, Any], Depends(require_csrf)],
+):
+    token = repository.ensure_preview_token(conn, post_id)
+    if token is None:
+        raise HTTPException(status_code=404, detail="文章不存在。")
+    _audit(conn, request, "preview_token_created", str(post_id))
+    return {"token": token, "url": f"{_base_url(conn)}/preview/{quote(token)}"}
+
+
+@app.delete("/api/admin/posts/{post_id}/preview-token", include_in_schema=False)
+def admin_preview_token_revoke(
+    post_id: int,
+    request: Request,
+    conn: Annotated[Any, Depends(get_db)],
+    session: Annotated[dict[str, Any], Depends(require_csrf)],
+):
+    repository.clear_preview_token(conn, post_id)
+    _audit(conn, request, "preview_token_revoked", str(post_id))
+    return {"ok": True}
+
+
 @app.get("/api/admin/2fa", include_in_schema=False)
 def admin_2fa_status(
     conn: Annotated[Any, Depends(get_db)],
@@ -717,18 +782,36 @@ def admin_health(
     _: Annotated[dict[str, Any], Depends(require_session)],
 ):
     settings_values = repository.get_all_settings(conn)
-    appearance = compute_appearance(settings_values)
+    health = monitor.collect_health(conn, settings_values)
     backups = transfer.list_auto_backups()
     media_count = conn.execute("SELECT COUNT(*) FROM media").fetchone()[0]
     return {
-        "db": conn.execute("SELECT 1").fetchone()[0] == 1,
+        **health,
         "media_dir": str(media.media_dir()),
         "media_count": int(media_count),
         "backups": backups[:3],
         "last_backup": backups[0] if backups else None,
-        "appearance": appearance,
         "errors": len(repository.list_app_errors(conn, 5)),
+        "monitoring": {
+            "webhook": bool(settings_values.get("alert_webhook_url")),
+            "uptime_ping": bool(settings_values.get("uptime_ping_url")),
+        },
     }
+
+
+@app.post("/api/admin/alerts/test", include_in_schema=False)
+def admin_alerts_test(
+    request: Request,
+    conn: Annotated[Any, Depends(get_db)],
+    session: Annotated[dict[str, Any], Depends(require_csrf)],
+):
+    values = repository.get_all_settings(conn)
+    try:
+        result = monitor.test_alerts(values)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    _audit(conn, request, "alert_test", json.dumps(result, ensure_ascii=False)[:300])
+    return result
 
 
 @app.get("/api/admin/posts", include_in_schema=False)
@@ -1260,6 +1343,7 @@ def robots(conn: Annotated[Any, Depends(get_db)]):
         "User-agent: *\n"
         "Allow: /\n"
         "Disallow: /admin\n"
+        "Disallow: /preview/\n"
         "Disallow: /api/\n"
         f"Sitemap: {base}/sitemap.xml\n"
     )
@@ -1466,6 +1550,10 @@ def _spa_page(conn: Any, path: str) -> tuple[str, int, bool]:
         title = f"关于 · {site_title}"
         description = site.get("author_bio") or description
         canonical = f"{base}/about"
+    elif clean_path.startswith("preview/"):
+        title = f"草稿预览 · {site_title}"
+        description = "仅通过预览链接访问的草稿。"
+        keywords = ""
     elif clean_path in {"privacy", "disclaimer"}:
         title = f"{'隐私说明' if clean_path == 'privacy' else '免责声明'} · {site_title}"
         description = (
@@ -1555,7 +1643,9 @@ def _spa_page(conn: Any, path: str) -> tuple[str, int, bool]:
         html_text,
         "name",
         "robots",
-        "noindex, nofollow, noarchive" if (is_admin or not_found) else "index, follow",
+        "noindex, nofollow, noarchive"
+        if (is_admin or not_found or clean_path.startswith("preview/"))
+        else "index, follow",
     )
     if not is_admin and keywords:
         html_text = _upsert_meta(html_text, "name", "keywords", keywords)

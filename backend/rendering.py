@@ -12,6 +12,7 @@ import math
 import re
 import unicodedata
 from typing import Any
+from urllib.parse import urlparse
 
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
@@ -80,10 +81,75 @@ def _heading_slug(text: str) -> str:
     return normalized or "section"
 
 
+_COMPARE_BLOCK = re.compile(
+    r"(?ms)^[ \t]*:::compare[ \t]*\n(.*?)\n[ \t]*:::[ \t]*$"
+)
+
+
+def _safe_image_url(value: str) -> str:
+    value = value.strip()
+    if value.startswith("/media/") and ".." not in value:
+        return value
+    parsed = urlparse(value)
+    if parsed.scheme in {"http", "https"} and parsed.hostname:
+        return value
+    return ""
+
+
+def _compare_html(block: str) -> str:
+    values: dict[str, str] = {}
+    for line in block.splitlines():
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        values[key.strip().lower()] = value.strip()
+    before = _safe_image_url(values.get("before", ""))
+    after = _safe_image_url(values.get("after", ""))
+    if not before or not after:
+        return ""
+    label = html.escape(values.get("label", "维修前后对比"))
+    before_label = html.escape(values.get("before_label", "之前"))
+    after_label = html.escape(values.get("after_label", "之后"))
+    caption = html.escape(values.get("caption", ""))
+    return (
+        '<figure class="image-compare" data-image-compare>'
+        '<div class="image-compare__frame">'
+        f'<img class="image-compare__after" src="{html.escape(after, quote=True)}" '
+        f'alt="{html.escape(after_label)}" loading="lazy">'
+        '<span class="image-compare__before">'
+        f'<img src="{html.escape(before, quote=True)}" '
+        f'alt="{html.escape(before_label)}" loading="lazy">'
+        "</span>"
+        f'<span class="image-compare__tag is-before">{before_label}</span>'
+        f'<span class="image-compare__tag is-after">{after_label}</span>'
+        '<input class="image-compare__range" type="range" min="0" max="100" value="50" '
+        f'aria-label="{label}">'
+        "</div>"
+        f"<figcaption>{label}"
+        + (f" · {caption}" if caption else "")
+        + "</figcaption></figure>"
+    )
+
+
 def render_markdown(source: str) -> str:
     if not source or not source.strip():
         return ""
-    return _MD.render(source, {})
+    blocks: list[str] = []
+
+    def capture(match: re.Match[str]) -> str:
+        rendered = _compare_html(match.group(1))
+        if not rendered:
+            return match.group(0)
+        token = f"COMPAREBLOCKTOKEN{len(blocks)}END"
+        blocks.append(rendered)
+        return f"\n\n{token}\n\n"
+
+    prepared = _COMPARE_BLOCK.sub(capture, source)
+    output = _MD.render(prepared, {})
+    for index, rendered in enumerate(blocks):
+        token = f"COMPAREBLOCKTOKEN{index}END"
+        output = output.replace(f"<p>{token}</p>", rendered)
+    return output
 
 
 def plain_text(source: str) -> str:

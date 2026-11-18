@@ -1,6 +1,6 @@
-import { _ as _export_sfc, k as useSite, l as tx, I as tu, U as UI_COPY_DEFAULTS, i as iH, m as lS, c as ii, n as na, r as r9, b as id, e as ea, a as ir, p as r2, g as i_, Y, q as lj, x as nu, P as sn, N as sl, y as o7, t as tA, Q as UI_COPY_GROUPS, M as adminApi, s as setPageMeta } from './index-5EsP4swv.js';
-import { A as AdminLayout } from './AdminLayout-g8FKvlVv.js';
-import { _ as _sfc_main$1 } from './StateBlock-C7-_2ZAf.js';
+import { _ as _export_sfc, k as useSite, l as tx, I as tu, U as UI_COPY_DEFAULTS, i as iH, m as lS, c as ii, n as na, r as r9, b as id, e as ea, a as ir, p as r2, g as i_, Y, q as lj, x as nu, P as sn, N as sl, y as o7, t as tA, Q as UI_COPY_GROUPS, M as adminApi, s as setPageMeta } from './index-BVhNW4Fl.js';
+import { A as AdminLayout } from './AdminLayout-DADCD54s.js';
+import { _ as _sfc_main$1 } from './StateBlock-BE1KWoST.js';
 
 const _hoisted_1 = { class: "container admin-page appearance-page" };
 const _hoisted_2 = { class: "admin-page__head" };

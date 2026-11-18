@@ -60,7 +60,8 @@ CREATE TABLE IF NOT EXISTS posts (
     cover_image TEXT NOT NULL DEFAULT '',
     featured INTEGER NOT NULL DEFAULT 0,
     repair_meta TEXT NOT NULL DEFAULT '{}',
-    canonical_url TEXT NOT NULL DEFAULT ''
+    canonical_url TEXT NOT NULL DEFAULT '',
+    preview_token TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_posts_status_published
     ON posts(status, published_at DESC);
@@ -162,6 +163,7 @@ POST_COLUMN_MIGRATIONS = {
     "featured": "INTEGER NOT NULL DEFAULT 0",
     "repair_meta": "TEXT NOT NULL DEFAULT '{}'",
     "canonical_url": "TEXT NOT NULL DEFAULT ''",
+    "preview_token": "TEXT NOT NULL DEFAULT ''",
 }
 
 ADMIN_COLUMN_MIGRATIONS = {
@@ -292,6 +294,9 @@ def _migrate_post_columns(conn: sqlite3.Connection) -> None:
     )
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_posts_scheduled ON posts(scheduled_at)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_posts_preview_token ON posts(preview_token)"
     )
 
 

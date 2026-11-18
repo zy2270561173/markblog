@@ -1,97 +1,102 @@
-import { _ as _export_sfc, k as useSite, u as useCopy, l as tx, i as iH, m as lS, w as lw, o as ny, a as ir, b as id, G, g as i_, c as ii, n as na, p as r2, h as ip, t as tA, d as _t, e as ea, z as formatDate, q as lj, Y, j as iv, A as sd, B as nO, D as Dt, C as t8, r as r9, f as formatShortDate, v as publicApi, s as setPageMeta, F as setKeywords } from './index-5EsP4swv.js';
-import { _ as _sfc_main$1 } from './StateBlock-C7-_2ZAf.js';
-import { _ as _sfc_main$2 } from './TagList-CeJdkM-a.js';
-import { c as copyText } from './media-BCeCLjWO.js';
+import { _ as _export_sfc, k as useSite, u as useCopy, i as iH, l as tx, m as lS, w as lw, o as ny, a as ir, b as id, G, g as i_, c as ii, n as na, p as r2, h as ip, t as tA, d as _t, e as ea, z as formatDate, q as lj, Y, j as iv, A as sd, B as nO, D as Dt, C as t8, r as r9, f as formatShortDate, v as publicApi, s as setPageMeta, F as setKeywords } from './index-BVhNW4Fl.js';
+import { _ as _sfc_main$1 } from './StateBlock-BE1KWoST.js';
+import { _ as _sfc_main$2 } from './TagList-DMZ_6ogo.js';
+import { c as copyText } from './media-DP2OKhRG.js';
 import { Q as QRCode } from './browser-_egF2y6r.js';
 
 const _hoisted_1 = { class: "article-page container" };
 const _hoisted_2 = ["aria-valuenow"];
 const _hoisted_3 = {
+  key: 0,
+  class: "preview-banner",
+  role: "status"
+};
+const _hoisted_4 = {
   class: "breadcrumb",
   "aria-label": "面包屑"
 };
-const _hoisted_4 = { "aria-current": "page" };
-const _hoisted_5 = { class: "article__header" };
-const _hoisted_6 = { class: "article__meta" };
-const _hoisted_7 = ["datetime"];
-const _hoisted_8 = {
+const _hoisted_5 = { "aria-current": "page" };
+const _hoisted_6 = { class: "article__header" };
+const _hoisted_7 = { class: "article__meta" };
+const _hoisted_8 = ["datetime"];
+const _hoisted_9 = {
   key: 0,
   class: "article__lead"
 };
-const _hoisted_9 = ["src", "alt"];
-const _hoisted_10 = { class: "article__footer-meta" };
-const _hoisted_11 = ["aria-label"];
-const _hoisted_12 = { class: "reading-tools__label" };
-const _hoisted_13 = ["aria-pressed", "onClick"];
-const _hoisted_14 = {
+const _hoisted_10 = ["src", "alt"];
+const _hoisted_11 = { class: "article__footer-meta" };
+const _hoisted_12 = ["aria-label"];
+const _hoisted_13 = { class: "reading-tools__label" };
+const _hoisted_14 = ["aria-pressed", "onClick"];
+const _hoisted_15 = {
   class: "article__end-mark",
   "aria-hidden": "true"
 };
-const _hoisted_15 = {
+const _hoisted_16 = {
   key: 0,
   class: "repair-card",
   "aria-labelledby": "repair-title"
 };
-const _hoisted_16 = { class: "repair-card__head" };
-const _hoisted_17 = { key: 0 };
-const _hoisted_18 = { key: 1 };
-const _hoisted_19 = {
+const _hoisted_17 = { class: "repair-card__head" };
+const _hoisted_18 = { key: 0 };
+const _hoisted_19 = { key: 1 };
+const _hoisted_20 = {
   key: 2,
   class: "is-wide"
 };
-const _hoisted_20 = {
+const _hoisted_21 = {
   key: 0,
   class: "repair-card__safety"
 };
-const _hoisted_21 = {
+const _hoisted_22 = {
   key: 1,
   class: "article-toc",
   open: ""
 };
-const _hoisted_22 = ["href"];
-const _hoisted_23 = ["innerHTML"];
-const _hoisted_24 = {
+const _hoisted_23 = ["href"];
+const _hoisted_24 = ["innerHTML"];
+const _hoisted_25 = {
   key: 2,
   class: "series-box",
   "aria-labelledby": "series-box-title"
 };
-const _hoisted_25 = { class: "eyebrow" };
-const _hoisted_26 = { id: "series-box-title" };
-const _hoisted_27 = { class: "series-box__count" };
-const _hoisted_28 = {
+const _hoisted_26 = { class: "eyebrow" };
+const _hoisted_27 = { id: "series-box-title" };
+const _hoisted_28 = { class: "series-box__count" };
+const _hoisted_29 = {
   key: 1,
   "aria-current": "page"
 };
-const _hoisted_29 = { class: "article__signoff" };
-const _hoisted_30 = { class: "adjacent__label" };
-const _hoisted_31 = { class: "adjacent__title" };
-const _hoisted_32 = {
+const _hoisted_30 = { class: "article__signoff" };
+const _hoisted_31 = { class: "adjacent__label" };
+const _hoisted_32 = { class: "adjacent__title" };
+const _hoisted_33 = {
   key: 1,
   class: "adjacent__empty"
 };
-const _hoisted_33 = { class: "adjacent__label" };
-const _hoisted_34 = { class: "adjacent__title" };
-const _hoisted_35 = {
-  key: 1,
+const _hoisted_34 = { class: "adjacent__label" };
+const _hoisted_35 = { class: "adjacent__title" };
+const _hoisted_36 = {
+  key: 2,
   class: "related",
   "aria-labelledby": "related-title"
 };
-const _hoisted_36 = { class: "related__head" };
-const _hoisted_37 = { id: "related-title" };
-const _hoisted_38 = { class: "related__grid" };
-const _hoisted_39 = ["src", "alt"];
-const _hoisted_40 = { class: "related-card__date" };
-const _hoisted_41 = { class: "related-card__excerpt" };
-const _hoisted_42 = { class: "qr-card" };
-const _hoisted_43 = ["src"];
-const _hoisted_44 = { class: "qr-card__url" };
-const _hoisted_45 = {
+const _hoisted_37 = { class: "related__head" };
+const _hoisted_38 = { id: "related-title" };
+const _hoisted_39 = { class: "related__grid" };
+const _hoisted_40 = ["src", "alt"];
+const _hoisted_41 = { class: "related-card__date" };
+const _hoisted_42 = { class: "related-card__excerpt" };
+const _hoisted_43 = { class: "qr-card" };
+const _hoisted_44 = ["src"];
+const _hoisted_45 = { class: "qr-card__url" };
+const _hoisted_46 = {
   key: 1,
   class: "alert alert--error"
 };
-const _hoisted_46 = ["aria-label"];
 const _hoisted_47 = ["aria-label"];
-const _hoisted_48 = ["src", "alt"];
+const _hoisted_48 = ["aria-label"];
+const _hoisted_49 = ["src", "alt"];
 
 
 const _sfc_main = {
@@ -101,6 +106,7 @@ const _sfc_main = {
 const route = Dt();
 const { state: siteState } = useSite();
 const copy = useCopy();
+const isPreview = iH(() => route.name === 'post-preview');
 
 const post = tx(null);
 const loading = tx(true);
@@ -138,17 +144,20 @@ const hasRepair = iH(() => {
 
 function applyMeta() {
   if (!post.value) return
-  setKeywords(post.value.seo_keywords || site.value.seo_keywords);
+  setKeywords(isPreview.value ? '' : post.value.seo_keywords || site.value.seo_keywords);
   const path = `/posts/${encodeURIComponent(post.value.slug)}`;
   const base = (site.value.site_url || window.location.origin).replace(/\/$/, '');
   setPageMeta({
-    title: post.value.seo_title || `${post.value.title} · ${site.value.site_title || 'Markblog'}`,
+    title: isPreview.value
+      ? `草稿预览 · ${post.value.title}`
+      : post.value.seo_title || `${post.value.title} · ${site.value.site_title || 'Markblog'}`,
     description: post.value.seo_description || post.value.excerpt,
-    canonicalPath: path,
-    canonicalUrl: post.value.canonical_url || null,
+    canonicalPath: isPreview.value ? null : path,
+    canonicalUrl: isPreview.value ? null : post.value.canonical_url || null,
     imageUrl: post.value.cover_image ? `${base}${post.value.cover_image}` : null,
     siteUrl: site.value.site_url,
     type: 'article',
+    noindex: isPreview.value,
   });
 }
 
@@ -185,7 +194,7 @@ async function copyArticleLink() {
 function updateProgress() {
   const scrollable = document.documentElement.scrollHeight - window.innerHeight;
   progress.value = scrollable > 0 ? Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100)) : 0;
-  if (!completionSent.value && progress.value >= 90 && post.value) {
+  if (!isPreview.value && !completionSent.value && progress.value >= 90 && post.value) {
     const key = `markblog:completed:${post.value.slug}`;
     try {
       if (window.sessionStorage.getItem(key)) return
@@ -226,6 +235,14 @@ function handleProseClick(event) {
 function enhanceArticle() {
   const root = proseEl.value;
   if (!root) return
+  root.querySelectorAll('[data-image-compare]').forEach((figure) => {
+    const range = figure.querySelector('.image-compare__range');
+    const frame = figure.querySelector('.image-compare__frame');
+    if (!range || !frame) return
+    const update = () => frame.style.setProperty('--compare', `${range.value}%`);
+    range.addEventListener('input', update);
+    update();
+  });
   root.querySelectorAll('pre').forEach((pre) => {
     if (pre.querySelector('.code-copy-button')) return
     pre.classList.add('code-block');
@@ -285,20 +302,22 @@ lw(() => {
   document.body.style.overflow = '';
 });
 
-async function loadPost(slug, { preserve = false } = {}) {
-  if (!slug) return
+async function loadPost(identifier, { preserve = false } = {}) {
+  if (!identifier) return
   const current = ++requestNumber;
   loading.value = true;
   notFound.value = false;
   if (!preserve) post.value = null;
   error.value = '';
   try {
-    const data = await publicApi.getPost(slug);
+    const data = isPreview.value
+      ? await publicApi.getPreview(identifier)
+      : await publicApi.getPost(identifier);
     if (current !== requestNumber) return
     post.value = data;
     completionSent.value = false;
     applyMeta();
-    recordView(slug);
+    if (!isPreview.value) recordView(identifier);
     t8(() => {
       enhanceArticle();
       updateProgress();
@@ -322,8 +341,8 @@ async function loadPost(slug, { preserve = false } = {}) {
 }
 
 ny(
-  () => route.params.slug,
-  (slug) => loadPost(slug),
+  () => [route.params.slug, route.params.token, route.name],
+  () => loadPost(route.params.token || route.params.slug),
   { immediate: true },
 );
 
@@ -387,7 +406,7 @@ return (_ctx, _cache) => {
               id("button", {
                 type: "button",
                 class: "btn btn--small",
-                onClick: _cache[0] || (_cache[0] = $event => (loadPost(tA(route).params.slug)))
+                onClick: _cache[0] || (_cache[0] = $event => (loadPost(tA(route).params.token || tA(route).params.slug)))
               }, " 重新加载 ")
             ]),
             _: 1
@@ -414,24 +433,29 @@ return (_ctx, _cache) => {
             }))
           : (post.value)
             ? (r9(), ir(r2, { key: 4 }, [
-                id("nav", _hoisted_3, [
-                  ip(tA(_t), { to: "/posts" }, {
+                (isPreview.value)
+                  ? (r9(), ir("div", _hoisted_3, " 草稿预览 · 这个链接不会被搜索引擎收录 "))
+                  : i_("", true),
+                id("nav", _hoisted_4, [
+                  ip(tA(_t), {
+                    to: isPreview.value ? '/' : '/posts'
+                  }, {
                     default: na(() => [
-                      iv(ea(tA(copy).post_breadcrumb), 1)
+                      iv(ea(isPreview.value ? site.value.site_title || 'Markblog' : tA(copy).post_breadcrumb), 1)
                     ]),
                     _: 1
-                  }),
+                  }, 8, ["to"]),
                   _cache[4] || (_cache[4] = id("span", { "aria-hidden": "true" }, "/", -1)),
-                  id("span", _hoisted_4, ea(post.value.title), 1)
+                  id("span", _hoisted_5, ea(post.value.title), 1)
                 ]),
                 id("article", {
                   class: Y(["article", articleClass.value])
                 }, [
-                  id("header", _hoisted_5, [
-                    id("div", _hoisted_6, [
+                  id("header", _hoisted_6, [
+                    id("div", _hoisted_7, [
                       id("time", {
                         datetime: post.value.published_at
-                      }, ea(tA(formatDate)(post.value.published_at)), 9, _hoisted_7),
+                      }, ea(tA(formatDate)(post.value.published_at)), 9, _hoisted_8),
                       _cache[5] || (_cache[5] = id("span", { "aria-hidden": "true" }, "·", -1)),
                       id("span", null, ea(readingText.value), 1),
                       _cache[6] || (_cache[6] = id("span", { "aria-hidden": "true" }, "·", -1)),
@@ -439,7 +463,7 @@ return (_ctx, _cache) => {
                     ]),
                     id("h1", null, ea(post.value.title), 1),
                     (post.value.excerpt)
-                      ? (r9(), ir("p", _hoisted_8, ea(post.value.excerpt), 1))
+                      ? (r9(), ir("p", _hoisted_9, ea(post.value.excerpt), 1))
                       : i_("", true),
                     (post.value.cover_image)
                       ? (r9(), ir("img", {
@@ -447,9 +471,9 @@ return (_ctx, _cache) => {
                           class: "article-cover",
                           src: post.value.cover_image,
                           alt: post.value.title
-                        }, null, 8, _hoisted_9))
+                        }, null, 8, _hoisted_10))
                       : i_("", true),
-                    id("div", _hoisted_10, [
+                    id("div", _hoisted_11, [
                       ip(_sfc_main$2, {
                         tags: post.value.tags,
                         linkable: ""
@@ -459,7 +483,7 @@ return (_ctx, _cache) => {
                         role: "group",
                         "aria-label": tA(copy).font_size_label
                       }, [
-                        id("span", _hoisted_12, ea(tA(copy).font_size_label), 1),
+                        id("span", _hoisted_13, ea(tA(copy).font_size_label), 1),
                         (r9(), ir(r2, null, lj(readingTools, (size) => {
                           return id("button", {
                             key: size.value,
@@ -467,20 +491,23 @@ return (_ctx, _cache) => {
                             class: Y(["reading-tools__button", { 'is-active': fontScale.value === size.value }]),
                             "aria-pressed": fontScale.value === size.value,
                             onClick: $event => (setFontScale(size.value))
-                          }, ea(size.label), 11, _hoisted_13)
+                          }, ea(size.label), 11, _hoisted_14)
                         }), 64)),
-                        id("button", {
-                          type: "button",
-                          class: "reading-tools__button reading-tools__qr",
-                          onClick: openQr
-                        }, ea(tA(copy).post_qr), 1),
-                        id("span", _hoisted_14, ea(tA(copy).post_fin), 1)
-                      ], 8, _hoisted_11)
+                        (!isPreview.value)
+                          ? (r9(), ir("button", {
+                              key: 0,
+                              type: "button",
+                              class: "reading-tools__button reading-tools__qr",
+                              onClick: openQr
+                            }, ea(tA(copy).post_qr), 1))
+                          : i_("", true),
+                        id("span", _hoisted_15, ea(tA(copy).post_fin), 1)
+                      ], 8, _hoisted_12)
                     ])
                   ]),
                   (hasRepair.value)
-                    ? (r9(), ir("section", _hoisted_15, [
-                        id("div", _hoisted_16, [
+                    ? (r9(), ir("section", _hoisted_16, [
+                        id("div", _hoisted_17, [
                           _cache[7] || (_cache[7] = id("p", { class: "eyebrow" }, "REPAIR BRIEF", -1)),
                           _cache[8] || (_cache[8] = id("h2", { id: "repair-title" }, "维修速览", -1)),
                           id("span", {
@@ -489,26 +516,26 @@ return (_ctx, _cache) => {
                         ]),
                         id("dl", null, [
                           (post.value.repair.time)
-                            ? (r9(), ir("div", _hoisted_17, [
+                            ? (r9(), ir("div", _hoisted_18, [
                                 _cache[9] || (_cache[9] = id("dt", null, "预计耗时", -1)),
                                 id("dd", null, ea(post.value.repair.time), 1)
                               ]))
                             : i_("", true),
                           (post.value.repair.models)
-                            ? (r9(), ir("div", _hoisted_18, [
+                            ? (r9(), ir("div", _hoisted_19, [
                                 _cache[10] || (_cache[10] = id("dt", null, "适用机型", -1)),
                                 id("dd", null, ea(post.value.repair.models), 1)
                               ]))
                             : i_("", true),
                           (post.value.repair.tools)
-                            ? (r9(), ir("div", _hoisted_19, [
+                            ? (r9(), ir("div", _hoisted_20, [
                                 _cache[11] || (_cache[11] = id("dt", null, "工具与材料", -1)),
                                 id("dd", null, ea(post.value.repair.tools), 1)
                               ]))
                             : i_("", true)
                         ]),
                         (post.value.repair.safety)
-                          ? (r9(), ir("p", _hoisted_20, [
+                          ? (r9(), ir("p", _hoisted_21, [
                               _cache[12] || (_cache[12] = id("strong", null, "安全提醒：", -1)),
                               iv(ea(post.value.repair.safety), 1)
                             ]))
@@ -516,7 +543,7 @@ return (_ctx, _cache) => {
                       ]))
                     : i_("", true),
                   (toc.value.length > 1)
-                    ? (r9(), ir("details", _hoisted_21, [
+                    ? (r9(), ir("details", _hoisted_22, [
                         id("summary", null, ea(tA(copy).toc_title), 1),
                         id("ol", null, [
                           (r9(true), ir(r2, null, lj(toc.value, (item) => {
@@ -526,7 +553,7 @@ return (_ctx, _cache) => {
                             }, [
                               id("a", {
                                 href: `#${item.id}`
-                              }, ea(item.text), 9, _hoisted_22)
+                              }, ea(item.text), 9, _hoisted_23)
                             ], 2))
                           }), 128))
                         ])
@@ -557,11 +584,11 @@ return (_ctx, _cache) => {
                     class: "prose article__body",
                     innerHTML: post.value.content_html,
                     onClick: handleProseClick
-                  }, null, 8, _hoisted_23),
+                  }, null, 8, _hoisted_24),
                   (seriesInfo.value)
-                    ? (r9(), ir("section", _hoisted_24, [
-                        id("p", _hoisted_25, ea(tA(copy).series_title), 1),
-                        id("h2", _hoisted_26, [
+                    ? (r9(), ir("section", _hoisted_25, [
+                        id("p", _hoisted_26, ea(tA(copy).series_title), 1),
+                        id("h2", _hoisted_27, [
                           ip(tA(_t), {
                             to: { name: 'series', params: { name: seriesInfo.value.name } }
                           }, {
@@ -571,7 +598,7 @@ return (_ctx, _cache) => {
                             _: 1
                           }, 8, ["to"])
                         ]),
-                        id("p", _hoisted_27, " 第 " + ea(seriesInfo.value.position) + " / " + ea(seriesInfo.value.total) + " 篇 ", 1),
+                        id("p", _hoisted_28, " 第 " + ea(seriesInfo.value.position) + " / " + ea(seriesInfo.value.total) + " 篇 ", 1),
                         id("ol", null, [
                           (r9(true), ir(r2, null, lj(seriesInfo.value.posts, (item, index) => {
                             return (r9(), ir("li", {
@@ -588,13 +615,13 @@ return (_ctx, _cache) => {
                                     ]),
                                     _: 2
                                   }, 1032, ["to"]))
-                                : (r9(), ir("span", _hoisted_28, ea(String(index + 1).padStart(2, '0')) + " · " + ea(item.title), 1))
+                                : (r9(), ir("span", _hoisted_29, ea(String(index + 1).padStart(2, '0')) + " · " + ea(item.title), 1))
                             ], 2))
                           }), 128))
                         ])
                       ]))
                     : i_("", true),
-                  id("footer", _hoisted_29, [
+                  id("footer", _hoisted_30, [
                     id("p", null, ea(signoff.value), 1),
                     ip(tA(_t), {
                       to: "/posts",
@@ -609,7 +636,7 @@ return (_ctx, _cache) => {
                 ], 2),
                 (adjacent.value.newer || adjacent.value.older)
                   ? (r9(), ir("nav", {
-                      key: 0,
+                      key: 1,
                       class: Y(["adjacent", { 'adjacent--single': !(adjacent.value.newer && adjacent.value.older) }]),
                       "aria-label": "相邻文章"
                     }, [
@@ -620,8 +647,8 @@ return (_ctx, _cache) => {
                             class: "adjacent__card adjacent__card--newer"
                           }, {
                             default: na(() => [
-                              id("span", _hoisted_30, ea(tA(copy).post_newer), 1),
-                              id("span", _hoisted_31, ea(adjacent.value.newer.title), 1),
+                              id("span", _hoisted_31, ea(tA(copy).post_newer), 1),
+                              id("span", _hoisted_32, ea(adjacent.value.newer.title), 1),
                               _cache[14] || (_cache[14] = id("span", {
                                 class: "adjacent__arrow",
                                 "aria-hidden": "true"
@@ -629,7 +656,7 @@ return (_ctx, _cache) => {
                             ]),
                             _: 1
                           }, 8, ["to"]))
-                        : (r9(), ir("span", _hoisted_32)),
+                        : (r9(), ir("span", _hoisted_33)),
                       (adjacent.value.older)
                         ? (r9(), ii(tA(_t), {
                             key: 2,
@@ -637,8 +664,8 @@ return (_ctx, _cache) => {
                             class: "adjacent__card adjacent__card--older"
                           }, {
                             default: na(() => [
-                              id("span", _hoisted_33, ea(tA(copy).post_older), 1),
-                              id("span", _hoisted_34, ea(adjacent.value.older.title), 1),
+                              id("span", _hoisted_34, ea(tA(copy).post_older), 1),
+                              id("span", _hoisted_35, ea(adjacent.value.older.title), 1),
                               _cache[15] || (_cache[15] = id("span", {
                                 class: "adjacent__arrow",
                                 "aria-hidden": "true"
@@ -650,12 +677,12 @@ return (_ctx, _cache) => {
                     ], 2))
                   : i_("", true),
                 (related.value.length)
-                  ? (r9(), ir("section", _hoisted_35, [
-                      id("div", _hoisted_36, [
+                  ? (r9(), ir("section", _hoisted_36, [
+                      id("div", _hoisted_37, [
                         _cache[16] || (_cache[16] = id("p", { class: "eyebrow" }, "KEEP READING", -1)),
-                        id("h2", _hoisted_37, ea(tA(copy).related_title), 1)
+                        id("h2", _hoisted_38, ea(tA(copy).related_title), 1)
                       ]),
-                      id("div", _hoisted_38, [
+                      id("div", _hoisted_39, [
                         (r9(true), ir(r2, null, lj(related.value, (item) => {
                           return (r9(), ii(tA(_t), {
                             key: item.slug,
@@ -670,11 +697,11 @@ return (_ctx, _cache) => {
                                     src: item.cover_image,
                                     alt: item.title,
                                     loading: "lazy"
-                                  }, null, 8, _hoisted_39))
+                                  }, null, 8, _hoisted_40))
                                 : i_("", true),
-                              id("span", _hoisted_40, ea(tA(formatShortDate)(item.published_at)), 1),
+                              id("span", _hoisted_41, ea(tA(formatShortDate)(item.published_at)), 1),
                               id("strong", null, ea(item.title), 1),
-                              id("span", _hoisted_41, ea(item.excerpt), 1),
+                              id("span", _hoisted_42, ea(item.excerpt), 1),
                               _cache[17] || (_cache[17] = id("span", {
                                 class: "related-card__arrow",
                                 "aria-hidden": "true"
@@ -698,7 +725,7 @@ return (_ctx, _cache) => {
             "aria-label": "文章二维码",
             onClick: _cache[2] || (_cache[2] = sd($event => (qrOpen.value = false), ["self"]))
           }, [
-            id("div", _hoisted_42, [
+            id("div", _hoisted_43, [
               id("button", {
                 type: "button",
                 class: "image-lightbox__close",
@@ -714,11 +741,11 @@ return (_ctx, _cache) => {
                     alt: "文章二维码",
                     width: "320",
                     height: "320"
-                  }, null, 8, _hoisted_43))
+                  }, null, 8, _hoisted_44))
                 : i_("", true),
-              id("p", _hoisted_44, ea(qrUrl.value), 1),
+              id("p", _hoisted_45, ea(qrUrl.value), 1),
               (qrError.value)
-                ? (r9(), ir("p", _hoisted_45, ea(qrError.value), 1))
+                ? (r9(), ir("p", _hoisted_46, ea(qrError.value), 1))
                 : i_("", true),
               id("button", {
                 type: "button",
@@ -742,12 +769,12 @@ return (_ctx, _cache) => {
               class: "image-lightbox__close",
               "aria-label": tA(copy).image_close,
               onClick: closeLightbox
-            }, " × ", 8, _hoisted_47),
+            }, " × ", 8, _hoisted_48),
             id("img", {
               src: lightbox.value.src,
               alt: lightbox.value.alt
-            }, null, 8, _hoisted_48)
-          ], 8, _hoisted_46))
+            }, null, 8, _hoisted_49)
+          ], 8, _hoisted_47))
         : i_("", true)
     ]))
   ]))
@@ -755,6 +782,6 @@ return (_ctx, _cache) => {
 }
 
 };
-const PostView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-6ff28c56"]]);
+const PostView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-b14befe4"]]);
 
 export { PostView as default };

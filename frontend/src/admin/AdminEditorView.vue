@@ -16,7 +16,7 @@ import { diffLines } from 'diff'
 import { adminApi } from '../api'
 import { setPageMeta } from '../lib/meta'
 import { formatShortDate } from '../lib/format'
-import { uploadImageFile } from '../lib/media'
+import { copyText, uploadImageFile } from '../lib/media'
 
 const route = useRoute()
 const router = useRouter()
@@ -54,6 +54,7 @@ const savedNotice = ref('')
 const lastSavedAt = ref('')
 const loadedAt = ref('')
 const previewHtml = ref('')
+const previewBody = ref(null)
 const previewMinutes = ref(1)
 const previewLoading = ref(false)
 const previewError = ref('')
@@ -68,6 +69,7 @@ const mediaNotice = ref('')
 const localDraft = ref(null)
 const autoSavedAt = ref('')
 const postViews = ref(0)
+const previewUrl = ref('')
 const mediaPickerOpen = ref(false)
 const mediaPickerMode = ref('cover')
 const revisionsOpen = ref(false)
@@ -77,6 +79,15 @@ const revisionError = ref('')
 const selectedRevision = ref(null)
 const revisionDiff = ref([])
 const revisionBusy = ref(false)
+const compareOpen = ref(false)
+const compareDraft = reactive({
+  before: '',
+  after: '',
+  beforeLabel: '之前',
+  afterLabel: '之后',
+  label: '维修前后',
+  caption: '',
+})
 let previewTimer = null
 let noticeTimer = null
 let previewSequence = 0
@@ -345,9 +356,37 @@ function handleMediaSelected(item) {
   mediaPickerOpen.value = false
   if (mediaPickerMode.value === 'cover') {
     form.coverImage = item.url
+  } else if (mediaPickerMode.value === 'compare-before') {
+    compareDraft.before = item.url
+  } else if (mediaPickerMode.value === 'compare-after') {
+    compareDraft.after = item.url
   } else {
     insertTextAtCursor(`\n![${item.alt || item.original_name}](${item.url})\n`)
   }
+}
+
+function openCompare() {
+  compareOpen.value = true
+}
+
+function insertCompare() {
+  if (!compareDraft.before || !compareDraft.after) {
+    mediaError.value = '对比图需要选择两张图片。'
+    return
+  }
+  const lines = [
+    '',
+    ':::compare',
+    `before: ${compareDraft.before}`,
+    `after: ${compareDraft.after}`,
+    `label: ${compareDraft.label || '维修前后'}`,
+    `before_label: ${compareDraft.beforeLabel || '之前'}`,
+    `after_label: ${compareDraft.afterLabel || '之后'}`,
+  ]
+  if (compareDraft.caption) lines.push(`caption: ${compareDraft.caption}`)
+  lines.push(':::', '')
+  insertTextAtCursor(lines.join('\n'))
+  compareOpen.value = false
 }
 
 function applyRepairTemplate() {
@@ -429,6 +468,34 @@ async function restoreSelectedRevision() {
   }
 }
 
+async function sharePreview() {
+  if (!postId.value) return
+  try {
+    const data = await adminApi.createPreviewToken(postId.value)
+    previewUrl.value = data.url
+    try {
+      await copyText(data.url)
+      savedNotice.value = '预览链接已生成并复制。'
+    } catch {
+      savedNotice.value = '预览链接已生成。'
+    }
+    window.open(data.url, '_blank', 'noopener')
+  } catch (error) {
+    saveError.value = error.message || '预览链接生成失败。'
+  }
+}
+
+async function revokePreview() {
+  if (!postId.value) return
+  try {
+    await adminApi.revokePreviewToken(postId.value)
+    previewUrl.value = ''
+    savedNotice.value = '预览链接已撤销。'
+  } catch (error) {
+    saveError.value = error.message || '撤销失败。'
+  }
+}
+
 async function duplicateCurrent() {
   if (!postId.value || saving.value) return
   try {
@@ -500,6 +567,7 @@ async function loadPost(id) {
   loadError.value = ''
   loadNotFound.value = false
   saveError.value = ''
+  previewUrl.value = ''
   try {
     const data = await adminApi.getPost(id)
     postId.value = data.id
@@ -585,6 +653,17 @@ async function requestPreview(sequence) {
     const data = await adminApi.preview(content)
     if (sequence !== previewSequence) return
     previewHtml.value = data.html || ''
+    nextTick(() => {
+      const figures = previewBody.value?.querySelectorAll('[data-image-compare]') || []
+      figures.forEach((figure) => {
+        const range = figure.querySelector('.image-compare__range')
+        const frame = figure.querySelector('.image-compare__frame')
+        if (!range || !frame) return
+        const update = () => frame.style.setProperty('--compare', `${range.value}%`)
+        range.addEventListener('input', update)
+        update()
+      })
+    })
     previewMinutes.value = data.reading_minutes || 1
   } catch (requestError) {
     if (sequence !== previewSequence) return
@@ -838,6 +917,9 @@ onBeforeUnmount(() => {
           >
             查看公开页面 ↗
           </a>
+          <button v-if="postId" type="button" class="text-link bare-button" @click="sharePreview">
+            预览链接
+          </button>
           <button v-if="postId" type="button" class="text-link bare-button" @click="openRevisions">
             历史版本
           </button>
@@ -881,6 +963,11 @@ onBeforeUnmount(() => {
           {{ savedNotice }}
         </div>
         <p v-if="saveError" class="alert alert--error" role="alert">{{ saveError }}</p>
+
+        <div v-if="previewUrl" class="preview-link-banner" role="status">
+          <span>草稿预览：<a :href="previewUrl" target="_blank" rel="noopener">{{ previewUrl }}</a></span>
+          <button type="button" class="text-link bare-button is-danger" @click="revokePreview">撤销链接</button>
+        </div>
 
         <div v-if="localDraft" class="local-draft-banner" role="status">
           <div>
@@ -982,6 +1069,13 @@ onBeforeUnmount(() => {
                 >
                   媒体库
                 </button>
+                <button
+                  type="button"
+                  class="toolbar-button toolbar-button--image"
+                  @click="openCompare"
+                >
+                  对比图
+                </button>
                 <span class="toolbar-hint">Markdown</span>
               </div>
               <input
@@ -1023,7 +1117,7 @@ onBeforeUnmount(() => {
                     <p v-else-if="previewLoading && !previewHtml" class="preview-empty">
                       正在排版…
                     </p>
-                    <div v-else-if="previewHtml" class="prose preview-prose" v-html="previewHtml"></div>
+                    <div v-else-if="previewHtml" ref="previewBody" class="prose preview-prose" v-html="previewHtml"></div>
                     <p v-else class="preview-empty">
                       写下第一段，右边就会出现排好版的纸页。
                     </p>
@@ -1261,10 +1355,45 @@ onBeforeUnmount(() => {
 
     <MediaPicker
       :open="mediaPickerOpen"
-      :title="mediaPickerMode === 'cover' ? '选择文章封面' : '从媒体库插入图片'"
+      :title="mediaPickerMode === 'cover' ? '选择文章封面' : mediaPickerMode === 'compare-before' ? '选择对比前图片' : mediaPickerMode === 'compare-after' ? '选择对比后图片' : '从媒体库插入图片'"
       @select="handleMediaSelected"
       @close="mediaPickerOpen = false"
     />
+
+    <Teleport to="body">
+      <div v-if="compareOpen" class="compare-dialog" role="dialog" aria-modal="true" aria-label="插入对比图" @click.self="compareOpen = false">
+        <div class="compare-panel">
+          <header class="revision-head">
+            <div>
+              <p class="eyebrow">BEFORE / AFTER</p>
+              <h2>插入维修对比图</h2>
+            </div>
+            <button type="button" class="text-link bare-button" @click="compareOpen = false">关闭</button>
+          </header>
+          <div class="compare-picks">
+            <button type="button" class="compare-pick" @click="openMediaPicker('compare-before')">
+              <img v-if="compareDraft.before" :src="compareDraft.before" alt="" />
+              <span v-else>选择「之前」图片</span>
+            </button>
+            <button type="button" class="compare-pick" @click="openMediaPicker('compare-after')">
+              <img v-if="compareDraft.after" :src="compareDraft.after" alt="" />
+              <span v-else>选择「之后」图片</span>
+            </button>
+          </div>
+          <p v-if="mediaError" class="alert alert--error">{{ mediaError }}</p>
+          <div class="form-grid">
+            <div class="field"><label for="compare-label">标题</label><input id="compare-label" v-model="compareDraft.label" class="input" /></div>
+            <div class="field"><label for="compare-before-label">前标签</label><input id="compare-before-label" v-model="compareDraft.beforeLabel" class="input" /></div>
+            <div class="field"><label for="compare-after-label">后标签</label><input id="compare-after-label" v-model="compareDraft.afterLabel" class="input" /></div>
+            <div class="field"><label for="compare-caption">说明</label><input id="compare-caption" v-model="compareDraft.caption" class="input" /></div>
+          </div>
+          <div class="button-row">
+            <button type="button" class="btn btn--small" @click="compareOpen = false">取消</button>
+            <button type="button" class="btn btn--small btn--solid" @click="insertCompare">插入到正文</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <Teleport to="body">
       <div v-if="revisionsOpen" class="revision-dialog" role="dialog" aria-modal="true" aria-label="历史版本" @click.self="revisionsOpen = false">
@@ -1377,6 +1506,28 @@ onBeforeUnmount(() => {
 
 .editor-toast {
   margin-bottom: 18px;
+}
+
+.preview-link-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 9px 12px;
+  border: 1.5px dashed var(--color-line);
+  color: var(--color-ink-faint);
+  font-size: 11px;
+}
+
+.preview-link-banner a {
+  color: var(--color-lake-ink);
+  overflow-wrap: anywhere;
+}
+
+.preview-link-banner .is-danger {
+  color: var(--color-vermilion);
 }
 
 .local-draft-banner {
@@ -1899,6 +2050,60 @@ onBeforeUnmount(() => {
   margin-bottom: 4px;
   font-family: var(--font-hand);
   font-size: 14px;
+}
+
+.compare-dialog {
+  position: fixed;
+  z-index: 195;
+  inset: 0;
+  display: grid;
+  padding: 20px;
+  place-items: center;
+  background: rgba(15, 14, 12, 0.68);
+}
+
+.compare-panel {
+  width: min(760px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 22px;
+  border: 2px solid var(--color-pencil);
+  background-color: var(--color-paper);
+  background-image: var(--paper-grain);
+  box-shadow: var(--shadow-sketch-hover);
+}
+
+.compare-picks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.compare-pick {
+  display: grid;
+  min-height: 150px;
+  place-items: center;
+  overflow: hidden;
+  border: 1.5px dashed var(--color-line);
+  background: var(--surface-soft);
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 14px;
+}
+
+.compare-pick img {
+  width: 100%;
+  height: 100%;
+  max-height: 220px;
+  object-fit: cover;
+}
+
+.compare-panel .button-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .revision-dialog {

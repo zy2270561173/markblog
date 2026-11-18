@@ -385,6 +385,52 @@ def test_revisions_cover_batch_analytics_security_and_backup(client: TestClient)
         assert public_post["repair"]["time"] == "30 分钟"
         assert public_post["cover_image"] == cover
 
+        compare_preview = client.post(
+            "/api/admin/preview",
+            json={
+                "content_md": (
+                    f":::compare\nbefore: {cover}\nafter: {cover}\nlabel: 清灰前后\n:::"
+                )
+            },
+            headers=headers,
+        )
+        assert compare_preview.status_code == 200
+        assert "image-compare" in compare_preview.json()["html"]
+        assert ":::compare" not in compare_preview.json()["html"]
+
+        draft = client.post(
+            "/api/admin/posts",
+            json={
+                **payload,
+                "title": "草稿预览测试",
+                "slug": "phase-two-preview",
+                "status": "draft",
+                "featured": False,
+            },
+            headers=headers,
+        )
+        assert draft.status_code == 201
+        draft_id = draft.json()["id"]
+        post_ids.append(draft_id)
+        token_response = client.post(
+            f"/api/admin/posts/{draft_id}/preview-token", headers=headers
+        )
+        assert token_response.status_code == 200
+        token = token_response.json()["token"]
+        preview = client.get(f"/api/public/preview/{token}")
+        assert preview.status_code == 200
+        assert preview.json()["title"] == "草稿预览测试"
+        assert preview.headers["x-robots-tag"].startswith("noindex")
+        preview_page = client.get(f"/preview/{token}")
+        assert preview_page.status_code == 200
+        assert "noindex, nofollow, noarchive" in preview_page.text
+        assert client.get("/api/public/preview/not-a-real-token").status_code == 404
+        revoked = client.delete(
+            f"/api/admin/posts/{draft_id}/preview-token", headers=headers
+        )
+        assert revoked.status_code == 200
+        assert client.get(f"/api/public/preview/{token}").status_code == 404
+
         updated = client.put(
             f"/api/admin/posts/{post['id']}",
             json={**payload, "title": "第二阶段测试（新）", "content_md": "## 新正文"},
@@ -485,6 +531,10 @@ def test_revisions_cover_batch_analytics_security_and_backup(client: TestClient)
         )
         assert disable.status_code == 200, disable.text
         assert client.get("/api/admin/audit", headers=headers).json()["items"]
+        health = client.get("/api/admin/health", headers=headers).json()
+        assert "issues" in health
+        assert "monitoring" in health
+        assert client.post("/api/admin/alerts/test", headers=headers).status_code == 400
     finally:
         for post_id in post_ids:
             client.delete(f"/api/admin/posts/{post_id}", headers=headers)

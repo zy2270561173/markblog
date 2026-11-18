@@ -5,6 +5,7 @@ from __future__ import annotations
 import html
 import json
 import re
+import secrets
 import sqlite3
 import unicodedata
 from collections import Counter
@@ -49,6 +50,8 @@ ADMIN_SETTING_KEYS = PUBLIC_SETTING_KEYS + (
     "night_start",
     "baidu_push_token",
     "indexnow_key",
+    "alert_webhook_url",
+    "uptime_ping_url",
 )
 
 
@@ -293,6 +296,61 @@ def get_public_post(conn: sqlite3.Connection, slug: str) -> dict[str, Any] | Non
         }
 
     post["adjacent"] = {"newer": adjacent(newer), "older": adjacent(older)}
+    return post
+
+
+def ensure_preview_token(conn: sqlite3.Connection, post_id: int) -> str | None:
+    row = conn.execute(
+        "SELECT preview_token FROM posts WHERE id = ?", (post_id,)
+    ).fetchone()
+    if row is None:
+        return None
+    token = row["preview_token"]
+    if token:
+        return token
+    for _ in range(10):
+        token = secrets.token_urlsafe(24)
+        exists = conn.execute(
+            "SELECT 1 FROM posts WHERE preview_token = ?", (token,)
+        ).fetchone()
+        if exists is None:
+            break
+    conn.execute(
+        "UPDATE posts SET preview_token = ? WHERE id = ?", (token, post_id)
+    )
+    conn.commit()
+    return token
+
+
+def clear_preview_token(conn: sqlite3.Connection, post_id: int) -> None:
+    conn.execute("UPDATE posts SET preview_token = '' WHERE id = ?", (post_id,))
+    conn.commit()
+
+
+def get_preview_post(
+    conn: sqlite3.Connection, token: str
+) -> dict[str, Any] | None:
+    row = conn.execute(
+        "SELECT * FROM posts WHERE preview_token = ? AND preview_token != ''",
+        (token,),
+    ).fetchone()
+    if row is None:
+        return None
+    post = _summary(row)
+    post["content_html"] = render_markdown(row["content_md"] or "")
+    post["seo_title"] = row["seo_title"] or ""
+    post["seo_description"] = row["seo_description"] or ""
+    post["seo_keywords"] = row["seo_keywords"] or ""
+    post["cover_image"] = row["cover_image"] or ""
+    post["repair"] = _repair_meta(row["repair_meta"] or "{}")
+    post["canonical_url"] = ""
+    post["status"] = row["status"]
+    post["toc"] = _extract_toc(post["content_html"])
+    post["views"] = 0
+    post["related"] = []
+    post["series_info"] = None
+    post["adjacent"] = {"newer": None, "older": None}
+    post["preview"] = True
     return post
 
 

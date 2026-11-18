@@ -181,6 +181,19 @@ class SettingsIn(StrictModel):
     night_start: str = Field(default="19:00", max_length=5)
     baidu_push_token: str = Field(default="", max_length=300)
     indexnow_key: str = Field(default="", max_length=300)
+    alert_webhook_url: str = Field(default="", max_length=500)
+    uptime_ping_url: str = Field(default="", max_length=500)
+
+    @field_validator("alert_webhook_url", "uptime_ping_url")
+    @classmethod
+    def valid_alert_url(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            return value
+        parsed = urlparse(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            raise ValueError("告警地址必须是完整的 http(s) URL。")
+        return value
 
     @field_validator("ui_copy")
     @classmethod

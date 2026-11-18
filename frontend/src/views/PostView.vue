@@ -14,6 +14,7 @@ import QRCode from 'qrcode'
 const route = useRoute()
 const { state: siteState } = useSite()
 const copy = useCopy()
+const isPreview = computed(() => route.name === 'post-preview')
 
 const post = ref(null)
 const loading = ref(true)
@@ -51,17 +52,20 @@ const hasRepair = computed(() => {
 
 function applyMeta() {
   if (!post.value) return
-  setKeywords(post.value.seo_keywords || site.value.seo_keywords)
+  setKeywords(isPreview.value ? '' : post.value.seo_keywords || site.value.seo_keywords)
   const path = `/posts/${encodeURIComponent(post.value.slug)}`
   const base = (site.value.site_url || window.location.origin).replace(/\/$/, '')
   setPageMeta({
-    title: post.value.seo_title || `${post.value.title} · ${site.value.site_title || 'Markblog'}`,
+    title: isPreview.value
+      ? `草稿预览 · ${post.value.title}`
+      : post.value.seo_title || `${post.value.title} · ${site.value.site_title || 'Markblog'}`,
     description: post.value.seo_description || post.value.excerpt,
-    canonicalPath: path,
-    canonicalUrl: post.value.canonical_url || null,
+    canonicalPath: isPreview.value ? null : path,
+    canonicalUrl: isPreview.value ? null : post.value.canonical_url || null,
     imageUrl: post.value.cover_image ? `${base}${post.value.cover_image}` : null,
     siteUrl: site.value.site_url,
     type: 'article',
+    noindex: isPreview.value,
   })
 }
 
@@ -98,7 +102,7 @@ async function copyArticleLink() {
 function updateProgress() {
   const scrollable = document.documentElement.scrollHeight - window.innerHeight
   progress.value = scrollable > 0 ? Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100)) : 0
-  if (!completionSent.value && progress.value >= 90 && post.value) {
+  if (!isPreview.value && !completionSent.value && progress.value >= 90 && post.value) {
     const key = `markblog:completed:${post.value.slug}`
     try {
       if (window.sessionStorage.getItem(key)) return
@@ -139,6 +143,14 @@ function handleProseClick(event) {
 function enhanceArticle() {
   const root = proseEl.value
   if (!root) return
+  root.querySelectorAll('[data-image-compare]').forEach((figure) => {
+    const range = figure.querySelector('.image-compare__range')
+    const frame = figure.querySelector('.image-compare__frame')
+    if (!range || !frame) return
+    const update = () => frame.style.setProperty('--compare', `${range.value}%`)
+    range.addEventListener('input', update)
+    update()
+  })
   root.querySelectorAll('pre').forEach((pre) => {
     if (pre.querySelector('.code-copy-button')) return
     pre.classList.add('code-block')
@@ -198,20 +210,22 @@ onBeforeUnmount(() => {
   document.body.style.overflow = ''
 })
 
-async function loadPost(slug, { preserve = false } = {}) {
-  if (!slug) return
+async function loadPost(identifier, { preserve = false } = {}) {
+  if (!identifier) return
   const current = ++requestNumber
   loading.value = true
   notFound.value = false
   if (!preserve) post.value = null
   error.value = ''
   try {
-    const data = await publicApi.getPost(slug)
+    const data = isPreview.value
+      ? await publicApi.getPreview(identifier)
+      : await publicApi.getPost(identifier)
     if (current !== requestNumber) return
     post.value = data
     completionSent.value = false
     applyMeta()
-    recordView(slug)
+    if (!isPreview.value) recordView(identifier)
     nextTick(() => {
       enhanceArticle()
       updateProgress()
@@ -235,8 +249,8 @@ async function loadPost(slug, { preserve = false } = {}) {
 }
 
 watch(
-  () => route.params.slug,
-  (slug) => loadPost(slug),
+  () => [route.params.slug, route.params.token, route.name],
+  () => loadPost(route.params.token || route.params.slug),
   { immediate: true },
 )
 
@@ -288,7 +302,7 @@ const signoff = computed(() =>
       title="文章没有顺利展开"
       :message="error"
     >
-      <button type="button" class="btn btn--small" @click="loadPost(route.params.slug)">
+      <button type="button" class="btn btn--small" @click="loadPost(route.params.token || route.params.slug)">
         重新加载
       </button>
     </StateBlock>
@@ -302,8 +316,14 @@ const signoff = computed(() =>
     </StateBlock>
 
     <template v-else-if="post">
+      <div v-if="isPreview" class="preview-banner" role="status">
+        草稿预览 · 这个链接不会被搜索引擎收录
+      </div>
+
       <nav class="breadcrumb" aria-label="面包屑">
-        <RouterLink to="/posts">{{ copy.post_breadcrumb }}</RouterLink>
+        <RouterLink :to="isPreview ? '/' : '/posts'">
+          {{ isPreview ? site.site_title || 'Markblog' : copy.post_breadcrumb }}
+        </RouterLink>
         <span aria-hidden="true">/</span>
         <span aria-current="page">{{ post.title }}</span>
       </nav>
@@ -340,7 +360,7 @@ const signoff = computed(() =>
               >
                 {{ size.label }}
               </button>
-              <button type="button" class="reading-tools__button reading-tools__qr" @click="openQr">
+              <button v-if="!isPreview" type="button" class="reading-tools__button reading-tools__qr" @click="openQr">
                 {{ copy.post_qr }}
               </button>
               <span class="article__end-mark" aria-hidden="true">{{ copy.post_fin }}</span>
@@ -843,6 +863,25 @@ const signoff = computed(() =>
 
 .adjacent__empty {
   display: block;
+}
+
+.preview-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 9px 13px;
+  border: 1.5px dashed var(--color-amber);
+  background: var(--surface-amber);
+  color: var(--color-ink-soft);
+  font-family: var(--font-hand);
+  font-size: 14px;
+}
+
+.preview-banner .text-link {
+  font-size: 13px;
 }
 
 .reading-progress {

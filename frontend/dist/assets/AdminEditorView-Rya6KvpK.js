@@ -1,7 +1,7 @@
-import { _ as _export_sfc, l as tx, o as ny, m as lS, r as r9, c as ii, a as ir, b as id, e as ea, g as i_, p as r2, q as lj, A as sd, B as nO, M as adminApi, I as tu, i as iH, R as ut, w as lw, n as na, D as Dt, E as Et, h as ip, t as tA, d as _t, j as iv, f as formatShortDate, x as nu, y as o7, Y, P as sn, S as se, N as sl, C as t8, s as setPageMeta } from './index-5EsP4swv.js';
-import { A as AdminLayout } from './AdminLayout-g8FKvlVv.js';
-import { _ as _sfc_main$2 } from './StateBlock-C7-_2ZAf.js';
-import { u as uploadImageFile } from './media-BCeCLjWO.js';
+import { _ as _export_sfc, l as tx, o as ny, m as lS, r as r9, c as ii, a as ir, b as id, e as ea, g as i_, p as r2, q as lj, A as sd, B as nO, M as adminApi, I as tu, i as iH, R as ut, w as lw, n as na, D as Dt, E as Et, h as ip, t as tA, d as _t, j as iv, f as formatShortDate, x as nu, y as o7, Y, P as sn, S as se, N as sl, C as t8, s as setPageMeta } from './index-BVhNW4Fl.js';
+import { A as AdminLayout } from './AdminLayout-DADCD54s.js';
+import { _ as _sfc_main$2 } from './StateBlock-BE1KWoST.js';
+import { u as uploadImageFile, c as copyText } from './media-DP2OKhRG.js';
 
 const _hoisted_1$1 = ["aria-label"];
 const _hoisted_2$1 = { class: "media-picker__panel" };
@@ -162,7 +162,7 @@ return (_ctx, _cache) => {
 }
 
 };
-const MediaPicker = /*#__PURE__*/_export_sfc(_sfc_main$1, [['__scopeId',"data-v-4c651141"]]);
+const MediaPicker = /*#__PURE__*/_export_sfc(_sfc_main$1, [['__scopeId',"data-v-b3b520d3"]]);
 
 class Diff {
     diff(oldStr, newStr, 
@@ -496,148 +496,171 @@ const _hoisted_8 = {
 };
 const _hoisted_9 = {
   key: 2,
+  class: "preview-link-banner",
+  role: "status"
+};
+const _hoisted_10 = ["href"];
+const _hoisted_11 = {
+  key: 3,
   class: "local-draft-banner",
   role: "status"
 };
-const _hoisted_10 = { class: "local-draft-banner__actions" };
-const _hoisted_11 = { class: "editor-layout" };
-const _hoisted_12 = { class: "editor-main" };
-const _hoisted_13 = {
+const _hoisted_12 = { class: "local-draft-banner__actions" };
+const _hoisted_13 = { class: "editor-layout" };
+const _hoisted_14 = { class: "editor-main" };
+const _hoisted_15 = {
   class: "title-block",
   "aria-labelledby": "editor-title-label"
 };
-const _hoisted_14 = { class: "title-meta" };
-const _hoisted_15 = {
+const _hoisted_16 = { class: "title-meta" };
+const _hoisted_17 = {
   key: 0,
   class: "auto-save-label"
 };
-const _hoisted_16 = {
+const _hoisted_18 = {
   key: 1,
   class: "dirty-dot",
   "aria-label": "有未保存的修改"
 };
-const _hoisted_17 = { key: 2 };
-const _hoisted_18 = { class: "excerpt-block" };
-const _hoisted_19 = { class: "field-hint" };
-const _hoisted_20 = {
+const _hoisted_19 = { key: 2 };
+const _hoisted_20 = { class: "excerpt-block" };
+const _hoisted_21 = { class: "field-hint" };
+const _hoisted_22 = {
   class: "writing-desk",
   "aria-labelledby": "writing-label"
 };
-const _hoisted_21 = { class: "writing-desk__head" };
-const _hoisted_22 = {
+const _hoisted_23 = { class: "writing-desk__head" };
+const _hoisted_24 = {
   class: "mobile-tabs",
   role: "tablist",
   "aria-label": "写作与预览"
 };
-const _hoisted_23 = ["aria-selected"];
-const _hoisted_24 = ["aria-selected"];
-const _hoisted_25 = {
+const _hoisted_25 = ["aria-selected"];
+const _hoisted_26 = ["aria-selected"];
+const _hoisted_27 = {
   class: "editor-toolbar",
   role: "toolbar",
   "aria-label": "Markdown 快捷输入"
 };
-const _hoisted_26 = ["title", "aria-label", "onClick"];
-const _hoisted_27 = ["disabled"];
-const _hoisted_28 = {
+const _hoisted_28 = ["title", "aria-label", "onClick"];
+const _hoisted_29 = ["disabled"];
+const _hoisted_30 = {
   key: 0,
   class: "editor-media-note alert alert--error"
 };
-const _hoisted_29 = {
+const _hoisted_31 = {
   key: 1,
   class: "editor-media-note alert alert--success",
   role: "status"
 };
-const _hoisted_30 = { class: "editor-pane editor-pane--write" };
-const _hoisted_31 = { class: "editor-pane__foot" };
-const _hoisted_32 = {
+const _hoisted_32 = { class: "editor-pane editor-pane--write" };
+const _hoisted_33 = { class: "editor-pane__foot" };
+const _hoisted_34 = {
   class: "editor-pane editor-pane--preview",
   role: "tabpanel",
   "aria-label": "文章预览"
 };
-const _hoisted_33 = { class: "preview-head" };
-const _hoisted_34 = {
+const _hoisted_35 = { class: "preview-head" };
+const _hoisted_36 = {
   key: 0,
   class: "preview-time"
 };
-const _hoisted_35 = { class: "preview-scroll" };
-const _hoisted_36 = {
+const _hoisted_37 = { class: "preview-scroll" };
+const _hoisted_38 = {
   key: 0,
   class: "alert alert--error"
 };
-const _hoisted_37 = {
+const _hoisted_39 = {
   key: 1,
   class: "preview-empty"
 };
-const _hoisted_38 = ["innerHTML"];
-const _hoisted_39 = {
+const _hoisted_40 = ["innerHTML"];
+const _hoisted_41 = {
   key: 3,
   class: "preview-empty"
 };
-const _hoisted_40 = {
+const _hoisted_42 = {
   class: "editor-side",
   "aria-label": "文章设置"
 };
-const _hoisted_41 = { class: "meta-card" };
-const _hoisted_42 = { class: "status-options" };
-const _hoisted_43 = {
+const _hoisted_43 = { class: "meta-card" };
+const _hoisted_44 = { class: "status-options" };
+const _hoisted_45 = {
   key: 0,
   class: "field schedule-field"
 };
-const _hoisted_44 = { class: "meta-card" };
-const _hoisted_45 = {
+const _hoisted_46 = { class: "meta-card" };
+const _hoisted_47 = {
   key: 0,
   class: "cover-preview"
 };
-const _hoisted_46 = ["src"];
-const _hoisted_47 = { class: "cover-preview__actions" };
-const _hoisted_48 = { class: "featured-toggle" };
-const _hoisted_49 = { class: "meta-card" };
-const _hoisted_50 = { class: "field" };
-const _hoisted_51 = { class: "slug-line" };
+const _hoisted_48 = ["src"];
+const _hoisted_49 = { class: "cover-preview__actions" };
+const _hoisted_50 = { class: "featured-toggle" };
+const _hoisted_51 = { class: "meta-card" };
 const _hoisted_52 = { class: "field" };
-const _hoisted_53 = { class: "field-hint" };
+const _hoisted_53 = { class: "slug-line" };
 const _hoisted_54 = { class: "field" };
-const _hoisted_55 = {
+const _hoisted_55 = { class: "field-hint" };
+const _hoisted_56 = { class: "field" };
+const _hoisted_57 = {
   key: 0,
   class: "field"
 };
-const _hoisted_56 = {
+const _hoisted_58 = {
   class: "meta-card repair-editor",
   open: ""
 };
-const _hoisted_57 = { class: "seo-card__body" };
-const _hoisted_58 = { class: "field" };
-const _hoisted_59 = { class: "field" };
+const _hoisted_59 = { class: "seo-card__body" };
 const _hoisted_60 = { class: "field" };
 const _hoisted_61 = { class: "field" };
 const _hoisted_62 = { class: "field" };
-const _hoisted_63 = { class: "meta-card seo-card" };
-const _hoisted_64 = { class: "seo-card__body" };
-const _hoisted_65 = { class: "field" };
-const _hoisted_66 = { class: "field" };
+const _hoisted_63 = { class: "field" };
+const _hoisted_64 = { class: "field" };
+const _hoisted_65 = { class: "meta-card seo-card" };
+const _hoisted_66 = { class: "seo-card__body" };
 const _hoisted_67 = { class: "field" };
 const _hoisted_68 = { class: "field" };
-const _hoisted_69 = { class: "meta-card meta-card--stats" };
-const _hoisted_70 = { class: "meta-stats" };
-const _hoisted_71 = { key: 0 };
-const _hoisted_72 = { class: "editor-save-sticky" };
-const _hoisted_73 = { class: "save-state" };
-const _hoisted_74 = ["disabled"];
-const _hoisted_75 = { class: "revision-panel" };
-const _hoisted_76 = { class: "revision-head" };
-const _hoisted_77 = {
+const _hoisted_69 = { class: "field" };
+const _hoisted_70 = { class: "field" };
+const _hoisted_71 = { class: "meta-card meta-card--stats" };
+const _hoisted_72 = { class: "meta-stats" };
+const _hoisted_73 = { key: 0 };
+const _hoisted_74 = { class: "editor-save-sticky" };
+const _hoisted_75 = { class: "save-state" };
+const _hoisted_76 = ["disabled"];
+const _hoisted_77 = { class: "compare-panel" };
+const _hoisted_78 = { class: "revision-head" };
+const _hoisted_79 = { class: "compare-picks" };
+const _hoisted_80 = ["src"];
+const _hoisted_81 = { key: 1 };
+const _hoisted_82 = ["src"];
+const _hoisted_83 = { key: 1 };
+const _hoisted_84 = {
   key: 0,
   class: "alert alert--error"
 };
-const _hoisted_78 = { class: "revision-layout" };
-const _hoisted_79 = { class: "revision-list" };
-const _hoisted_80 = { key: 0 };
-const _hoisted_81 = ["onClick"];
-const _hoisted_82 = { key: 1 };
-const _hoisted_83 = { class: "revision-diff" };
-const _hoisted_84 = { class: "revision-diff__actions" };
-const _hoisted_85 = ["disabled"];
-const _hoisted_86 = {
+const _hoisted_85 = { class: "form-grid" };
+const _hoisted_86 = { class: "field" };
+const _hoisted_87 = { class: "field" };
+const _hoisted_88 = { class: "field" };
+const _hoisted_89 = { class: "field" };
+const _hoisted_90 = { class: "button-row" };
+const _hoisted_91 = { class: "revision-panel" };
+const _hoisted_92 = { class: "revision-head" };
+const _hoisted_93 = {
+  key: 0,
+  class: "alert alert--error"
+};
+const _hoisted_94 = { class: "revision-layout" };
+const _hoisted_95 = { class: "revision-list" };
+const _hoisted_96 = { key: 0 };
+const _hoisted_97 = ["onClick"];
+const _hoisted_98 = { key: 1 };
+const _hoisted_99 = { class: "revision-diff" };
+const _hoisted_100 = { class: "revision-diff__actions" };
+const _hoisted_101 = ["disabled"];
+const _hoisted_102 = {
   key: 1,
   class: "revision-empty"
 };
@@ -683,6 +706,7 @@ const savedNotice = tx('');
 const lastSavedAt = tx('');
 const loadedAt = tx('');
 const previewHtml = tx('');
+const previewBody = tx(null);
 const previewMinutes = tx(1);
 const previewLoading = tx(false);
 const previewError = tx('');
@@ -697,6 +721,7 @@ const mediaNotice = tx('');
 const localDraft = tx(null);
 const autoSavedAt = tx('');
 const postViews = tx(0);
+const previewUrl = tx('');
 const mediaPickerOpen = tx(false);
 const mediaPickerMode = tx('cover');
 const revisionsOpen = tx(false);
@@ -706,6 +731,15 @@ const revisionError = tx('');
 const selectedRevision = tx(null);
 const revisionDiff = tx([]);
 const revisionBusy = tx(false);
+const compareOpen = tx(false);
+const compareDraft = tu({
+  before: '',
+  after: '',
+  beforeLabel: '之前',
+  afterLabel: '之后',
+  label: '维修前后',
+  caption: '',
+});
 let previewTimer = null;
 let noticeTimer = null;
 let previewSequence = 0;
@@ -974,9 +1008,37 @@ function handleMediaSelected(item) {
   mediaPickerOpen.value = false;
   if (mediaPickerMode.value === 'cover') {
     form.coverImage = item.url;
+  } else if (mediaPickerMode.value === 'compare-before') {
+    compareDraft.before = item.url;
+  } else if (mediaPickerMode.value === 'compare-after') {
+    compareDraft.after = item.url;
   } else {
     insertTextAtCursor(`\n![${item.alt || item.original_name}](${item.url})\n`);
   }
+}
+
+function openCompare() {
+  compareOpen.value = true;
+}
+
+function insertCompare() {
+  if (!compareDraft.before || !compareDraft.after) {
+    mediaError.value = '对比图需要选择两张图片。';
+    return
+  }
+  const lines = [
+    '',
+    ':::compare',
+    `before: ${compareDraft.before}`,
+    `after: ${compareDraft.after}`,
+    `label: ${compareDraft.label || '维修前后'}`,
+    `before_label: ${compareDraft.beforeLabel || '之前'}`,
+    `after_label: ${compareDraft.afterLabel || '之后'}`,
+  ];
+  if (compareDraft.caption) lines.push(`caption: ${compareDraft.caption}`);
+  lines.push(':::', '');
+  insertTextAtCursor(lines.join('\n'));
+  compareOpen.value = false;
 }
 
 function applyRepairTemplate() {
@@ -1058,6 +1120,34 @@ async function restoreSelectedRevision() {
   }
 }
 
+async function sharePreview() {
+  if (!postId.value) return
+  try {
+    const data = await adminApi.createPreviewToken(postId.value);
+    previewUrl.value = data.url;
+    try {
+      await copyText(data.url);
+      savedNotice.value = '预览链接已生成并复制。';
+    } catch {
+      savedNotice.value = '预览链接已生成。';
+    }
+    window.open(data.url, '_blank', 'noopener');
+  } catch (error) {
+    saveError.value = error.message || '预览链接生成失败。';
+  }
+}
+
+async function revokePreview() {
+  if (!postId.value) return
+  try {
+    await adminApi.revokePreviewToken(postId.value);
+    previewUrl.value = '';
+    savedNotice.value = '预览链接已撤销。';
+  } catch (error) {
+    saveError.value = error.message || '撤销失败。';
+  }
+}
+
 async function duplicateCurrent() {
   if (!postId.value || saving.value) return
   try {
@@ -1129,6 +1219,7 @@ async function loadPost(id) {
   loadError.value = '';
   loadNotFound.value = false;
   saveError.value = '';
+  previewUrl.value = '';
   try {
     const data = await adminApi.getPost(id);
     postId.value = data.id;
@@ -1214,6 +1305,17 @@ async function requestPreview(sequence) {
     const data = await adminApi.preview(content);
     if (sequence !== previewSequence) return
     previewHtml.value = data.html || '';
+    t8(() => {
+      const figures = previewBody.value?.querySelectorAll('[data-image-compare]') || [];
+      figures.forEach((figure) => {
+        const range = figure.querySelector('.image-compare__range');
+        const frame = figure.querySelector('.image-compare__frame');
+        if (!range || !frame) return
+        const update = () => frame.style.setProperty('--compare', `${range.value}%`);
+        range.addEventListener('input', update);
+        update();
+      });
+    });
     previewMinutes.value = data.reading_minutes || 1;
   } catch (requestError) {
     if (sequence !== previewSequence) return
@@ -1454,13 +1556,13 @@ return (_ctx, _cache) => {
               to: "/admin/posts",
               class: "editor-back"
             }, {
-              default: na(() => [...(_cache[33] || (_cache[33] = [
+              default: na(() => [...(_cache[42] || (_cache[42] = [
                 id("span", { "aria-hidden": "true" }, "←", -1),
                 iv(" 所有文章 ", -1)
               ]))]),
               _: 1
             }),
-            _cache[34] || (_cache[34] = id("p", { class: "eyebrow" }, "WRITING DESK / 写作台", -1)),
+            _cache[43] || (_cache[43] = id("p", { class: "eyebrow" }, "WRITING DESK / 写作台", -1)),
             id("h1", null, ea(isNew.value ? '写新文章' : '编辑文章'), 1)
           ]),
           id("div", _hoisted_4, [
@@ -1478,12 +1580,20 @@ return (_ctx, _cache) => {
                   key: 1,
                   type: "button",
                   class: "text-link bare-button",
+                  onClick: sharePreview
+                }, " 预览链接 "))
+              : i_("", true),
+            (postId.value)
+              ? (r9(), ir("button", {
+                  key: 2,
+                  type: "button",
+                  class: "text-link bare-button",
                   onClick: openRevisions
                 }, " 历史版本 "))
               : i_("", true),
             (postId.value)
               ? (r9(), ir("button", {
-                  key: 2,
+                  key: 3,
                   type: "button",
                   class: "text-link bare-button",
                   onClick: duplicateCurrent
@@ -1515,7 +1625,7 @@ return (_ctx, _cache) => {
                     to: "/admin/posts",
                     class: "btn btn--small"
                   }, {
-                    default: na(() => [...(_cache[35] || (_cache[35] = [
+                    default: na(() => [...(_cache[44] || (_cache[44] = [
                       iv("回到文章列表", -1)
                     ]))]),
                     _: 1
@@ -1535,7 +1645,7 @@ return (_ctx, _cache) => {
                       to: "/admin/posts",
                       class: "btn btn--small"
                     }, {
-                      default: na(() => [...(_cache[36] || (_cache[36] = [
+                      default: na(() => [...(_cache[45] || (_cache[45] = [
                         iv("回到文章列表", -1)
                       ]))]),
                       _: 1
@@ -1558,13 +1668,30 @@ return (_ctx, _cache) => {
                   (saveError.value)
                     ? (r9(), ir("p", _hoisted_8, ea(saveError.value), 1))
                     : i_("", true),
-                  (localDraft.value)
+                  (previewUrl.value)
                     ? (r9(), ir("div", _hoisted_9, [
+                        id("span", null, [
+                          _cache[46] || (_cache[46] = iv("草稿预览：", -1)),
+                          id("a", {
+                            href: previewUrl.value,
+                            target: "_blank",
+                            rel: "noopener"
+                          }, ea(previewUrl.value), 9, _hoisted_10)
+                        ]),
+                        id("button", {
+                          type: "button",
+                          class: "text-link bare-button is-danger",
+                          onClick: revokePreview
+                        }, "撤销链接")
+                      ]))
+                    : i_("", true),
+                  (localDraft.value)
+                    ? (r9(), ir("div", _hoisted_11, [
                         id("div", null, [
-                          _cache[37] || (_cache[37] = id("strong", null, "发现本地草稿", -1)),
+                          _cache[47] || (_cache[47] = id("strong", null, "发现本地草稿", -1)),
                           id("p", null, "保存于 " + ea(tA(formatShortDate)(localDraft.value.savedAt)) + "，比服务器上的版本更新。", 1)
                         ]),
-                        id("div", _hoisted_10, [
+                        id("div", _hoisted_12, [
                           id("button", {
                             type: "button",
                             class: "btn btn--small",
@@ -1578,10 +1705,10 @@ return (_ctx, _cache) => {
                         ])
                       ]))
                     : i_("", true),
-                  id("div", _hoisted_11, [
-                    id("div", _hoisted_12, [
-                      id("section", _hoisted_13, [
-                        _cache[38] || (_cache[38] = id("label", {
+                  id("div", _hoisted_13, [
+                    id("div", _hoisted_14, [
+                      id("section", _hoisted_15, [
+                        _cache[48] || (_cache[48] = id("label", {
                           id: "editor-title-label",
                           for: "post-title",
                           class: "visually-hidden"
@@ -1599,20 +1726,20 @@ return (_ctx, _cache) => {
                         }, null, 512), [
                           [o7, form.title]
                         ]),
-                        id("div", _hoisted_14, [
+                        id("div", _hoisted_16, [
                           id("span", null, ea(form.title.length) + " / 120", 1),
                           (autoSavedAt.value)
-                            ? (r9(), ir("span", _hoisted_15, "自动保存于 " + ea(tA(formatShortDate)(autoSavedAt.value)), 1))
+                            ? (r9(), ir("span", _hoisted_17, "自动保存于 " + ea(tA(formatShortDate)(autoSavedAt.value)), 1))
                             : i_("", true),
                           (dirty.value)
-                            ? (r9(), ir("span", _hoisted_16, "未保存"))
+                            ? (r9(), ir("span", _hoisted_18, "未保存"))
                             : (lastSavedAt.value)
-                              ? (r9(), ir("span", _hoisted_17, "上次保存 " + ea(tA(formatShortDate)(lastSavedAt.value)), 1))
+                              ? (r9(), ir("span", _hoisted_19, "上次保存 " + ea(tA(formatShortDate)(lastSavedAt.value)), 1))
                               : i_("", true)
                         ])
                       ]),
-                      id("section", _hoisted_18, [
-                        _cache[39] || (_cache[39] = id("label", {
+                      id("section", _hoisted_20, [
+                        _cache[49] || (_cache[49] = id("label", {
                           for: "post-excerpt",
                           class: "field-label"
                         }, [
@@ -1629,29 +1756,29 @@ return (_ctx, _cache) => {
                         }, null, 512), [
                           [o7, form.excerpt]
                         ]),
-                        id("p", _hoisted_19, ea(form.excerpt.length) + " / 300", 1)
+                        id("p", _hoisted_21, ea(form.excerpt.length) + " / 300", 1)
                       ]),
-                      id("section", _hoisted_20, [
-                        id("div", _hoisted_21, [
-                          _cache[40] || (_cache[40] = id("h2", { id: "writing-label" }, "正文", -1)),
-                          id("div", _hoisted_22, [
+                      id("section", _hoisted_22, [
+                        id("div", _hoisted_23, [
+                          _cache[50] || (_cache[50] = id("h2", { id: "writing-label" }, "正文", -1)),
+                          id("div", _hoisted_24, [
                             id("button", {
                               type: "button",
                               role: "tab",
                               "aria-selected": activeTab.value === 'write',
                               class: Y({ 'is-active': activeTab.value === 'write' }),
                               onClick: _cache[4] || (_cache[4] = $event => (activeTab.value = 'write'))
-                            }, " 写作 ", 10, _hoisted_23),
+                            }, " 写作 ", 10, _hoisted_25),
                             id("button", {
                               type: "button",
                               role: "tab",
                               "aria-selected": activeTab.value === 'preview',
                               class: Y({ 'is-active': activeTab.value === 'preview' }),
                               onClick: _cache[5] || (_cache[5] = $event => (activeTab.value = 'preview'))
-                            }, " 预览 ", 10, _hoisted_24)
+                            }, " 预览 ", 10, _hoisted_26)
                           ])
                         ]),
-                        id("div", _hoisted_25, [
+                        id("div", _hoisted_27, [
                           (r9(), ir(r2, null, lj(toolbar, (item) => {
                             return id("button", {
                               key: item.title,
@@ -1660,7 +1787,7 @@ return (_ctx, _cache) => {
                               title: item.title,
                               "aria-label": item.title,
                               onClick: $event => (insertSnippet(item))
-                            }, ea(item.label), 9, _hoisted_26)
+                            }, ea(item.label), 9, _hoisted_28)
                           }), 64)),
                           id("button", {
                             type: "button",
@@ -1669,13 +1796,18 @@ return (_ctx, _cache) => {
                             title: "上传图片",
                             "aria-label": "上传图片",
                             onClick: _cache[6] || (_cache[6] = $event => (imageInput.value?.click()))
-                          }, ea(uploadingImage.value ? '上传中…' : '图片'), 9, _hoisted_27),
+                          }, ea(uploadingImage.value ? '上传中…' : '图片'), 9, _hoisted_29),
                           id("button", {
                             type: "button",
                             class: "toolbar-button toolbar-button--image",
                             onClick: _cache[7] || (_cache[7] = $event => (openMediaPicker('insert')))
                           }, " 媒体库 "),
-                          _cache[41] || (_cache[41] = id("span", { class: "toolbar-hint" }, "Markdown", -1))
+                          id("button", {
+                            type: "button",
+                            class: "toolbar-button toolbar-button--image",
+                            onClick: openCompare
+                          }, " 对比图 "),
+                          _cache[51] || (_cache[51] = id("span", { class: "toolbar-hint" }, "Markdown", -1))
                         ]),
                         id("input", {
                           ref_key: "imageInput",
@@ -1686,16 +1818,16 @@ return (_ctx, _cache) => {
                           onChange: handleImageInput
                         }, null, 544),
                         (mediaError.value)
-                          ? (r9(), ir("p", _hoisted_28, ea(mediaError.value), 1))
+                          ? (r9(), ir("p", _hoisted_30, ea(mediaError.value), 1))
                           : i_("", true),
                         (mediaNotice.value)
-                          ? (r9(), ir("p", _hoisted_29, ea(mediaNotice.value), 1))
+                          ? (r9(), ir("p", _hoisted_31, ea(mediaNotice.value), 1))
                           : i_("", true),
                         id("div", {
                           class: Y(["editor-panes", `is-${activeTab.value}`])
                         }, [
-                          id("div", _hoisted_30, [
-                            _cache[43] || (_cache[43] = id("label", {
+                          id("div", _hoisted_32, [
+                            _cache[53] || (_cache[53] = id("label", {
                               for: "post-content",
                               class: "visually-hidden"
                             }, "Markdown 正文", -1)),
@@ -1712,41 +1844,43 @@ return (_ctx, _cache) => {
                             }, null, 544), [
                               [o7, form.content_md]
                             ]),
-                            id("div", _hoisted_31, [
+                            id("div", _hoisted_33, [
                               id("span", null, ea(contentLength.value.toLocaleString('zh-CN')) + " 字符", 1),
-                              _cache[42] || (_cache[42] = id("span", null, "Ctrl / ⌘ + S 保存", -1))
+                              _cache[52] || (_cache[52] = id("span", null, "Ctrl / ⌘ + S 保存", -1))
                             ])
                           ]),
-                          id("div", _hoisted_32, [
-                            id("div", _hoisted_33, [
-                              _cache[44] || (_cache[44] = id("span", null, "预览", -1)),
+                          id("div", _hoisted_34, [
+                            id("div", _hoisted_35, [
+                              _cache[54] || (_cache[54] = id("span", null, "预览", -1)),
                               (previewMinutes.value)
-                                ? (r9(), ir("span", _hoisted_34, "约 " + ea(previewMinutes.value) + " 分钟", 1))
+                                ? (r9(), ir("span", _hoisted_36, "约 " + ea(previewMinutes.value) + " 分钟", 1))
                                 : i_("", true)
                             ]),
-                            id("div", _hoisted_35, [
+                            id("div", _hoisted_37, [
                               (previewError.value)
-                                ? (r9(), ir("p", _hoisted_36, ea(previewError.value), 1))
+                                ? (r9(), ir("p", _hoisted_38, ea(previewError.value), 1))
                                 : (previewLoading.value && !previewHtml.value)
-                                  ? (r9(), ir("p", _hoisted_37, " 正在排版… "))
+                                  ? (r9(), ir("p", _hoisted_39, " 正在排版… "))
                                   : (previewHtml.value)
                                     ? (r9(), ir("div", {
                                         key: 2,
+                                        ref_key: "previewBody",
+                                        ref: previewBody,
                                         class: "prose preview-prose",
                                         innerHTML: previewHtml.value
-                                      }, null, 8, _hoisted_38))
-                                    : (r9(), ir("p", _hoisted_39, " 写下第一段，右边就会出现排好版的纸页。 "))
+                                      }, null, 8, _hoisted_40))
+                                    : (r9(), ir("p", _hoisted_41, " 写下第一段，右边就会出现排好版的纸页。 "))
                             ])
                           ])
                         ], 2)
                       ])
                     ]),
-                    id("aside", _hoisted_40, [
-                      id("section", _hoisted_41, [
-                        _cache[52] || (_cache[52] = id("div", { class: "meta-card__head" }, [
+                    id("aside", _hoisted_42, [
+                      id("section", _hoisted_43, [
+                        _cache[62] || (_cache[62] = id("div", { class: "meta-card__head" }, [
                           id("h2", null, "发布状态")
                         ], -1)),
-                        id("div", _hoisted_42, [
+                        id("div", _hoisted_44, [
                           id("label", {
                             class: Y(["status-option", { 'is-active': form.status === 'draft' }])
                           }, [
@@ -1758,11 +1892,11 @@ return (_ctx, _cache) => {
                             }, null, 512), [
                               [sn, form.status]
                             ]),
-                            _cache[45] || (_cache[45] = id("span", {
+                            _cache[55] || (_cache[55] = id("span", {
                               class: "status-option__dot",
                               "aria-hidden": "true"
                             }, null, -1)),
-                            _cache[46] || (_cache[46] = id("span", null, [
+                            _cache[56] || (_cache[56] = id("span", null, [
                               id("strong", null, "草稿"),
                               id("small", null, "仅自己可见")
                             ], -1))
@@ -1778,11 +1912,11 @@ return (_ctx, _cache) => {
                             }, null, 512), [
                               [sn, form.status]
                             ]),
-                            _cache[47] || (_cache[47] = id("span", {
+                            _cache[57] || (_cache[57] = id("span", {
                               class: "status-option__dot",
                               "aria-hidden": "true"
                             }, null, -1)),
-                            _cache[48] || (_cache[48] = id("span", null, [
+                            _cache[58] || (_cache[58] = id("span", null, [
                               id("strong", null, "发布"),
                               id("small", null, "公开到文章列表")
                             ], -1))
@@ -1798,19 +1932,19 @@ return (_ctx, _cache) => {
                             }, null, 512), [
                               [sn, form.status]
                             ]),
-                            _cache[49] || (_cache[49] = id("span", {
+                            _cache[59] || (_cache[59] = id("span", {
                               class: "status-option__dot",
                               "aria-hidden": "true"
                             }, null, -1)),
-                            _cache[50] || (_cache[50] = id("span", null, [
+                            _cache[60] || (_cache[60] = id("span", null, [
                               id("strong", null, "定时发布"),
                               id("small", null, "到点自动上线")
                             ], -1))
                           ], 2)
                         ]),
                         (form.status === 'scheduled')
-                          ? (r9(), ir("div", _hoisted_43, [
-                              _cache[51] || (_cache[51] = id("label", { for: "post-scheduled-at" }, "上线时间", -1)),
+                          ? (r9(), ir("div", _hoisted_45, [
+                              _cache[61] || (_cache[61] = id("label", { for: "post-scheduled-at" }, "上线时间", -1)),
                               nu(id("input", {
                                 id: "post-scheduled-at",
                                 "onUpdate:modelValue": _cache[12] || (_cache[12] = $event => ((form.scheduledAt) = $event)),
@@ -1821,19 +1955,19 @@ return (_ctx, _cache) => {
                               ])
                             ]))
                           : i_("", true),
-                        _cache[53] || (_cache[53] = id("p", { class: "meta-card__note" }, " 切换为草稿后保存，会从公开页面移除。自动保存每 28 秒检查一次。 ", -1))
+                        _cache[63] || (_cache[63] = id("p", { class: "meta-card__note" }, " 切换为草稿后保存，会从公开页面移除。自动保存每 28 秒检查一次。 ", -1))
                       ]),
-                      id("section", _hoisted_44, [
-                        _cache[55] || (_cache[55] = id("div", { class: "meta-card__head" }, [
+                      id("section", _hoisted_46, [
+                        _cache[65] || (_cache[65] = id("div", { class: "meta-card__head" }, [
                           id("h2", null, "封面与推荐")
                         ], -1)),
                         (form.coverImage)
-                          ? (r9(), ir("div", _hoisted_45, [
+                          ? (r9(), ir("div", _hoisted_47, [
                               id("img", {
                                 src: form.coverImage,
                                 alt: "文章封面"
-                              }, null, 8, _hoisted_46),
-                              id("div", _hoisted_47, [
+                              }, null, 8, _hoisted_48),
+                              id("div", _hoisted_49, [
                                 id("button", {
                                   type: "button",
                                   class: "text-link bare-button",
@@ -1852,24 +1986,24 @@ return (_ctx, _cache) => {
                               class: "btn btn--small",
                               onClick: _cache[15] || (_cache[15] = $event => (openMediaPicker('cover')))
                             }, " 选择封面 ")),
-                        id("label", _hoisted_48, [
+                        id("label", _hoisted_50, [
                           nu(id("input", {
                             "onUpdate:modelValue": _cache[16] || (_cache[16] = $event => ((form.featured) = $event)),
                             type: "checkbox"
                           }, null, 512), [
                             [se, form.featured]
                           ]),
-                          _cache[54] || (_cache[54] = id("span", null, "推荐 / 置顶到首页前面", -1))
+                          _cache[64] || (_cache[64] = id("span", null, "推荐 / 置顶到首页前面", -1))
                         ])
                       ]),
-                      id("section", _hoisted_49, [
-                        _cache[64] || (_cache[64] = id("div", { class: "meta-card__head" }, [
+                      id("section", _hoisted_51, [
+                        _cache[74] || (_cache[74] = id("div", { class: "meta-card__head" }, [
                           id("h2", null, "链接与标签")
                         ], -1)),
-                        id("div", _hoisted_50, [
-                          _cache[57] || (_cache[57] = id("label", { for: "post-slug" }, "文章地址", -1)),
-                          id("div", _hoisted_51, [
-                            _cache[56] || (_cache[56] = id("span", { class: "slug-prefix" }, "/posts/", -1)),
+                        id("div", _hoisted_52, [
+                          _cache[67] || (_cache[67] = id("label", { for: "post-slug" }, "文章地址", -1)),
+                          id("div", _hoisted_53, [
+                            _cache[66] || (_cache[66] = id("span", { class: "slug-prefix" }, "/posts/", -1)),
                             nu(id("input", {
                               id: "post-slug",
                               "onUpdate:modelValue": _cache[17] || (_cache[17] = $event => ((form.slug) = $event)),
@@ -1883,10 +2017,10 @@ return (_ctx, _cache) => {
                               [o7, form.slug]
                             ])
                           ]),
-                          _cache[58] || (_cache[58] = id("p", { class: "field-hint" }, "建议使用简短的英文或数字，留空会根据标题生成。", -1))
+                          _cache[68] || (_cache[68] = id("p", { class: "field-hint" }, "建议使用简短的英文或数字，留空会根据标题生成。", -1))
                         ]),
-                        id("div", _hoisted_52, [
-                          _cache[59] || (_cache[59] = id("label", { for: "post-tags" }, "标签", -1)),
+                        id("div", _hoisted_54, [
+                          _cache[69] || (_cache[69] = id("label", { for: "post-tags" }, "标签", -1)),
                           nu(id("input", {
                             id: "post-tags",
                             "onUpdate:modelValue": _cache[18] || (_cache[18] = $event => ((form.tagsText) = $event)),
@@ -1898,10 +2032,10 @@ return (_ctx, _cache) => {
                           }, null, 512), [
                             [o7, form.tagsText]
                           ]),
-                          id("p", _hoisted_53, "用逗号分隔，最多 8 个。当前 " + ea(tags.value.length) + " 个。", 1)
+                          id("p", _hoisted_55, "用逗号分隔，最多 8 个。当前 " + ea(tags.value.length) + " 个。", 1)
                         ]),
-                        id("div", _hoisted_54, [
-                          _cache[60] || (_cache[60] = id("label", { for: "post-series" }, "系列", -1)),
+                        id("div", _hoisted_56, [
+                          _cache[70] || (_cache[70] = id("label", { for: "post-series" }, "系列", -1)),
                           nu(id("input", {
                             id: "post-series",
                             "onUpdate:modelValue": _cache[19] || (_cache[19] = $event => ((form.series) = $event)),
@@ -1913,11 +2047,11 @@ return (_ctx, _cache) => {
                           }, null, 512), [
                             [o7, form.series]
                           ]),
-                          _cache[61] || (_cache[61] = id("p", { class: "field-hint" }, "同系列文章会出现在文章底部的系列导航中，并生成系列页。", -1))
+                          _cache[71] || (_cache[71] = id("p", { class: "field-hint" }, "同系列文章会出现在文章底部的系列导航中，并生成系列页。", -1))
                         ]),
                         (form.series.trim())
-                          ? (r9(), ir("div", _hoisted_55, [
-                              _cache[62] || (_cache[62] = id("label", { for: "post-series-order" }, "系列顺序", -1)),
+                          ? (r9(), ir("div", _hoisted_57, [
+                              _cache[72] || (_cache[72] = id("label", { for: "post-series-order" }, "系列顺序", -1)),
                               nu(id("input", {
                                 id: "post-series-order",
                                 "onUpdate:modelValue": _cache[20] || (_cache[20] = $event => ((form.seriesOrder) = $event)),
@@ -1933,28 +2067,28 @@ return (_ctx, _cache) => {
                                   { number: true }
                                 ]
                               ]),
-                              _cache[63] || (_cache[63] = id("p", { class: "field-hint" }, "数字小的排在前面，同序号按发布时间。", -1))
+                              _cache[73] || (_cache[73] = id("p", { class: "field-hint" }, "数字小的排在前面，同序号按发布时间。", -1))
                             ]))
                           : i_("", true)
                       ]),
-                      id("details", _hoisted_56, [
-                        _cache[71] || (_cache[71] = id("summary", { class: "seo-card__summary" }, [
+                      id("details", _hoisted_58, [
+                        _cache[81] || (_cache[81] = id("summary", { class: "seo-card__summary" }, [
                           id("span", null, "维修速览"),
                           id("small", null, "显示在文章正文前")
                         ], -1)),
-                        id("div", _hoisted_57, [
+                        id("div", _hoisted_59, [
                           id("button", {
                             type: "button",
                             class: "text-link bare-button repair-template",
                             onClick: applyRepairTemplate
                           }, " 套用维修教程模板 "),
-                          id("div", _hoisted_58, [
-                            _cache[66] || (_cache[66] = id("label", { for: "repair-risk" }, "风险等级", -1)),
+                          id("div", _hoisted_60, [
+                            _cache[76] || (_cache[76] = id("label", { for: "repair-risk" }, "风险等级", -1)),
                             nu(id("select", {
                               id: "repair-risk",
                               "onUpdate:modelValue": _cache[21] || (_cache[21] = $event => ((form.repairRisk) = $event)),
                               class: "select"
-                            }, [...(_cache[65] || (_cache[65] = [
+                            }, [...(_cache[75] || (_cache[75] = [
                               id("option", { value: "low" }, "低风险", -1),
                               id("option", { value: "medium" }, "中等风险", -1),
                               id("option", { value: "high" }, "高风险", -1)
@@ -1962,8 +2096,8 @@ return (_ctx, _cache) => {
                               [sl, form.repairRisk]
                             ])
                           ]),
-                          id("div", _hoisted_59, [
-                            _cache[67] || (_cache[67] = id("label", { for: "repair-time" }, "预计耗时", -1)),
+                          id("div", _hoisted_61, [
+                            _cache[77] || (_cache[77] = id("label", { for: "repair-time" }, "预计耗时", -1)),
                             nu(id("input", {
                               id: "repair-time",
                               "onUpdate:modelValue": _cache[22] || (_cache[22] = $event => ((form.repairTime) = $event)),
@@ -1974,8 +2108,8 @@ return (_ctx, _cache) => {
                               [o7, form.repairTime]
                             ])
                           ]),
-                          id("div", _hoisted_60, [
-                            _cache[68] || (_cache[68] = id("label", { for: "repair-models" }, "适用机型", -1)),
+                          id("div", _hoisted_62, [
+                            _cache[78] || (_cache[78] = id("label", { for: "repair-models" }, "适用机型", -1)),
                             nu(id("input", {
                               id: "repair-models",
                               "onUpdate:modelValue": _cache[23] || (_cache[23] = $event => ((form.repairModels) = $event)),
@@ -1986,8 +2120,8 @@ return (_ctx, _cache) => {
                               [o7, form.repairModels]
                             ])
                           ]),
-                          id("div", _hoisted_61, [
-                            _cache[69] || (_cache[69] = id("label", { for: "repair-tools" }, "工具与材料", -1)),
+                          id("div", _hoisted_63, [
+                            _cache[79] || (_cache[79] = id("label", { for: "repair-tools" }, "工具与材料", -1)),
                             nu(id("textarea", {
                               id: "repair-tools",
                               "onUpdate:modelValue": _cache[24] || (_cache[24] = $event => ((form.repairTools) = $event)),
@@ -1998,8 +2132,8 @@ return (_ctx, _cache) => {
                               [o7, form.repairTools]
                             ])
                           ]),
-                          id("div", _hoisted_62, [
-                            _cache[70] || (_cache[70] = id("label", { for: "repair-safety" }, "安全提醒", -1)),
+                          id("div", _hoisted_64, [
+                            _cache[80] || (_cache[80] = id("label", { for: "repair-safety" }, "安全提醒", -1)),
                             nu(id("textarea", {
                               id: "repair-safety",
                               "onUpdate:modelValue": _cache[25] || (_cache[25] = $event => ((form.repairSafety) = $event)),
@@ -2012,14 +2146,14 @@ return (_ctx, _cache) => {
                           ])
                         ])
                       ]),
-                      id("details", _hoisted_63, [
-                        _cache[76] || (_cache[76] = id("summary", { class: "seo-card__summary" }, [
+                      id("details", _hoisted_65, [
+                        _cache[86] || (_cache[86] = id("summary", { class: "seo-card__summary" }, [
                           id("span", null, "SEO 设置"),
                           id("small", null, "每篇文章的标题、描述与关键词")
                         ], -1)),
-                        id("div", _hoisted_64, [
-                          id("div", _hoisted_65, [
-                            _cache[72] || (_cache[72] = id("label", { for: "post-seo-title" }, "SEO 标题", -1)),
+                        id("div", _hoisted_66, [
+                          id("div", _hoisted_67, [
+                            _cache[82] || (_cache[82] = id("label", { for: "post-seo-title" }, "SEO 标题", -1)),
                             nu(id("input", {
                               id: "post-seo-title",
                               "onUpdate:modelValue": _cache[26] || (_cache[26] = $event => ((form.seoTitle) = $event)),
@@ -2030,8 +2164,8 @@ return (_ctx, _cache) => {
                               [o7, form.seoTitle]
                             ])
                           ]),
-                          id("div", _hoisted_66, [
-                            _cache[73] || (_cache[73] = id("label", { for: "post-seo-description" }, "SEO 描述", -1)),
+                          id("div", _hoisted_68, [
+                            _cache[83] || (_cache[83] = id("label", { for: "post-seo-description" }, "SEO 描述", -1)),
                             nu(id("textarea", {
                               id: "post-seo-description",
                               "onUpdate:modelValue": _cache[27] || (_cache[27] = $event => ((form.seoDescription) = $event)),
@@ -2043,8 +2177,8 @@ return (_ctx, _cache) => {
                               [o7, form.seoDescription]
                             ])
                           ]),
-                          id("div", _hoisted_67, [
-                            _cache[74] || (_cache[74] = id("label", { for: "post-seo-keywords" }, "SEO 关键词", -1)),
+                          id("div", _hoisted_69, [
+                            _cache[84] || (_cache[84] = id("label", { for: "post-seo-keywords" }, "SEO 关键词", -1)),
                             nu(id("input", {
                               id: "post-seo-keywords",
                               "onUpdate:modelValue": _cache[28] || (_cache[28] = $event => ((form.seoKeywords) = $event)),
@@ -2055,8 +2189,8 @@ return (_ctx, _cache) => {
                               [o7, form.seoKeywords]
                             ])
                           ]),
-                          id("div", _hoisted_68, [
-                            _cache[75] || (_cache[75] = id("label", { for: "post-canonical" }, "Canonical 地址", -1)),
+                          id("div", _hoisted_70, [
+                            _cache[85] || (_cache[85] = id("label", { for: "post-canonical" }, "Canonical 地址", -1)),
                             nu(id("input", {
                               id: "post-canonical",
                               "onUpdate:modelValue": _cache[29] || (_cache[29] = $event => ((form.canonicalUrl) = $event)),
@@ -2069,33 +2203,33 @@ return (_ctx, _cache) => {
                           ])
                         ])
                       ]),
-                      id("section", _hoisted_69, [
-                        _cache[81] || (_cache[81] = id("div", { class: "meta-card__head" }, [
+                      id("section", _hoisted_71, [
+                        _cache[91] || (_cache[91] = id("div", { class: "meta-card__head" }, [
                           id("h2", null, "这一页")
                         ], -1)),
-                        id("dl", _hoisted_70, [
+                        id("dl", _hoisted_72, [
                           id("div", null, [
-                            _cache[77] || (_cache[77] = id("dt", null, "创建", -1)),
+                            _cache[87] || (_cache[87] = id("dt", null, "创建", -1)),
                             id("dd", null, ea(loadedAt.value ? tA(formatShortDate)(loadedAt.value) : '还没保存'), 1)
                           ]),
                           id("div", null, [
-                            _cache[78] || (_cache[78] = id("dt", null, "最近保存", -1)),
+                            _cache[88] || (_cache[88] = id("dt", null, "最近保存", -1)),
                             id("dd", null, ea(lastSavedAt.value ? tA(formatShortDate)(lastSavedAt.value) : '还没保存'), 1)
                           ]),
                           id("div", null, [
-                            _cache[79] || (_cache[79] = id("dt", null, "正文字符", -1)),
+                            _cache[89] || (_cache[89] = id("dt", null, "正文字符", -1)),
                             id("dd", null, ea(contentLength.value.toLocaleString('zh-CN')), 1)
                           ]),
                           (postId.value)
-                            ? (r9(), ir("div", _hoisted_71, [
-                                _cache[80] || (_cache[80] = id("dt", null, "阅读量", -1)),
+                            ? (r9(), ir("div", _hoisted_73, [
+                                _cache[90] || (_cache[90] = id("dt", null, "阅读量", -1)),
                                 id("dd", null, ea(postViews.value.toLocaleString('zh-CN')), 1)
                               ]))
                             : i_("", true)
                         ])
                       ]),
-                      id("div", _hoisted_72, [
-                        id("span", _hoisted_73, [
+                      id("div", _hoisted_74, [
+                        id("span", _hoisted_75, [
                           (saving.value)
                             ? (r9(), ir(r2, { key: 0 }, [
                                 iv("正在保存…")
@@ -2113,7 +2247,7 @@ return (_ctx, _cache) => {
                           class: "btn btn--small",
                           disabled: saving.value,
                           onClick: save
-                        }, ea(saving.value ? '保存中…' : '保存'), 9, _hoisted_74)
+                        }, ea(saving.value ? '保存中…' : '保存'), 9, _hoisted_76)
                       ])
                     ])
                   ])
@@ -2121,10 +2255,121 @@ return (_ctx, _cache) => {
       ]),
       ip(MediaPicker, {
         open: mediaPickerOpen.value,
-        title: mediaPickerMode.value === 'cover' ? '选择文章封面' : '从媒体库插入图片',
+        title: mediaPickerMode.value === 'cover' ? '选择文章封面' : mediaPickerMode.value === 'compare-before' ? '选择对比前图片' : mediaPickerMode.value === 'compare-after' ? '选择对比后图片' : '从媒体库插入图片',
         onSelect: handleMediaSelected,
         onClose: _cache[30] || (_cache[30] = $event => (mediaPickerOpen.value = false))
       }, null, 8, ["open", "title"]),
+      (r9(), ii(nO, { to: "body" }, [
+        (compareOpen.value)
+          ? (r9(), ir("div", {
+              key: 0,
+              class: "compare-dialog",
+              role: "dialog",
+              "aria-modal": "true",
+              "aria-label": "插入对比图",
+              onClick: _cache[39] || (_cache[39] = sd($event => (compareOpen.value = false), ["self"]))
+            }, [
+              id("div", _hoisted_77, [
+                id("header", _hoisted_78, [
+                  _cache[92] || (_cache[92] = id("div", null, [
+                    id("p", { class: "eyebrow" }, "BEFORE / AFTER"),
+                    id("h2", null, "插入维修对比图")
+                  ], -1)),
+                  id("button", {
+                    type: "button",
+                    class: "text-link bare-button",
+                    onClick: _cache[31] || (_cache[31] = $event => (compareOpen.value = false))
+                  }, "关闭")
+                ]),
+                id("div", _hoisted_79, [
+                  id("button", {
+                    type: "button",
+                    class: "compare-pick",
+                    onClick: _cache[32] || (_cache[32] = $event => (openMediaPicker('compare-before')))
+                  }, [
+                    (compareDraft.before)
+                      ? (r9(), ir("img", {
+                          key: 0,
+                          src: compareDraft.before,
+                          alt: ""
+                        }, null, 8, _hoisted_80))
+                      : (r9(), ir("span", _hoisted_81, "选择「之前」图片"))
+                  ]),
+                  id("button", {
+                    type: "button",
+                    class: "compare-pick",
+                    onClick: _cache[33] || (_cache[33] = $event => (openMediaPicker('compare-after')))
+                  }, [
+                    (compareDraft.after)
+                      ? (r9(), ir("img", {
+                          key: 0,
+                          src: compareDraft.after,
+                          alt: ""
+                        }, null, 8, _hoisted_82))
+                      : (r9(), ir("span", _hoisted_83, "选择「之后」图片"))
+                  ])
+                ]),
+                (mediaError.value)
+                  ? (r9(), ir("p", _hoisted_84, ea(mediaError.value), 1))
+                  : i_("", true),
+                id("div", _hoisted_85, [
+                  id("div", _hoisted_86, [
+                    _cache[93] || (_cache[93] = id("label", { for: "compare-label" }, "标题", -1)),
+                    nu(id("input", {
+                      id: "compare-label",
+                      "onUpdate:modelValue": _cache[34] || (_cache[34] = $event => ((compareDraft.label) = $event)),
+                      class: "input"
+                    }, null, 512), [
+                      [o7, compareDraft.label]
+                    ])
+                  ]),
+                  id("div", _hoisted_87, [
+                    _cache[94] || (_cache[94] = id("label", { for: "compare-before-label" }, "前标签", -1)),
+                    nu(id("input", {
+                      id: "compare-before-label",
+                      "onUpdate:modelValue": _cache[35] || (_cache[35] = $event => ((compareDraft.beforeLabel) = $event)),
+                      class: "input"
+                    }, null, 512), [
+                      [o7, compareDraft.beforeLabel]
+                    ])
+                  ]),
+                  id("div", _hoisted_88, [
+                    _cache[95] || (_cache[95] = id("label", { for: "compare-after-label" }, "后标签", -1)),
+                    nu(id("input", {
+                      id: "compare-after-label",
+                      "onUpdate:modelValue": _cache[36] || (_cache[36] = $event => ((compareDraft.afterLabel) = $event)),
+                      class: "input"
+                    }, null, 512), [
+                      [o7, compareDraft.afterLabel]
+                    ])
+                  ]),
+                  id("div", _hoisted_89, [
+                    _cache[96] || (_cache[96] = id("label", { for: "compare-caption" }, "说明", -1)),
+                    nu(id("input", {
+                      id: "compare-caption",
+                      "onUpdate:modelValue": _cache[37] || (_cache[37] = $event => ((compareDraft.caption) = $event)),
+                      class: "input"
+                    }, null, 512), [
+                      [o7, compareDraft.caption]
+                    ])
+                  ])
+                ]),
+                id("div", _hoisted_90, [
+                  id("button", {
+                    type: "button",
+                    class: "btn btn--small",
+                    onClick: _cache[38] || (_cache[38] = $event => (compareOpen.value = false))
+                  }, "取消"),
+                  id("button", {
+                    type: "button",
+                    class: "btn btn--small btn--solid",
+                    onClick: insertCompare
+                  }, "插入到正文")
+                ])
+              ])
+            ]))
+          : i_("", true)
+      ])),
       (r9(), ii(nO, { to: "body" }, [
         (revisionsOpen.value)
           ? (r9(), ir("div", {
@@ -2133,27 +2378,27 @@ return (_ctx, _cache) => {
               role: "dialog",
               "aria-modal": "true",
               "aria-label": "历史版本",
-              onClick: _cache[32] || (_cache[32] = sd($event => (revisionsOpen.value = false), ["self"]))
+              onClick: _cache[41] || (_cache[41] = sd($event => (revisionsOpen.value = false), ["self"]))
             }, [
-              id("div", _hoisted_75, [
-                id("header", _hoisted_76, [
-                  _cache[82] || (_cache[82] = id("div", null, [
+              id("div", _hoisted_91, [
+                id("header", _hoisted_92, [
+                  _cache[97] || (_cache[97] = id("div", null, [
                     id("p", { class: "eyebrow" }, "HISTORY / 历史版本"),
                     id("h2", null, "历史版本")
                   ], -1)),
                   id("button", {
                     type: "button",
                     class: "text-link bare-button",
-                    onClick: _cache[31] || (_cache[31] = $event => (revisionsOpen.value = false))
+                    onClick: _cache[40] || (_cache[40] = $event => (revisionsOpen.value = false))
                   }, "关闭")
                 ]),
                 (revisionError.value)
-                  ? (r9(), ir("p", _hoisted_77, ea(revisionError.value), 1))
+                  ? (r9(), ir("p", _hoisted_93, ea(revisionError.value), 1))
                   : i_("", true),
-                id("div", _hoisted_78, [
-                  id("div", _hoisted_79, [
+                id("div", _hoisted_94, [
+                  id("div", _hoisted_95, [
                     (revisionLoading.value)
-                      ? (r9(), ir("p", _hoisted_80, "正在读取版本…"))
+                      ? (r9(), ir("p", _hoisted_96, "正在读取版本…"))
                       : i_("", true),
                     (r9(true), ir(r2, null, lj(revisions.value, (rev) => {
                       return (r9(), ir("button", {
@@ -2164,23 +2409,23 @@ return (_ctx, _cache) => {
                       }, [
                         id("span", null, ea(tA(formatShortDate)(rev.created_at)), 1),
                         id("strong", null, ea(rev.title), 1)
-                      ], 10, _hoisted_81))
+                      ], 10, _hoisted_97))
                     }), 128)),
                     (!revisionLoading.value && !revisions.value.length)
-                      ? (r9(), ir("p", _hoisted_82, "还没有历史版本。下一次保存后会开始记录。"))
+                      ? (r9(), ir("p", _hoisted_98, "还没有历史版本。下一次保存后会开始记录。"))
                       : i_("", true)
                   ]),
-                  id("div", _hoisted_83, [
+                  id("div", _hoisted_99, [
                     (selectedRevision.value)
                       ? (r9(), ir(r2, { key: 0 }, [
-                          id("div", _hoisted_84, [
-                            _cache[83] || (_cache[83] = id("span", null, "与当前稿对比", -1)),
+                          id("div", _hoisted_100, [
+                            _cache[98] || (_cache[98] = id("span", null, "与当前稿对比", -1)),
                             id("button", {
                               type: "button",
                               class: "btn btn--small",
                               disabled: revisionBusy.value,
                               onClick: restoreSelectedRevision
-                            }, ea(revisionBusy.value ? '恢复中…' : '恢复这一版'), 9, _hoisted_85)
+                            }, ea(revisionBusy.value ? '恢复中…' : '恢复这一版'), 9, _hoisted_101)
                           ]),
                           id("pre", null, [
                             (r9(true), ir(r2, null, lj(revisionDiff.value, (part, index) => {
@@ -2191,7 +2436,7 @@ return (_ctx, _cache) => {
                             }), 128))
                           ])
                         ], 64))
-                      : (r9(), ir("p", _hoisted_86, "从左侧选择一个版本，看看它改了什么。"))
+                      : (r9(), ir("p", _hoisted_102, "从左侧选择一个版本，看看它改了什么。"))
                   ])
                 ])
               ])
@@ -2205,6 +2450,6 @@ return (_ctx, _cache) => {
 }
 
 };
-const AdminEditorView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-fe0bdef8"]]);
+const AdminEditorView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-dd94de1e"]]);
 
 export { AdminEditorView as default };

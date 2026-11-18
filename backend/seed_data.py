@@ -57,6 +57,8 @@ DEFAULT_SETTINGS: dict[str, str] = {
     "disclaimer_md": "## 免责声明\n\n本站记录的是个人维修经验，不构成专业维修、数据恢复或安全建议。拆机、通电和操作硬件有风险，请先断开电源并备份数据；因参照本站内容造成的损失，作者不承担责任。",
     "baidu_push_token": "",
     "indexnow_key": "",
+    "alert_webhook_url": "",
+    "uptime_ping_url": "",
 }
 
 POSTS: list[dict[str, object]] = [

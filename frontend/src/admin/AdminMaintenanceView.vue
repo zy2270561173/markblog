@@ -14,11 +14,13 @@ const errors = ref([])
 const redirects = ref([])
 const notFound = ref([])
 const settings = ref(null)
+const health = ref(null)
 const secret = ref('')
 const qrData = ref('')
 const busy = ref(false)
 const twoFactor = reactive({ password: '', code: '' })
 const seoForm = reactive({ baidu_push_token: '', indexnow_key: '' })
+const alertForm = reactive({ alert_webhook_url: '', uptime_ping_url: '' })
 const redirectForm = reactive({ path: '', target: '' })
 
 const actionLabels = {
@@ -47,6 +49,10 @@ const actionLabels = {
   '2fa_disabled': '关闭 2FA',
   errors_cleared: '清空错误日志',
   not_found_cleared: '清空 404 记录',
+  alert_test: '测试告警',
+  monitor_alert: '监控告警',
+  preview_token_created: '生成草稿预览链接',
+  preview_token_revoked: '撤销草稿预览链接',
 }
 
 function formatTime(value) {
@@ -69,7 +75,7 @@ async function loadPage() {
   loading.value = true
   error.value = ''
   try {
-    const [two, auditData, errorData, redirectData, notFoundData, settingData] =
+    const [two, auditData, errorData, redirectData, notFoundData, settingData, healthData] =
       await Promise.all([
         adminApi.get2fa(),
         adminApi.getAudit(),
@@ -77,6 +83,7 @@ async function loadPage() {
         adminApi.getRedirects(),
         adminApi.getNotFound(),
         adminApi.getSettings(),
+        adminApi.getHealth(),
       ])
     status.value = two
     audit.value = auditData.items || []
@@ -84,8 +91,11 @@ async function loadPage() {
     redirects.value = redirectData.items || []
     notFound.value = notFoundData.items || []
     settings.value = settingData
+    health.value = healthData
     seoForm.baidu_push_token = settingData.baidu_push_token || ''
     seoForm.indexnow_key = settingData.indexnow_key || ''
+    alertForm.alert_webhook_url = settingData.alert_webhook_url || ''
+    alertForm.uptime_ping_url = settingData.uptime_ping_url || ''
   } catch (requestError) {
     error.value = requestError.message || '运维页加载失败。'
   } finally {
@@ -164,10 +174,57 @@ async function saveSeo() {
       ...settings.value,
       baidu_push_token: seoForm.baidu_push_token.trim(),
       indexnow_key: seoForm.indexnow_key.trim(),
+      alert_webhook_url: alertForm.alert_webhook_url.trim(),
+      uptime_ping_url: alertForm.uptime_ping_url.trim(),
     })
     flash('SEO 推送设置已保存。')
   } catch (requestError) {
     error.value = requestError.message || '保存失败。'
+  } finally {
+    busy.value = false
+  }
+}
+
+async function saveAlerts() {
+  if (!settings.value) return
+  busy.value = true
+  error.value = ''
+  try {
+    settings.value = await adminApi.saveSettings({
+      ...settings.value,
+      baidu_push_token: seoForm.baidu_push_token.trim(),
+      indexnow_key: seoForm.indexnow_key.trim(),
+      alert_webhook_url: alertForm.alert_webhook_url.trim(),
+      uptime_ping_url: alertForm.uptime_ping_url.trim(),
+    })
+    const data = await adminApi.getHealth()
+    health.value = data
+    flash('监控告警设置已保存。')
+  } catch (requestError) {
+    error.value = requestError.message || '保存失败。'
+  } finally {
+    busy.value = false
+  }
+}
+
+async function testAlerts() {
+  busy.value = true
+  error.value = ''
+  try {
+    if (settings.value) {
+      settings.value = await adminApi.saveSettings({
+        ...settings.value,
+        baidu_push_token: seoForm.baidu_push_token.trim(),
+        indexnow_key: seoForm.indexnow_key.trim(),
+        alert_webhook_url: alertForm.alert_webhook_url.trim(),
+        uptime_ping_url: alertForm.uptime_ping_url.trim(),
+      })
+    }
+    const result = await adminApi.testAlerts()
+    const ok = [result.webhook, result.ping].filter(Boolean).every((item) => item.ok)
+    flash(ok ? '测试告警发送成功。' : '已发送，但至少一个地址返回失败，请检查日志或地址。')
+  } catch (requestError) {
+    error.value = requestError.message || '测试告警失败。'
   } finally {
     busy.value = false
   }
@@ -244,7 +301,7 @@ onMounted(() => {
         <div>
           <p class="eyebrow">SECURITY / 安全与运维</p>
           <h1>安全与运维</h1>
-          <p>两步验证、操作日志、SEO 推送、重定向和 404 记录。</p>
+          <p>两步验证、服务监控告警、操作日志、SEO 推送、重定向和 404 记录。</p>
         </div>
         <a :href="adminApi.analyticsCsvUrl()" class="btn">导出阅读 CSV</a>
       </header>
@@ -313,6 +370,33 @@ onMounted(() => {
           <div class="button-row">
             <button type="button" class="btn btn--small" :disabled="busy" @click="saveSeo">保存</button>
             <button type="button" class="btn btn--small btn--solid" :disabled="busy" @click="pushSeo">推送全部已发布文章</button>
+          </div>
+        </section>
+
+        <section class="admin-card">
+          <div class="admin-card__head">
+            <h2>服务监控与告警</h2>
+            <p :class="health?.ok ? 'health-ok' : 'health-warn'">
+              {{ health?.ok ? '当前正常' : '有需要留意的问题' }}
+            </p>
+          </div>
+          <ul v-if="health?.issues?.length" class="health-issues">
+            <li v-for="issue in health.issues" :key="issue">{{ issue }}</li>
+          </ul>
+          <p v-else class="admin-note">数据库、媒体目录、NTP 校时和最近 30 小时自动备份都正常。</p>
+          <div class="field">
+            <label for="alert-webhook">告警 Webhook</label>
+            <input id="alert-webhook" v-model="alertForm.alert_webhook_url" class="input" placeholder="https://…（Bark / 飞书 / 钉钉 / 自定义）" />
+            <p class="field-hint">发现异常或恢复时 POST 一段 JSON；留空则关闭 Webhook。</p>
+          </div>
+          <div class="field">
+            <label for="uptime-ping">Uptime 心跳地址</label>
+            <input id="uptime-ping" v-model="alertForm.uptime_ping_url" class="input" placeholder="https://hc-ping.com/…" />
+            <p class="field-hint">正常时每 5 分钟 GET 一次；进程或服务器宕机后由外部服务发告警。</p>
+          </div>
+          <div class="button-row">
+            <button type="button" class="btn btn--small" :disabled="busy" @click="saveAlerts">保存</button>
+            <button type="button" class="btn btn--small" :disabled="busy" @click="testAlerts">发送测试告警</button>
           </div>
         </section>
 
@@ -429,6 +513,28 @@ onMounted(() => {
   overflow-wrap: anywhere;
   margin-top: 6px;
   font-size: 11px;
+}
+
+.health-ok {
+  color: var(--color-grass);
+  font-family: var(--font-hand);
+  font-size: 13px;
+}
+
+.health-warn {
+  color: var(--color-vermilion);
+  font-family: var(--font-hand);
+  font-size: 13px;
+}
+
+.health-issues {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 12px 0;
+  padding-left: 18px;
+  color: var(--color-vermilion);
+  font-size: 12px;
 }
 
 .redirect-form {

@@ -18,6 +18,12 @@ const routes = [
     component: () => import('./views/PostView.vue'),
   },
   {
+    path: '/preview/:token',
+    name: 'post-preview',
+    component: () => import('./views/PostView.vue'),
+    meta: { noindex: true },
+  },
+  {
     path: '/about',
     name: 'about',
     component: () => import('./views/AboutView.vue'),

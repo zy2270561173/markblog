@@ -2,7 +2,7 @@
 
 一个铅笔手绘风的中文电脑维修笔记：Vue 3 前端构建成静态文件，由 FastAPI 统一提供页面与 API；文章、SEO、备案信息、前台文案、外观和后台会话全部存放在 SQLite 中；正文使用 Markdown 编写。
 
-后台包含仪表盘、文章管理、媒体与数据、安全与运维、外观与文案、站点设置。公开站支持图片媒体库、文章封面、正文全文搜索、文章系列、相关文章、维修速览、目录 / 复制代码 / 图片灯箱 / 字号调整 / 文章二维码、阅读量与完成度统计、访客主题切换，以及「纸本手绘 / 素纸极简」两套排版和按 NTP 校时自动切换的白天 / 黑夜主题。
+后台包含仪表盘、文章管理、媒体与数据、安全与运维、外观与文案、站点设置。公开站支持图片媒体库、文章封面、维修前后对比图、草稿预览链接、正文全文搜索、文章系列、相关文章、维修速览、目录 / 复制代码 / 图片灯箱 / 字号调整 / 文章二维码、阅读量与完成度统计、访客主题切换，以及「纸本手绘 / 素纸极简」两套排版和按 NTP 校时自动切换的白天 / 黑夜主题。
 
 公开页面**没有任何登录、注册、用户中心入口或相关导航**，也不提供评论、投稿等访客账号功能。唯一的管理员入口位于 `/admin`，不出现在公开页面链接中，并带有 `noindex` 响应头与 robots 屏蔽。
 
@@ -14,7 +14,7 @@
 | --- | --- |
 | ![Markblog 公开首页](docs/preview-home.png) | ![Markblog 管理仪表盘](docs/preview-admin-dashboard.png) |
 
-[文章阅读页](docs/preview-post-reading.png) · [文章二维码](docs/preview-post-qr.png) · [媒体、自动备份与封面](docs/preview-admin-assets.png) · [安全与运维](docs/preview-admin-maintenance.png) · [后台外观与文案](docs/preview-admin-appearance.png) · [黑夜 + 素纸极简](docs/preview-dark-minimal.png) · [手机版首页](docs/preview-home-mobile.png) · [手机版文章](docs/preview-post-reading-mobile.png) · [后台设置](docs/preview-admin-settings.png) · [关于页](docs/preview-about.png)
+[文章阅读页](docs/preview-post-reading.png) · [文章二维码](docs/preview-post-qr.png) · [草稿预览与图片对比](docs/preview-draft-compare.png) · [媒体、自动备份与封面](docs/preview-admin-assets.png) · [安全与运维](docs/preview-admin-maintenance.png) · [后台外观与文案](docs/preview-admin-appearance.png) · [黑夜 + 素纸极简](docs/preview-dark-minimal.png) · [手机版首页](docs/preview-home-mobile.png) · [手机版文章](docs/preview-post-reading-mobile.png) · [后台设置](docs/preview-admin-settings.png) · [关于页](docs/preview-about.png)
 
 ## 默认内容
 
@@ -76,6 +76,8 @@ npm run build
 | 维修速览 | 文章表的 `repair_meta`（风险、耗时、工具、机型、安全提醒） |
 | 合规页面 | `privacy_md`、`disclaimer_md` |
 | SEO 推送 | `baidu_push_token`、`indexnow_key` |
+| 草稿预览 | 文章表的 `preview_token`；预览页不进入 sitemap |
+| 监控告警 | `alert_webhook_url`、`uptime_ping_url` |
 
 备案查询链接默认指向：
 
@@ -122,6 +124,19 @@ python -m backend.manage reset-2fa
 - 文章封面会显示在首页、归档、相关文章和文章详情，并用于 og:image。
 - 文章页提供目录、代码复制、图片灯箱、阅读进度、字号调整和每篇文章的二维码。
 - 维修速览卡片显示风险等级、预计耗时、适用机型、工具材料和安全提醒。
+- 正文支持可拖动的「之前 / 之后」图片对比块，适合清灰、换屏、换硅脂等维修记录：
+
+```markdown
+:::compare
+before: /media/before.webp
+after: /media/after.webp
+label: 清灰前后
+before_label: 之前
+after_label: 之后
+caption: 同一台笔记本的风扇
+:::
+```
+- 草稿可生成只在拿到链接时可访问的预览页，页面 `noindex`，不会进入站点导航或站点地图。
 - 页脚提供隐私说明、免责声明和 RSS 入口。
 - 访客可切换「跟随时间 / 白天 / 黑夜」，选择保存在浏览器；默认仍按 NTP 自动。
 - 动态 `sitemap.xml`、`robots.txt`、RSS、页面级标题/描述/Open Graph、Article/CollectionPage JSON-LD。
@@ -134,6 +149,8 @@ python -m backend.manage reset-2fa
 - `/admin/dashboard` 仪表盘：已发布、草稿、标签、全站字数、最近编辑、站点就绪状态、当前排版与昼夜主题、NTP 状态、常用标签。
 - `/admin` 管理员账号密码验证；无注册、无找回密码入口、无公开链接。
 - 文章新建、编辑、删除、草稿/发布、标签、摘要、Slug、系列、系列顺序、每篇 SEO、封面、推荐、维修速览、Markdown 实时预览。
+- 编辑器「对比图」按钮：从媒体库选两张图，填写前后标签和说明，自动插入 `:::compare` 块。
+- 「预览链接」按钮：为当前草稿生成随机 token 的预览地址，可复制、打开或撤销；预览页强制 `noindex` 和 `no-store`。
 - 定时发布：选择日期时间后自动上线；自动保存每 28 秒检查一次，新文章另存本地草稿，刷新后可恢复。
 - 文章历史版本：保存时自动留快照，支持查看行级差异和恢复旧版。
 - 批量发布、转草稿、批量加标签、批量删除、复制文章。
@@ -146,7 +163,9 @@ python -m backend.manage reset-2fa
   - TOTP 两步验证；
   - 最近操作日志、服务端错误日志、404 记录；
   - 百度主动推送、IndexNow 推送；
-  - 301 重定向管理（修改已发布 slug 时自动生成）。
+  - 301 重定向管理（修改已发布 slug 时自动生成）；
+  - 服务监控：数据库、媒体目录可写、NTP 校时、30 小时内自动备份、最近 24 小时错误；
+  - 告警 Webhook（Bark / 飞书 / 钉钉 / 自定义）和 healthchecks.io 风格的心跳地址。
 - 仪表盘包含最近 7 天阅读趋势、今日/累计阅读量、完成率、访问来源、按阅读量排序的标签、热门文章和最近备份。
 - `/admin/appearance` 外观与文案：
   - 两套排版：纸本手绘 / 素纸极简；
@@ -197,6 +216,7 @@ markblog/
 │  ├─ rendering.py      Markdown → 安全 HTML、摘要、阅读时间
 │  ├─ repository.py     文章、系列、搜索、阅读量、设置、账号
 │  ├─ schemas.py        请求校验与官方备案链接校验
+│  ├─ monitor.py        健康检查、Webhook 告警、Uptime 心跳
 │  ├─ search.py         FTS5 trigram 索引
 │  ├─ seo_push.py       百度 / IndexNow 推送
 │  ├─ security.py       scrypt、令牌、登录限流
@@ -286,6 +306,7 @@ server {
 - 后台所有写操作要求 `X-CSRF-Token`，前端令牌来自登录/会话接口；登录、发布、设置、2FA、备份恢复等操作写入审计日志。
 - Markdown 渲染关闭原始 HTML，避免文章内嵌脚本；预览与公开文章使用同一渲染器。
 - 上传图片只接受 JPG/PNG/WebP/GIF，校验文件签名并限制大小，文件名由服务端随机生成。
+- 草稿预览使用随机 token，API 与页面均返回 `noindex` / `no-store`，robots 也屏蔽 `/preview/`。
 - 备份恢复支持自动备份或管理员上传的 ZIP；恢复后强制注销全部会话。
 - CSP、`X-Content-Type-Options`、`X-Frame-Options`、Referrer-Policy 等安全响应头默认开启。
 - `/admin` 不在 sitemap 中，robots 屏蔽，并带 `noindex` 响应头；公开页面没有任何后台链接。
@@ -310,7 +331,7 @@ python -m pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
-测试使用临时数据库，不会修改 `data/markblog.db`。当前 **8 项测试全部通过**，覆盖公开站点、6 篇默认文章、仪表盘、登录保护、CSRF、文章 CRUD、Markdown 转义、SEO/备案字段与官方链接校验、前台文案保存、深色/极简外观、昼夜窗口判断、图片上传与删除、全文搜索、系列/相关文章、阅读量/完成度、定时发布、文章封面/维修速览、历史版本恢复、批量操作、TOTP 两步验证、重定向、404 记录、自动备份下载、Markdown 导入、密码修改后会话失效。
+测试使用临时数据库，不会修改 `data/markblog.db`。当前 **8 项测试全部通过**，覆盖公开站点、6 篇默认文章、仪表盘、登录保护、CSRF、文章 CRUD、Markdown 转义、图片对比块、SEO/备案字段与官方链接校验、前台文案保存、深色/极简外观、昼夜窗口判断、图片上传与删除、全文搜索、系列/相关文章、阅读量/完成度、定时发布、文章封面/维修速览、历史版本恢复、批量操作、草稿预览 token、TOTP 两步验证、重定向、404 记录、自动备份下载、监控健康、Markdown 导入、密码修改后会话失效。
 
 ## 设计说明
 
@@ -324,6 +345,8 @@ python -m pytest -q
 - 公开站是 Vue SPA；首屏依赖 JavaScript。后端已为常用路由注入标题、描述、canonical、JSON-LD 与 404 状态，静态 HTML 本身不含文章正文。若对 SEO 有更高要求，可进一步接入 SSR/预渲染。
 - 全文搜索使用 SQLite FTS5 trigram；运行环境没有 FTS5 时会自动回退到 LIKE，功能仍可用但大数据量下会慢一些。
 - 自动昼夜模式依赖服务器能访问 UDP 123；若机房屏蔽 NTP，会自动使用服务器系统时间。可通过后台更换可用的 NTP 服务器。
+- 站内监控每 5 分钟检查数据库、媒体目录、NTP 和备份，异常通过 Webhook 通知；进程或整机宕机需要配置 Uptime 心跳地址，由外部服务负责报警。
+- 草稿预览链接是随机 token，不自动过期；离职交接或链接外泄时，在编辑器撤销后重新生成即可。
 - 前台文案覆盖固定页面文案；加载、错误、成功等动态状态提示和表单校验信息属于交互反馈，不在文案编辑范围内。
 - 定时发布依赖 FastAPI 进程运行；服务停机期间到点的文章会在下次启动/请求时补发。自动备份同样依赖进程运行。
 - SEO 主动推送需要服务器能访问百度和 IndexNow；失败会显示在运维页，不影响本地发布。

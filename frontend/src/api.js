@@ -90,6 +90,9 @@ export const publicApi = {
   getSeries(name) {
     return request(`/public/series/${encodeURIComponent(name)}`)
   },
+  getPreview(token) {
+    return request(`/public/preview/${encodeURIComponent(token)}`)
+  },
   recordView(slug, { complete = false } = {}) {
     const suffix = complete ? '?complete=true' : ''
     return request(`/public/posts/${encodeURIComponent(slug)}/view${suffix}`, {
@@ -185,6 +188,12 @@ export const adminApi = {
   },
   duplicatePost(id) {
     return request(`/admin/posts/${id}/duplicate`, { method: 'POST', csrf: true })
+  },
+  createPreviewToken(id) {
+    return request(`/admin/posts/${id}/preview-token`, { method: 'POST', csrf: true })
+  },
+  revokePreviewToken(id) {
+    return request(`/admin/posts/${id}/preview-token`, { method: 'DELETE', csrf: true })
   },
   batchPosts(payload) {
     return request('/admin/posts/batch', { method: 'POST', body: payload, csrf: true })
@@ -282,6 +291,9 @@ export const adminApi = {
   },
   pushSeo() {
     return request('/admin/seo/push', { method: 'POST', csrf: true })
+  },
+  testAlerts() {
+    return request('/admin/alerts/test', { method: 'POST', csrf: true })
   },
   analyticsCsvUrl() {
     return `${API_ROOT}/admin/analytics/export.csv`
