@@ -1128,6 +1128,7 @@ onBeforeUnmount(() => {
           </div>
 
           <aside class="editor-side" aria-label="文章设置">
+            <div class="editor-side__scroll">
             <section class="meta-card">
               <div class="meta-card__head">
                 <h2>发布状态</h2>
@@ -1253,7 +1254,7 @@ onBeforeUnmount(() => {
               </div>
             </section>
 
-            <details class="meta-card repair-editor" open>
+            <details class="meta-card repair-editor">
               <summary class="seo-card__summary">
                 <span>维修速览</span>
                 <small>显示在文章正文前</small>
@@ -1337,6 +1338,8 @@ onBeforeUnmount(() => {
                 </div>
               </dl>
             </section>
+
+            </div>
 
             <div class="editor-save-sticky">
               <span class="save-state">
@@ -1446,14 +1449,15 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.editor-page {
+.container.editor-page {
+  width: min(1540px, calc(100% - 48px));
   padding-top: 32px;
 }
 
 .editor-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(250px, 290px);
-  gap: 32px;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 30px;
   align-items: start;
 }
 
@@ -1774,7 +1778,7 @@ onBeforeUnmount(() => {
 
 .editor-panes {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
 }
 
 .editor-pane {
@@ -1788,6 +1792,7 @@ onBeforeUnmount(() => {
 .markdown-input {
   display: block;
   width: 100%;
+  height: clamp(520px, calc(100vh - 330px), 720px);
   min-height: 520px;
   padding: 20px;
   border: 0;
@@ -1840,7 +1845,7 @@ onBeforeUnmount(() => {
 }
 
 .preview-scroll {
-  height: 520px;
+  height: clamp(520px, calc(100vh - 330px), 720px);
   padding: 24px;
   overflow: auto;
 }
@@ -1872,13 +1877,38 @@ onBeforeUnmount(() => {
 }
 
 .editor-side {
+  position: sticky;
+  top: 92px;
   display: flex;
+  max-height: calc(100vh - 112px);
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
+}
+
+.editor-side__scroll {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-color: var(--color-line-strong) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.editor-side__scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.editor-side__scroll::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: var(--color-line-strong);
 }
 
 .meta-card {
-  padding: 18px;
+  padding: 16px;
   border: 1.5px dashed var(--color-line-strong);
   border-radius: 2px;
   background: var(--surface-soft);
@@ -1898,16 +1928,17 @@ onBeforeUnmount(() => {
 }
 
 .status-options {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
 }
 
 .status-option {
   display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  padding: 9px 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 7px;
   border: 1px dashed var(--color-line);
   border-radius: 2px;
   cursor: pointer;
@@ -1928,10 +1959,9 @@ onBeforeUnmount(() => {
 }
 
 .status-option__dot {
-  width: 9px;
-  height: 9px;
-  flex: 0 0 9px;
-  margin-top: 5px;
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
   border: 1.5px solid var(--color-line-strong);
   border-radius: 50%;
 }
@@ -1945,15 +1975,17 @@ onBeforeUnmount(() => {
 .status-option strong {
   display: block;
   font-family: var(--font-hand);
-  font-size: 18px;
-  line-height: 1.2;
+  font-size: 15px;
+  line-height: 1.1;
 }
 
 .status-option small {
   display: block;
-  margin-top: 2px;
+  flex-basis: 100%;
+  margin-left: 13px;
   color: var(--color-ink-faint);
-  font-size: 11px;
+  font-size: 9px;
+  line-height: 1.35;
 }
 
 .status-option:focus-within {
@@ -2249,15 +2281,43 @@ onBeforeUnmount(() => {
   font-size: 14px;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1300px) {
+  .mobile-tabs {
+    display: flex;
+  }
+
+  .editor-panes {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-pane--write {
+    border-right: 0;
+  }
+
+  .editor-panes.is-write .editor-pane--preview {
+    display: none;
+  }
+
+  .editor-panes.is-preview .editor-pane--write {
+    display: none;
+  }
+}
+
+@media (max-width: 1120px) {
   .editor-layout {
     grid-template-columns: 1fr;
   }
 
   .editor-side {
+    position: static;
     display: grid;
+    max-height: none;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
+  }
+
+  .editor-side__scroll {
+    display: contents;
   }
 
   .editor-save-sticky {
@@ -2266,6 +2326,10 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 760px) {
+  .container.editor-page {
+    width: calc(100% - 32px);
+  }
+
   .editor-head {
     align-items: flex-start;
     flex-direction: column;
@@ -2286,26 +2350,6 @@ onBeforeUnmount(() => {
 
   .revision-list {
     max-height: 25vh;
-  }
-
-  .mobile-tabs {
-    display: flex;
-  }
-
-  .editor-panes {
-    grid-template-columns: 1fr;
-  }
-
-  .editor-pane--write {
-    border-right: 0;
-  }
-
-  .editor-panes.is-write .editor-pane--preview {
-    display: none;
-  }
-
-  .editor-panes.is-preview .editor-pane--write {
-    display: none;
   }
 
   .markdown-input,
