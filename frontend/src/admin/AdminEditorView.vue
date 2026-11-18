@@ -1193,10 +1193,12 @@ onBeforeUnmount(() => {
               </label>
             </section>
 
-            <section class="meta-card">
-              <div class="meta-card__head">
-                <h2>链接与标签</h2>
-              </div>
+            <details class="meta-card link-card">
+              <summary class="seo-card__summary">
+                <span>链接与标签</span>
+                <small>{{ tags.length }} 个标签 · {{ form.series || '未归系列' }}</small>
+              </summary>
+              <div class="seo-card__body">
               <div class="field">
                 <label for="post-slug">文章地址</label>
                 <div class="slug-line">
@@ -1252,7 +1254,8 @@ onBeforeUnmount(() => {
                 />
                 <p class="field-hint">数字小的排在前面，同序号按发布时间。</p>
               </div>
-            </section>
+              </div>
+            </details>
 
             <details class="meta-card repair-editor">
               <summary class="seo-card__summary">
