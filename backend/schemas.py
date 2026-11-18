@@ -52,6 +52,15 @@ class StrictModel(BaseModel):
 class LoginIn(StrictModel):
     username: str = Field(min_length=1, max_length=64)
     password: str = Field(min_length=1, max_length=256)
+    totp_code: str = Field(default="", max_length=12)
+
+
+class RepairMeta(StrictModel):
+    risk: Literal["low", "medium", "high"] = "low"
+    time: str = Field(default="", max_length=40)
+    tools: str = Field(default="", max_length=300)
+    models: str = Field(default="", max_length=300)
+    safety: str = Field(default="", max_length=600)
 
 
 class PostIn(StrictModel):
@@ -67,6 +76,29 @@ class PostIn(StrictModel):
     seo_title: str = Field(default="", max_length=120)
     seo_description: str = Field(default="", max_length=300)
     seo_keywords: str = Field(default="", max_length=300)
+    cover_image: str = Field(default="", max_length=500)
+    featured: bool = False
+    repair: RepairMeta = Field(default_factory=RepairMeta)
+    canonical_url: str = Field(default="", max_length=400)
+
+    @field_validator("cover_image")
+    @classmethod
+    def valid_cover_image(cls, value: str) -> str:
+        value = value.strip()
+        if value and not value.startswith("/media/"):
+            raise ValueError("文章封面必须来自本站媒体库。")
+        return value
+
+    @field_validator("canonical_url")
+    @classmethod
+    def valid_canonical_url(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            return value
+        parsed = urlparse(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            raise ValueError("Canonical 地址必须是完整的 http(s) URL。")
+        return value
 
     @field_validator("scheduled_at")
     @classmethod
@@ -130,6 +162,8 @@ class SettingsIn(StrictModel):
     author_name: str = Field(min_length=1, max_length=50)
     author_bio: str = Field(default="", max_length=500)
     about_md: str = Field(default="", max_length=60_000)
+    privacy_md: str = Field(default="", max_length=60_000)
+    disclaimer_md: str = Field(default="", max_length=60_000)
     icp_number: str = Field(default="", max_length=80)
     icp_link: str = Field(default=DEFAULT_ICP_LINK, max_length=300)
     police_number: str = Field(default="", max_length=80)
@@ -145,6 +179,8 @@ class SettingsIn(StrictModel):
     ntp_server: str = Field(default="ntp.aliyun.com", max_length=253)
     day_start: str = Field(default="07:00", max_length=5)
     night_start: str = Field(default="19:00", max_length=5)
+    baidu_push_token: str = Field(default="", max_length=300)
+    indexnow_key: str = Field(default="", max_length=300)
 
     @field_validator("ui_copy")
     @classmethod
@@ -240,6 +276,55 @@ class PreviewIn(StrictModel):
 
 class MediaAltIn(StrictModel):
     alt: str = Field(default="", max_length=200)
+
+
+class BatchPostsIn(StrictModel):
+    ids: list[int] = Field(min_length=1, max_length=100)
+    action: Literal["publish", "draft", "delete", "tag"]
+    tags: list[str] = Field(default_factory=list, max_length=8)
+
+    @field_validator("tags")
+    @classmethod
+    def clean_batch_tags(cls, values: list[str]) -> list[str]:
+        cleaned = []
+        for value in values:
+            tag = str(value).strip()
+            if tag and tag not in cleaned:
+                cleaned.append(tag[:24])
+        return cleaned[:8]
+
+
+class RedirectIn(StrictModel):
+    path: str = Field(min_length=1, max_length=300)
+    target: str = Field(min_length=1, max_length=500)
+
+    @field_validator("path")
+    @classmethod
+    def valid_path(cls, value: str) -> str:
+        value = value.strip()
+        if not value.startswith("/") or value.startswith("//"):
+            raise ValueError("旧地址必须以单个 / 开头。")
+        return value
+
+    @field_validator("target")
+    @classmethod
+    def valid_target(cls, value: str) -> str:
+        value = value.strip()
+        if value.startswith("/") and not value.startswith("//"):
+            return value
+        parsed = urlparse(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            raise ValueError("目标地址必须是站内路径或完整的 http(s) URL。")
+        return value
+
+
+class TotpSetupIn(StrictModel):
+    password: str = Field(default="", max_length=256)
+    code: str = Field(default="", max_length=12)
+
+
+class RestoreBackupIn(StrictModel):
+    filename: str = Field(min_length=1, max_length=200)
 
 
 class MarkdownImportFile(StrictModel):

@@ -81,6 +81,9 @@ export const UI_COPY_DEFAULTS = {
   copy_code: '复制',
   copied: '已复制',
   image_close: '关闭图片',
+  post_qr: '二维码',
+  footer_privacy: '隐私说明',
+  footer_disclaimer: '免责声明',
 }
 
 export const UI_COPY_GROUPS = [
@@ -200,6 +203,9 @@ export const UI_COPY_GROUPS = [
       { key: 'copy_code', label: '复制代码' },
       { key: 'copied', label: '复制成功' },
       { key: 'image_close', label: '关闭图片' },
+      { key: 'post_qr', label: '文章二维码按钮' },
+      { key: 'footer_privacy', label: '页脚隐私说明' },
+      { key: 'footer_disclaimer', label: '页脚免责声明' },
     ],
   },
   {

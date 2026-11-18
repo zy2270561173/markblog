@@ -36,6 +36,16 @@ const tiltClass = computed(() => {
       </div>
     </div>
 
+    <RouterLink
+      v-if="post.cover_image"
+      :to="{ name: 'post', params: { slug: post.slug } }"
+      class="post-card__cover"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <img :src="post.cover_image" :alt="post.title" loading="lazy" />
+    </RouterLink>
+
     <h3 class="post-card__title">
       <RouterLink :to="{ name: 'post', params: { slug: post.slug } }">
         {{ post.title }}
@@ -75,6 +85,27 @@ const tiltClass = computed(() => {
 </template>
 
 <style scoped>
+.post-card__cover {
+  display: block;
+  overflow: hidden;
+  margin: 12px 0 14px;
+  border: 1.5px dashed var(--color-line-strong);
+  background: var(--surface-soft);
+}
+
+.post-card__cover img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 230px;
+  object-fit: cover;
+  transition: transform 180ms ease;
+}
+
+.post-card__cover:hover img {
+  transform: scale(1.02);
+}
+
 .post-card {
   position: relative;
   display: flex;

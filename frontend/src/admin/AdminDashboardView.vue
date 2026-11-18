@@ -8,6 +8,7 @@ import { setPageMeta } from '../lib/meta'
 import { formatShortDate } from '../lib/format'
 
 const data = ref(null)
+const health = ref(null)
 const loading = ref(true)
 const error = ref('')
 
@@ -17,6 +18,8 @@ const appearance = computed(() => data.value?.appearance || {})
 const recent = computed(() => data.value?.recent || [])
 const trend = computed(() => data.value?.views_trend || [])
 const topPosts = computed(() => data.value?.top_posts || [])
+const referrers = computed(() => data.value?.referrers || [])
+const popularTags = computed(() => data.value?.popular_tags || [])
 const trendMax = computed(() =>
   Math.max(1, ...trend.value.map((item) => Number(item.views) || 0)),
 )
@@ -91,7 +94,12 @@ async function loadDashboard() {
   loading.value = true
   error.value = ''
   try {
-    data.value = await adminApi.getDashboard()
+    const [dashboardData, healthData] = await Promise.all([
+      adminApi.getDashboard(),
+      adminApi.getHealth(),
+    ])
+    data.value = dashboardData
+    health.value = healthData
   } catch (requestError) {
     error.value = requestError.message || '仪表盘加载失败。'
   } finally {
@@ -177,6 +185,10 @@ onMounted(() => {
               <span class="quick-action__mark" aria-hidden="true">▣</span>
               <span>媒体与数据<small>图片、备份与导入</small></span>
             </RouterLink>
+            <RouterLink to="/admin/maintenance" class="quick-action">
+              <span class="quick-action__mark" aria-hidden="true">⚿</span>
+              <span>安全与运维<small>2FA、日志、推送和重定向</small></span>
+            </RouterLink>
             <RouterLink to="/admin/appearance" class="quick-action">
               <span class="quick-action__mark" aria-hidden="true">◐</span>
               <span>外观与文案<small>排版、主题和前台文字</small></span>
@@ -201,6 +213,8 @@ onMounted(() => {
             <div class="analytics-totals">
               <span>今日 <strong>{{ compactNumber(counts.views_today) }}</strong></span>
               <span>累计 <strong>{{ compactNumber(counts.views_total) }}</strong></span>
+              <span>完成率 <strong>{{ counts.completion_rate || 0 }}%</strong></span>
+              <a :href="adminApi.analyticsCsvUrl()" class="text-link">CSV</a>
             </div>
           </div>
           <div class="analytics-body">
@@ -226,6 +240,26 @@ onMounted(() => {
                 </li>
               </ol>
               <p v-if="!topPosts.length" class="appearance-card__detail">还没有阅读数据。</p>
+            </div>
+          </div>
+          <div class="analytics-extra">
+            <div>
+              <p class="top-posts__title">访问来源（30 天）</p>
+              <ul class="metrics-list">
+                <li v-for="item in referrers" :key="item.host">
+                  <span>{{ item.host || '直接访问' }}</span><strong>{{ item.views }}</strong>
+                </li>
+                <li v-if="!referrers.length"><span>还没有来源数据</span></li>
+              </ul>
+            </div>
+            <div>
+              <p class="top-posts__title">按阅读量排的标签</p>
+              <div class="dashboard-tags">
+                <span v-for="tag in popularTags" :key="tag.name" class="tag">
+                  {{ tag.name }} <span>{{ tag.views }}</span>
+                </span>
+                <span v-if="!popularTags.length" class="appearance-card__detail">还没有标签数据</span>
+              </div>
             </div>
           </div>
         </section>
@@ -284,6 +318,10 @@ onMounted(() => {
                 <div>
                   <dt>当前主题</dt>
                   <dd>{{ themeLabel }} · {{ sourceLabel }}</dd>
+                </div>
+                <div v-if="health?.last_backup">
+                  <dt>最近备份</dt>
+                  <dd>{{ formatShortDate(health.last_backup.created_at) }}</dd>
                 </div>
               </dl>
               <div class="readiness-list">
@@ -613,6 +651,43 @@ onMounted(() => {
   font-size: 12px;
 }
 
+.analytics-extra {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--color-line);
+}
+
+.metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+}
+
+.metrics-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--color-ink-faint);
+}
+
+.metrics-list strong {
+  color: var(--color-ink-soft);
+}
+
+.analytics-extra .dashboard-tags .tag span {
+  margin-left: 3px;
+  color: var(--color-ink-faint);
+  font-size: 10px;
+  vertical-align: super;
+}
+
 .status-chip--scheduled {
   color: var(--color-lake-ink);
   border-color: rgba(52, 152, 219, 0.5);
@@ -849,7 +924,8 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 
-  .analytics-body {
+  .analytics-body,
+  .analytics-extra {
     grid-template-columns: 1fr;
   }
 

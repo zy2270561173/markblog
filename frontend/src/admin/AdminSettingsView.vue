@@ -36,6 +36,8 @@ const form = reactive({
   footer_note: '',
   site_since: '',
   about_md: '',
+  privacy_md: '',
+  disclaimer_md: '',
 })
 
 const loading = ref(true)
@@ -491,6 +493,21 @@ onBeforeUnmount(() => {
                 spellcheck="false"
               ></textarea>
               <p class="field-hint">支持标题、列表、引用和链接；原始 HTML 不会被执行。</p>
+            </div>
+          </section>
+
+          <section class="admin-card" aria-labelledby="settings-legal">
+            <div class="admin-card__head">
+              <h2 id="settings-legal">隐私与免责声明</h2>
+              <p>公开页脚会自动链接到这两页</p>
+            </div>
+            <div class="field">
+              <label for="privacy-md">隐私说明</label>
+              <textarea id="privacy-md" v-model="form.privacy_md" class="textarea about-textarea" maxlength="60000"></textarea>
+            </div>
+            <div class="field">
+              <label for="disclaimer-md">免责声明</label>
+              <textarea id="disclaimer-md" v-model="form.disclaimer_md" class="textarea about-textarea" maxlength="60000"></textarea>
             </div>
           </section>
 

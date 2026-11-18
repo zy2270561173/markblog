@@ -19,6 +19,7 @@ const isPosts = computed(
   () => route.path === '/admin/posts' || route.path.startsWith('/admin/posts/'),
 )
 const isAssets = computed(() => route.path === '/admin/assets')
+const isMaintenance = computed(() => route.path === '/admin/maintenance')
 const isAppearance = computed(() => route.path === '/admin/appearance')
 const isSettings = computed(() => route.path === '/admin/settings')
 
@@ -72,6 +73,13 @@ async function handleSignOut() {
             :class="{ 'is-active': isAssets }"
           >
             媒体数据
+          </RouterLink>
+          <RouterLink
+            to="/admin/maintenance"
+            class="admin-nav__link"
+            :class="{ 'is-active': isMaintenance }"
+          >
+            安全运维
           </RouterLink>
           <RouterLink
             to="/admin/appearance"

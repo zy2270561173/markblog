@@ -11,6 +11,8 @@ import {
 import { onBeforeRouteLeave, RouterLink, useRoute, useRouter } from 'vue-router'
 import AdminLayout from './AdminLayout.vue'
 import StateBlock from '../components/StateBlock.vue'
+import MediaPicker from '../components/MediaPicker.vue'
+import { diffLines } from 'diff'
 import { adminApi } from '../api'
 import { setPageMeta } from '../lib/meta'
 import { formatShortDate } from '../lib/format'
@@ -32,6 +34,14 @@ const form = reactive({
   seoTitle: '',
   seoDescription: '',
   seoKeywords: '',
+  coverImage: '',
+  featured: false,
+  canonicalUrl: '',
+  repairRisk: 'low',
+  repairTime: '',
+  repairTools: '',
+  repairModels: '',
+  repairSafety: '',
 })
 
 const postId = ref(null)
@@ -58,6 +68,15 @@ const mediaNotice = ref('')
 const localDraft = ref(null)
 const autoSavedAt = ref('')
 const postViews = ref(0)
+const mediaPickerOpen = ref(false)
+const mediaPickerMode = ref('cover')
+const revisionsOpen = ref(false)
+const revisions = ref([])
+const revisionLoading = ref(false)
+const revisionError = ref('')
+const selectedRevision = ref(null)
+const revisionDiff = ref([])
+const revisionBusy = ref(false)
 let previewTimer = null
 let noticeTimer = null
 let previewSequence = 0
@@ -108,6 +127,14 @@ function snapshot() {
     seoTitle: form.seoTitle,
     seoDescription: form.seoDescription,
     seoKeywords: form.seoKeywords,
+    coverImage: form.coverImage,
+    featured: form.featured,
+    canonicalUrl: form.canonicalUrl,
+    repairRisk: form.repairRisk,
+    repairTime: form.repairTime,
+    repairTools: form.repairTools,
+    repairModels: form.repairModels,
+    repairSafety: form.repairSafety,
   })
 }
 
@@ -143,6 +170,14 @@ function draftPayload() {
     seoTitle: form.seoTitle,
     seoDescription: form.seoDescription,
     seoKeywords: form.seoKeywords,
+    coverImage: form.coverImage,
+    featured: form.featured,
+    canonicalUrl: form.canonicalUrl,
+    repairRisk: form.repairRisk,
+    repairTime: form.repairTime,
+    repairTools: form.repairTools,
+    repairModels: form.repairModels,
+    repairSafety: form.repairSafety,
     savedAt: new Date().toISOString(),
   }
 }
@@ -187,6 +222,14 @@ function applyLocalDraft(draft) {
     seoTitle: draft.seoTitle || '',
     seoDescription: draft.seoDescription || '',
     seoKeywords: draft.seoKeywords || '',
+    coverImage: draft.coverImage || '',
+    featured: Boolean(draft.featured),
+    canonicalUrl: draft.canonicalUrl || '',
+    repairRisk: draft.repairRisk || 'low',
+    repairTime: draft.repairTime || '',
+    repairTools: draft.repairTools || '',
+    repairModels: draft.repairModels || '',
+    repairSafety: draft.repairSafety || '',
   })
   localDraft.value = null
 }
@@ -216,6 +259,14 @@ function checkLocalDraft() {
     seoTitle: draft.seoTitle || '',
     seoDescription: draft.seoDescription || '',
     seoKeywords: draft.seoKeywords || '',
+    coverImage: draft.coverImage || '',
+    featured: Boolean(draft.featured),
+    canonicalUrl: draft.canonicalUrl || '',
+    repairRisk: draft.repairRisk || 'low',
+    repairTime: draft.repairTime || '',
+    repairTools: draft.repairTools || '',
+    repairModels: draft.repairModels || '',
+    repairSafety: draft.repairSafety || '',
   })
   if (draftSnapshot !== snapshot() && (draft.title || draft.content_md)) {
     localDraft.value = draft
@@ -285,6 +336,109 @@ function handlePaste(event) {
   uploadAndInsert(files[0])
 }
 
+function openMediaPicker(mode) {
+  mediaPickerMode.value = mode
+  mediaPickerOpen.value = true
+}
+
+function handleMediaSelected(item) {
+  mediaPickerOpen.value = false
+  if (mediaPickerMode.value === 'cover') {
+    form.coverImage = item.url
+  } else {
+    insertTextAtCursor(`\n![${item.alt || item.original_name}](${item.url})\n`)
+  }
+}
+
+function applyRepairTemplate() {
+  if (form.content_md.includes('## 适用机型与症状')) {
+    savedNotice.value = '正文里已经有维修模板了。'
+    return
+  }
+  const skeleton = `\n\n## 适用机型与症状\n\n- 适用：\n- 症状：\n\n## 风险与准备\n\n> 动手前先断电并备份数据。\n\n## 工具与材料\n\n- \n\n## 排查步骤\n\n1. \n2. \n\n## 修复与验证\n\n- \n\n## 收尾\n\n- \n`
+  insertTextAtCursor(skeleton)
+  form.repairRisk = form.repairRisk || 'medium'
+}
+
+async function openRevisions() {
+  if (!postId.value) return
+  revisionsOpen.value = true
+  revisionLoading.value = true
+  revisionError.value = ''
+  selectedRevision.value = null
+  revisionDiff.value = []
+  try {
+    const data = await adminApi.getRevisions(postId.value)
+    revisions.value = data.items || []
+  } catch (error) {
+    revisionError.value = error.message || '历史版本加载失败。'
+  } finally {
+    revisionLoading.value = false
+  }
+}
+
+function selectRevision(rev) {
+  selectedRevision.value = rev
+  const parts = []
+  if (form.title !== rev.title) {
+    parts.push({ removed: true, value: `标题：${form.title}\n` })
+    parts.push({ added: true, value: `标题：${rev.title}\n` })
+  }
+  parts.push(...diffLines(form.content_md, rev.content_md || ''))
+  revisionDiff.value = parts
+}
+
+async function restoreSelectedRevision() {
+  if (!selectedRevision.value || revisionBusy.value) return
+  if (!window.confirm('恢复这一版会覆盖当前正文，确定继续吗？')) return
+  revisionBusy.value = true
+  revisionError.value = ''
+  try {
+    const result = await adminApi.restoreRevision(postId.value, selectedRevision.value.id)
+    applyingResult = true
+    Object.assign(form, {
+      title: result.title,
+      excerpt: result.excerpt,
+      content_md: result.content_md,
+      tagsText: result.tags.join(', '),
+      series: result.series || '',
+      seriesOrder: result.series_order || 0,
+      seoTitle: result.seo_title || '',
+      seoDescription: result.seo_description || '',
+      seoKeywords: result.seo_keywords || '',
+      coverImage: result.cover_image || '',
+      featured: Boolean(result.featured),
+      canonicalUrl: result.canonical_url || '',
+      repairRisk: result.repair?.risk || 'low',
+      repairTime: result.repair?.time || '',
+      repairTools: result.repair?.tools || '',
+      repairModels: result.repair?.models || '',
+      repairSafety: result.repair?.safety || '',
+    })
+    await nextTick()
+    applyingResult = false
+    savedSnapshot.value = snapshot()
+    lastSavedAt.value = result.updated_at
+    revisionsOpen.value = false
+    savedNotice.value = '已恢复选中的历史版本。'
+    schedulePreview(30)
+  } catch (error) {
+    revisionError.value = error.message || '恢复失败。'
+  } finally {
+    revisionBusy.value = false
+  }
+}
+
+async function duplicateCurrent() {
+  if (!postId.value || saving.value) return
+  try {
+    const copy = await adminApi.duplicatePost(postId.value)
+    await router.push({ name: 'admin-post-edit', params: { id: copy.id } })
+  } catch (error) {
+    saveError.value = error.message || '复制失败。'
+  }
+}
+
 function parseTags() {
   const seen = new Set()
   const values = form.tagsText
@@ -318,6 +472,14 @@ function resetForNew() {
     seoTitle: '',
     seoDescription: '',
     seoKeywords: '',
+    coverImage: '',
+    featured: false,
+    canonicalUrl: '',
+    repairRisk: 'low',
+    repairTime: '',
+    repairTools: '',
+    repairModels: '',
+    repairSafety: '',
   })
   loadedAt.value = ''
   lastSavedAt.value = ''
@@ -354,6 +516,14 @@ async function loadPost(id) {
       seoTitle: data.seo_title || '',
       seoDescription: data.seo_description || '',
       seoKeywords: data.seo_keywords || '',
+      coverImage: data.cover_image || '',
+      featured: Boolean(data.featured),
+      canonicalUrl: data.canonical_url || '',
+      repairRisk: data.repair?.risk || 'low',
+      repairTime: data.repair?.time || '',
+      repairTools: data.repair?.tools || '',
+      repairModels: data.repair?.models || '',
+      repairSafety: data.repair?.safety || '',
     })
     loadedAt.value = data.created_at
     lastSavedAt.value = data.updated_at
@@ -509,6 +679,16 @@ async function save({ silent = false } = {}) {
       seo_title: form.seoTitle.trim(),
       seo_description: form.seoDescription.trim(),
       seo_keywords: form.seoKeywords.trim(),
+      cover_image: form.coverImage,
+      featured: Boolean(form.featured),
+      canonical_url: form.canonicalUrl.trim(),
+      repair: {
+        risk: form.repairRisk,
+        time: form.repairTime.trim(),
+        tools: form.repairTools.trim(),
+        models: form.repairModels.trim(),
+        safety: form.repairSafety.trim(),
+      },
     }
     const wasNew = postId.value === null
     const result = postId.value
@@ -527,6 +707,14 @@ async function save({ silent = false } = {}) {
     form.seoTitle = result.seo_title || ''
     form.seoDescription = result.seo_description || ''
     form.seoKeywords = result.seo_keywords || ''
+    form.coverImage = result.cover_image || ''
+    form.featured = Boolean(result.featured)
+    form.canonicalUrl = result.canonical_url || ''
+    form.repairRisk = result.repair?.risk || 'low'
+    form.repairTime = result.repair?.time || ''
+    form.repairTools = result.repair?.tools || ''
+    form.repairModels = result.repair?.models || ''
+    form.repairSafety = result.repair?.safety || ''
     postViews.value = result.views || postViews.value
     await nextTick()
     applyingResult = false
@@ -650,6 +838,12 @@ onBeforeUnmount(() => {
           >
             查看公开页面 ↗
           </a>
+          <button v-if="postId" type="button" class="text-link bare-button" @click="openRevisions">
+            历史版本
+          </button>
+          <button v-if="postId" type="button" class="text-link bare-button" @click="duplicateCurrent">
+            复制一份
+          </button>
           <button type="button" class="btn" :disabled="saving" @click="save">
             {{ saving ? '正在保存…' : '保存' }}
           </button>
@@ -781,6 +975,13 @@ onBeforeUnmount(() => {
                 >
                   {{ uploadingImage ? '上传中…' : '图片' }}
                 </button>
+                <button
+                  type="button"
+                  class="toolbar-button toolbar-button--image"
+                  @click="openMediaPicker('insert')"
+                >
+                  媒体库
+                </button>
                 <span class="toolbar-hint">Markdown</span>
               </div>
               <input
@@ -879,6 +1080,26 @@ onBeforeUnmount(() => {
 
             <section class="meta-card">
               <div class="meta-card__head">
+                <h2>封面与推荐</h2>
+              </div>
+              <div v-if="form.coverImage" class="cover-preview">
+                <img :src="form.coverImage" alt="文章封面" />
+                <div class="cover-preview__actions">
+                  <button type="button" class="text-link bare-button" @click="openMediaPicker('cover')">更换</button>
+                  <button type="button" class="text-link bare-button is-danger" @click="form.coverImage = ''">移除</button>
+                </div>
+              </div>
+              <button v-else type="button" class="btn btn--small" @click="openMediaPicker('cover')">
+                选择封面
+              </button>
+              <label class="featured-toggle">
+                <input v-model="form.featured" type="checkbox" />
+                <span>推荐 / 置顶到首页前面</span>
+              </label>
+            </section>
+
+            <section class="meta-card">
+              <div class="meta-card__head">
                 <h2>链接与标签</h2>
               </div>
               <div class="field">
@@ -938,6 +1159,42 @@ onBeforeUnmount(() => {
               </div>
             </section>
 
+            <details class="meta-card repair-editor" open>
+              <summary class="seo-card__summary">
+                <span>维修速览</span>
+                <small>显示在文章正文前</small>
+              </summary>
+              <div class="seo-card__body">
+                <button type="button" class="text-link bare-button repair-template" @click="applyRepairTemplate">
+                  套用维修教程模板
+                </button>
+                <div class="field">
+                  <label for="repair-risk">风险等级</label>
+                  <select id="repair-risk" v-model="form.repairRisk" class="select">
+                    <option value="low">低风险</option>
+                    <option value="medium">中等风险</option>
+                    <option value="high">高风险</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="repair-time">预计耗时</label>
+                  <input id="repair-time" v-model="form.repairTime" class="input" maxlength="40" placeholder="例如 30 分钟" />
+                </div>
+                <div class="field">
+                  <label for="repair-models">适用机型</label>
+                  <input id="repair-models" v-model="form.repairModels" class="input" maxlength="300" placeholder="例如 ThinkPad T480 / 通用台式机" />
+                </div>
+                <div class="field">
+                  <label for="repair-tools">工具与材料</label>
+                  <textarea id="repair-tools" v-model="form.repairTools" class="textarea" rows="2" maxlength="300"></textarea>
+                </div>
+                <div class="field">
+                  <label for="repair-safety">安全提醒</label>
+                  <textarea id="repair-safety" v-model="form.repairSafety" class="textarea" rows="3" maxlength="600"></textarea>
+                </div>
+              </div>
+            </details>
+
             <details class="meta-card seo-card">
               <summary class="seo-card__summary">
                 <span>SEO 设置</span>
@@ -955,6 +1212,10 @@ onBeforeUnmount(() => {
                 <div class="field">
                   <label for="post-seo-keywords">SEO 关键词</label>
                   <input id="post-seo-keywords" v-model="form.seoKeywords" class="input" maxlength="300" placeholder="留空使用站点关键词" />
+                </div>
+                <div class="field">
+                  <label for="post-canonical">Canonical 地址</label>
+                  <input id="post-canonical" v-model="form.canonicalUrl" class="input" maxlength="400" placeholder="留空使用本站文章地址" />
                 </div>
               </div>
             </details>
@@ -997,6 +1258,61 @@ onBeforeUnmount(() => {
         </div>
       </template>
     </div>
+
+    <MediaPicker
+      :open="mediaPickerOpen"
+      :title="mediaPickerMode === 'cover' ? '选择文章封面' : '从媒体库插入图片'"
+      @select="handleMediaSelected"
+      @close="mediaPickerOpen = false"
+    />
+
+    <Teleport to="body">
+      <div v-if="revisionsOpen" class="revision-dialog" role="dialog" aria-modal="true" aria-label="历史版本" @click.self="revisionsOpen = false">
+        <div class="revision-panel">
+          <header class="revision-head">
+            <div>
+              <p class="eyebrow">HISTORY / 历史版本</p>
+              <h2>历史版本</h2>
+            </div>
+            <button type="button" class="text-link bare-button" @click="revisionsOpen = false">关闭</button>
+          </header>
+          <p v-if="revisionError" class="alert alert--error">{{ revisionError }}</p>
+          <div class="revision-layout">
+            <div class="revision-list">
+              <p v-if="revisionLoading">正在读取版本…</p>
+              <button
+                v-for="rev in revisions"
+                :key="rev.id"
+                type="button"
+                class="revision-item"
+                :class="{ 'is-active': selectedRevision?.id === rev.id }"
+                @click="selectRevision(rev)"
+              >
+                <span>{{ formatShortDate(rev.created_at) }}</span>
+                <strong>{{ rev.title }}</strong>
+              </button>
+              <p v-if="!revisionLoading && !revisions.length">还没有历史版本。下一次保存后会开始记录。</p>
+            </div>
+            <div class="revision-diff">
+              <template v-if="selectedRevision">
+                <div class="revision-diff__actions">
+                  <span>与当前稿对比</span>
+                  <button type="button" class="btn btn--small" :disabled="revisionBusy" @click="restoreSelectedRevision">
+                    {{ revisionBusy ? '恢复中…' : '恢复这一版' }}
+                  </button>
+                </div>
+                <pre><span
+                  v-for="(part, index) in revisionDiff"
+                  :key="index"
+                  :class="{ 'is-added': part.added, 'is-removed': part.removed }"
+                >{{ part.value }}</span></pre>
+              </template>
+              <p v-else class="revision-empty">从左侧选择一个版本，看看它改了什么。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </AdminLayout>
 </template>
 
@@ -1544,6 +1860,172 @@ onBeforeUnmount(() => {
   font-size: 12px;
 }
 
+.cover-preview img {
+  display: block;
+  width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border: 1px solid var(--color-line);
+}
+
+.cover-preview__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+  font-family: var(--font-hand);
+  font-size: 13px;
+}
+
+.cover-preview__actions .is-danger {
+  color: var(--color-vermilion);
+}
+
+.featured-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 12px;
+  color: var(--color-ink-soft);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.featured-toggle input {
+  margin-top: 2px;
+  accent-color: var(--color-vermilion);
+}
+
+.repair-template {
+  margin-bottom: 4px;
+  font-family: var(--font-hand);
+  font-size: 14px;
+}
+
+.revision-dialog {
+  position: fixed;
+  z-index: 190;
+  inset: 0;
+  display: grid;
+  padding: 20px;
+  place-items: center;
+  background: rgba(15, 14, 12, 0.68);
+}
+
+.revision-panel {
+  display: flex;
+  width: min(1100px, 100%);
+  max-height: 88vh;
+  flex-direction: column;
+  padding: 22px;
+  border: 2px solid var(--color-pencil);
+  background-color: var(--color-paper);
+  background-image: var(--paper-grain);
+  box-shadow: var(--shadow-sketch-hover);
+}
+
+.revision-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px dashed var(--color-line);
+}
+
+.revision-head h2 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.revision-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 18px;
+  min-height: 0;
+  padding-top: 14px;
+  overflow: hidden;
+}
+
+.revision-list {
+  display: flex;
+  max-height: 64vh;
+  flex-direction: column;
+  gap: 5px;
+  overflow: auto;
+}
+
+.revision-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  border: 1px dashed var(--color-line);
+  background: transparent;
+  text-align: left;
+}
+
+.revision-item:hover,
+.revision-item.is-active {
+  border-color: var(--color-line-strong);
+  background: var(--surface-tint);
+}
+
+.revision-item span {
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 12px;
+}
+
+.revision-item strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.revision-diff {
+  min-width: 0;
+  overflow: auto;
+}
+
+.revision-diff__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: var(--color-ink-faint);
+  font-size: 12px;
+}
+
+.revision-diff pre {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--color-line);
+  background: var(--surface-soft);
+  color: var(--color-ink-soft);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.revision-diff .is-added {
+  color: var(--color-grass);
+  background: rgba(39, 174, 96, 0.08);
+}
+
+.revision-diff .is-removed {
+  color: var(--color-vermilion);
+  background: rgba(231, 76, 60, 0.08);
+  text-decoration: line-through;
+}
+
+.revision-empty {
+  color: var(--color-ink-faint);
+  font-size: 13px;
+}
+
 .editor-save-sticky {
   display: flex;
   align-items: center;
@@ -1591,6 +2073,14 @@ onBeforeUnmount(() => {
 
   .editor-side {
     grid-template-columns: 1fr;
+  }
+
+  .revision-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .revision-list {
+    max-height: 25vh;
   }
 
   .mobile-tabs {

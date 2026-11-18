@@ -24,7 +24,103 @@ const deleting = ref(null)
 const deleteBusy = ref(false)
 const copyNotice = ref('')
 const altDrafts = reactive({})
+const backups = ref([])
+const backupBusy = ref(false)
+const backupNotice = ref('')
+const backupError = ref('')
+const restoreInput = ref(null)
+const unusedCount = ref(null)
+const cleanupBusy = ref(false)
 let copyTimer = null
+
+async function loadBackups() {
+  try {
+    const data = await adminApi.getBackups()
+    backups.value = data.items || []
+  } catch (error) {
+    backupError.value = error.message || '备份列表加载失败。'
+  }
+}
+
+async function runBackup() {
+  backupBusy.value = true
+  backupError.value = ''
+  backupNotice.value = ''
+  try {
+    const item = await adminApi.runBackup()
+    backups.value.unshift(item)
+    backupNotice.value = `已创建备份 ${item.filename}`
+  } catch (error) {
+    backupError.value = error.message || '备份失败。'
+  } finally {
+    backupBusy.value = false
+  }
+}
+
+async function restoreBackup(item) {
+  if (!window.confirm(`用 ${item.filename} 覆盖当前数据库和媒体吗？恢复后会退出登录并要求重新登录。`)) return
+  backupBusy.value = true
+  backupError.value = ''
+  try {
+    await adminApi.restoreBackup(item.filename)
+    window.alert('恢复完成，正在重新登录。')
+    window.location.href = '/admin'
+  } catch (error) {
+    backupError.value = error.message || '恢复失败。'
+  } finally {
+    backupBusy.value = false
+  }
+}
+
+async function restoreUpload(event) {
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  if (!file) return
+  if (!window.confirm(`用 ${file.name} 覆盖当前数据库和媒体吗？恢复后会退出登录。`)) return
+  backupBusy.value = true
+  backupError.value = ''
+  try {
+    await adminApi.restoreBackupUpload(file)
+    window.alert('恢复完成，正在重新登录。')
+    window.location.href = '/admin'
+  } catch (error) {
+    backupError.value = error.message || '恢复失败。'
+  } finally {
+    backupBusy.value = false
+  }
+}
+
+async function checkUnused() {
+  cleanupBusy.value = true
+  uploadError.value = ''
+  try {
+    const data = await adminApi.getUnusedMedia()
+    unusedCount.value = data.count
+    if (!data.count) {
+      uploadNotice.value = '没有未引用的图片。'
+      window.setTimeout(() => (uploadNotice.value = ''), 2500)
+    }
+  } catch (error) {
+    uploadError.value = error.message || '检查失败。'
+  } finally {
+    cleanupBusy.value = false
+  }
+}
+
+async function cleanupUnused() {
+  if (!window.confirm(`确定删除 ${unusedCount.value} 张没有被任何文章引用的图片吗？`)) return
+  cleanupBusy.value = true
+  try {
+    const result = await adminApi.cleanupUnusedMedia()
+    unusedCount.value = null
+    uploadNotice.value = `已清理 ${result.removed} 张未引用图片。`
+    await loadMedia()
+  } catch (error) {
+    uploadError.value = error.message || '清理失败。'
+  } finally {
+    cleanupBusy.value = false
+  }
+}
 
 async function loadMedia() {
   loading.value = true
@@ -139,6 +235,7 @@ async function handleImport(event) {
 onMounted(() => {
   setPageMeta({ title: '媒体与数据 · 管理后台', noindex: true })
   loadMedia()
+  loadBackups()
 })
 </script>
 
@@ -168,7 +265,15 @@ onMounted(() => {
             <h2 id="media-title">媒体库</h2>
             <p>上传时会自动缩放并压缩为 WebP；GIF 保留原文件。复制 Markdown 后粘贴到文章里。</p>
           </div>
-          <span class="media-count">{{ items.length }} 张</span>
+          <div class="media-tools">
+            <span class="media-count">{{ items.length }} 张</span>
+            <button v-if="unusedCount === null" type="button" class="text-link bare-button" :disabled="cleanupBusy" @click="checkUnused">
+              检查未引用图片
+            </button>
+            <button v-else type="button" class="text-link bare-button is-danger" :disabled="cleanupBusy" @click="cleanupUnused">
+              清理 {{ unusedCount }} 张未引用图片
+            </button>
+          </div>
         </div>
 
         <StateBlock v-if="loading" tone="loading" message="正在整理图片。" />
@@ -231,8 +336,7 @@ onMounted(() => {
             </a>
           </div>
           <p class="admin-note">
-            备份文件包含整站内容和图片，请妥善保存，不要放进公开目录。恢复数据库需要停服后替换
-            <code>data/markblog.db</code>。
+            备份文件包含整站内容和图片，请妥善保存，不要放进公开目录。也可以用下方自动备份直接恢复。
           </p>
         </section>
 
@@ -253,6 +357,41 @@ onMounted(() => {
           <RouterLink to="/admin/posts" class="text-link">去文章列表查看导入结果</RouterLink>
         </section>
       </div>
+
+      <section class="admin-card auto-backup-card" aria-labelledby="auto-backup-title">
+        <div class="admin-card__head">
+          <div>
+            <h2 id="auto-backup-title">自动备份与恢复</h2>
+            <p>服务每天自动备份一次，保留最近 7 份。恢复会覆盖当前数据库和媒体，并强制重新登录。</p>
+          </div>
+          <div class="button-row">
+            <button type="button" class="btn btn--small" :disabled="backupBusy" @click="runBackup">
+              {{ backupBusy ? '处理中…' : '立即备份' }}
+            </button>
+            <input ref="restoreInput" class="visually-hidden" type="file" accept=".zip,application/zip" @change="restoreUpload" />
+            <button type="button" class="btn btn--small" :disabled="backupBusy" @click="restoreInput?.click()">
+              从 ZIP 恢复
+            </button>
+          </div>
+        </div>
+        <p v-if="backupError" class="alert alert--error">{{ backupError }}</p>
+        <p v-if="backupNotice" class="alert alert--success">{{ backupNotice }}</p>
+        <ul v-if="backups.length" class="backup-list">
+          <li v-for="item in backups" :key="item.filename">
+            <div>
+              <strong>{{ item.filename }}</strong>
+              <span>{{ formatShortDate(item.created_at) }} · {{ Math.max(1, Math.round(item.size / 1024)) }} KB</span>
+            </div>
+            <div class="backup-actions">
+              <a :href="adminApi.backupDownloadUrl(item.filename)" class="text-link">下载</a>
+              <button type="button" class="text-link bare-button is-danger" :disabled="backupBusy" @click="restoreBackup(item)">
+                恢复
+              </button>
+            </div>
+          </li>
+        </ul>
+        <p v-else class="admin-note">还没有自动备份，点击“立即备份”创建第一份。</p>
+      </section>
     </div>
 
     <ConfirmDialog
@@ -280,13 +419,79 @@ onMounted(() => {
   margin-top: 0;
 }
 
+.media-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
 .media-count {
-  align-self: flex-start;
   padding: 4px 8px;
   border: 1px dashed var(--color-line);
   color: var(--color-ink-faint);
   font-family: var(--font-hand);
   font-size: 13px;
+}
+
+.media-tools .is-danger {
+  color: var(--color-vermilion);
+}
+
+.auto-backup-card {
+  margin-top: 22px;
+  padding: 24px;
+}
+
+.auto-backup-card .button-row {
+  display: flex;
+  gap: 8px;
+}
+
+.backup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.backup-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--color-line);
+}
+
+.backup-list strong,
+.backup-list span {
+  display: block;
+}
+
+.backup-list strong {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.backup-list span {
+  margin-top: 2px;
+  color: var(--color-ink-faint);
+  font-size: 10px;
+}
+
+.backup-actions {
+  display: flex;
+  gap: 12px;
+  font-family: var(--font-hand);
+  font-size: 13px;
+}
+
+.backup-actions .is-danger {
+  color: var(--color-vermilion);
 }
 
 .media-grid {

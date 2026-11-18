@@ -155,6 +155,24 @@ def delete_media(conn: sqlite3.Connection, media_id: int) -> bool:
     return True
 
 
+def unused_media(conn: sqlite3.Connection) -> list[dict[str, Any]]:
+    rows = conn.execute("SELECT content_md, cover_image FROM posts").fetchall()
+    referenced: set[str] = set()
+    for row in rows:
+        text = f"{row['content_md'] or ''} {row['cover_image'] or ''}"
+        referenced.update(re.findall(r"/media/([a-zA-Z0-9-]+\.(?:jpg|png|webp|gif))", text))
+    items = list_media(conn)
+    return [item for item in items if item["filename"] not in referenced]
+
+
+def cleanup_unused_media(conn: sqlite3.Connection) -> int:
+    removed = 0
+    for item in unused_media(conn):
+        if delete_media(conn, item["id"]):
+            removed += 1
+    return removed
+
+
 def resolve_media_path(filename: str) -> Path | None:
     if not SAFE_FILENAME.fullmatch(filename or ""):
         return None

@@ -26,7 +26,9 @@ CREATE TABLE IF NOT EXISTS admin (
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     password_changed_at TEXT NOT NULL,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    totp_secret TEXT NOT NULL DEFAULT '',
+    totp_enabled INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
@@ -54,7 +56,11 @@ CREATE TABLE IF NOT EXISTS posts (
     series_order INTEGER NOT NULL DEFAULT 0,
     seo_title TEXT NOT NULL DEFAULT '',
     seo_description TEXT NOT NULL DEFAULT '',
-    seo_keywords TEXT NOT NULL DEFAULT ''
+    seo_keywords TEXT NOT NULL DEFAULT '',
+    cover_image TEXT NOT NULL DEFAULT '',
+    featured INTEGER NOT NULL DEFAULT 0,
+    repair_meta TEXT NOT NULL DEFAULT '{}',
+    canonical_url TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_posts_status_published
     ON posts(status, published_at DESC);
@@ -76,10 +82,73 @@ CREATE TABLE IF NOT EXISTS post_views (
     post_id INTEGER NOT NULL,
     day TEXT NOT NULL,
     views INTEGER NOT NULL DEFAULT 0,
+    completions INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (post_id, day),
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_post_views_day ON post_views(day);
+
+CREATE TABLE IF NOT EXISTS post_referrers (
+    post_id INTEGER NOT NULL,
+    day TEXT NOT NULL,
+    host TEXT NOT NULL,
+    views INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (post_id, day, host),
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS post_revisions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    excerpt TEXT NOT NULL DEFAULT '',
+    content_md TEXT NOT NULL DEFAULT '',
+    tags TEXT NOT NULL DEFAULT '[]',
+    series TEXT NOT NULL DEFAULT '',
+    series_order INTEGER NOT NULL DEFAULT 0,
+    seo_title TEXT NOT NULL DEFAULT '',
+    seo_description TEXT NOT NULL DEFAULT '',
+    seo_keywords TEXT NOT NULL DEFAULT '',
+    cover_image TEXT NOT NULL DEFAULT '',
+    repair_meta TEXT NOT NULL DEFAULT '{}',
+    canonical_url TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_post_revisions_post
+    ON post_revisions(post_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS admin_audit (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    action TEXT NOT NULL,
+    detail TEXT NOT NULL DEFAULT '',
+    ip TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS redirects (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    path TEXT NOT NULL UNIQUE,
+    target TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS not_found_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    path TEXT NOT NULL,
+    referrer TEXT NOT NULL DEFAULT '',
+    user_agent TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_not_found_created ON not_found_logs(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS app_errors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    path TEXT NOT NULL DEFAULT '',
+    message TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_app_errors_created ON app_errors(created_at DESC);
 """
 
 POST_COLUMN_MIGRATIONS = {
@@ -89,6 +158,15 @@ POST_COLUMN_MIGRATIONS = {
     "seo_title": "TEXT NOT NULL DEFAULT ''",
     "seo_description": "TEXT NOT NULL DEFAULT ''",
     "seo_keywords": "TEXT NOT NULL DEFAULT ''",
+    "cover_image": "TEXT NOT NULL DEFAULT ''",
+    "featured": "INTEGER NOT NULL DEFAULT 0",
+    "repair_meta": "TEXT NOT NULL DEFAULT '{}'",
+    "canonical_url": "TEXT NOT NULL DEFAULT ''",
+}
+
+ADMIN_COLUMN_MIGRATIONS = {
+    "totp_secret": "TEXT NOT NULL DEFAULT ''",
+    "totp_enabled": "INTEGER NOT NULL DEFAULT 0",
 }
 
 
@@ -217,6 +295,27 @@ def _migrate_post_columns(conn: sqlite3.Connection) -> None:
     )
 
 
+def _migrate_admin_columns(conn: sqlite3.Connection) -> None:
+    existing = {
+        row["name"] for row in conn.execute("PRAGMA table_info(admin)").fetchall()
+    }
+    for column, declaration in ADMIN_COLUMN_MIGRATIONS.items():
+        if column not in existing:
+            conn.execute(f"ALTER TABLE admin ADD COLUMN {column} {declaration}")
+            logger.info("Added admin.%s", column)
+
+
+def _migrate_view_columns(conn: sqlite3.Connection) -> None:
+    existing = {
+        row["name"] for row in conn.execute("PRAGMA table_info(post_views)").fetchall()
+    }
+    if "completions" not in existing:
+        conn.execute(
+            "ALTER TABLE post_views ADD COLUMN completions INTEGER NOT NULL DEFAULT 0"
+        )
+        logger.info("Added post_views.completions")
+
+
 def _remove_retired_settings(conn: sqlite3.Connection) -> None:
     """Drop rows for features that were intentionally removed."""
 
@@ -259,6 +358,8 @@ def init_db() -> None:
     try:
         conn.executescript(SCHEMA)
         _migrate_post_columns(conn)
+        _migrate_admin_columns(conn)
+        _migrate_view_columns(conn)
         conn.execute(
             "DELETE FROM sessions WHERE expires_at < ?",
             (iso_utc(utc_now()),),

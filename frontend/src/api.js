@@ -90,8 +90,9 @@ export const publicApi = {
   getSeries(name) {
     return request(`/public/series/${encodeURIComponent(name)}`)
   },
-  recordView(slug) {
-    return request(`/public/posts/${encodeURIComponent(slug)}/view`, {
+  recordView(slug, { complete = false } = {}) {
+    const suffix = complete ? '?complete=true' : ''
+    return request(`/public/posts/${encodeURIComponent(slug)}/view${suffix}`, {
       method: 'POST',
     })
   },
@@ -133,10 +134,10 @@ async function rawUpload(path, blob, { timeout = 30000 } = {}) {
 }
 
 export const adminApi = {
-  login(username, password) {
+  login(username, password, totpCode = '') {
     return request('/admin/login', {
       method: 'POST',
-      body: { username, password },
+      body: { username, password, totp_code: totpCode },
     })
   },
   me() {
@@ -172,6 +173,118 @@ export const adminApi = {
       body: { content_md },
       csrf: true,
     })
+  },
+  getRevisions(id) {
+    return request(`/admin/posts/${id}/revisions`)
+  },
+  restoreRevision(id, revisionId) {
+    return request(`/admin/posts/${id}/revisions/${revisionId}/restore`, {
+      method: 'POST',
+      csrf: true,
+    })
+  },
+  duplicatePost(id) {
+    return request(`/admin/posts/${id}/duplicate`, { method: 'POST', csrf: true })
+  },
+  batchPosts(payload) {
+    return request('/admin/posts/batch', { method: 'POST', body: payload, csrf: true })
+  },
+  get2fa() {
+    return request('/admin/2fa')
+  },
+  setup2fa(password) {
+    return request('/admin/2fa/setup', {
+      method: 'POST',
+      body: { password },
+      csrf: true,
+    })
+  },
+  enable2fa(code) {
+    return request('/admin/2fa/enable', {
+      method: 'POST',
+      body: { code },
+      csrf: true,
+    })
+  },
+  disable2fa(payload) {
+    return request('/admin/2fa/disable', {
+      method: 'POST',
+      body: payload,
+      csrf: true,
+    })
+  },
+  getAudit() {
+    return request('/admin/audit')
+  },
+  getErrors() {
+    return request('/admin/errors')
+  },
+  clearErrors() {
+    return request('/admin/errors', { method: 'DELETE', csrf: true })
+  },
+  getHealth() {
+    return request('/admin/health')
+  },
+  getBackups() {
+    return request('/admin/backups')
+  },
+  backupDownloadUrl(filename) {
+    return `${API_ROOT}/admin/backups/${encodeURIComponent(filename)}`
+  },
+  runBackup() {
+    return request('/admin/backups/run', { method: 'POST', csrf: true })
+  },
+  restoreBackup(filename) {
+    return request('/admin/backups/restore', {
+      method: 'POST',
+      body: { filename },
+      csrf: true,
+    })
+  },
+  async restoreBackupUpload(file) {
+    const headers = { Accept: 'application/json', 'Content-Type': 'application/zip' }
+    if (csrfToken) headers['X-CSRF-Token'] = csrfToken
+    const response = await fetch(`${API_ROOT}/admin/backups/restore-upload`, {
+      method: 'POST',
+      headers,
+      credentials: 'same-origin',
+      body: file,
+    })
+    let data = null
+    try {
+      data = await response.json()
+    } catch {
+      data = null
+    }
+    if (!response.ok) throw new ApiError(data?.detail || '恢复失败。', response.status, data)
+    return data
+  },
+  getUnusedMedia() {
+    return request('/admin/media/unused')
+  },
+  cleanupUnusedMedia() {
+    return request('/admin/media/unused', { method: 'DELETE', csrf: true })
+  },
+  getRedirects() {
+    return request('/admin/redirects')
+  },
+  addRedirect(payload) {
+    return request('/admin/redirects', { method: 'POST', body: payload, csrf: true })
+  },
+  deleteRedirect(id) {
+    return request(`/admin/redirects/${id}`, { method: 'DELETE', csrf: true })
+  },
+  getNotFound() {
+    return request('/admin/not-found')
+  },
+  clearNotFound() {
+    return request('/admin/not-found', { method: 'DELETE', csrf: true })
+  },
+  pushSeo() {
+    return request('/admin/seo/push', { method: 'POST', csrf: true })
+  },
+  analyticsCsvUrl() {
+    return `${API_ROOT}/admin/analytics/export.csv`
   },
   getSettings() {
     return request('/admin/settings')

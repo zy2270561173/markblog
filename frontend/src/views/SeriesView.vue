@@ -84,6 +84,13 @@ watch(seriesName, (name) => loadSeries(name), { immediate: true })
         <li v-for="(post, index) in series.posts" :key="post.slug" class="series-row">
           <span class="series-row__index" aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
           <div class="series-row__main">
+            <RouterLink
+              v-if="post.cover_image"
+              :to="{ name: 'post', params: { slug: post.slug } }"
+              class="series-row__cover"
+            >
+              <img :src="post.cover_image" :alt="post.title" loading="lazy" />
+            </RouterLink>
             <div class="series-row__meta">
               <time :datetime="post.published_at">{{ formatShortDate(post.published_at) }}</time>
               <span aria-hidden="true">·</span>
@@ -158,6 +165,20 @@ watch(seriesName, (name) => loadSeries(name), { immediate: true })
   font-family: var(--font-hand);
   font-size: 24px;
   transform: rotate(-3deg);
+}
+
+.series-row__cover {
+  display: block;
+  width: min(100%, 480px);
+  margin-bottom: 10px;
+  border: 1px solid var(--color-line);
+}
+
+.series-row__cover img {
+  display: block;
+  width: 100%;
+  max-height: 210px;
+  object-fit: cover;
 }
 
 .series-row__meta {

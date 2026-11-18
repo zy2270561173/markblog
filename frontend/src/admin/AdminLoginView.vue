@@ -11,7 +11,7 @@ const router = useRouter()
 const { state: sessionState, signIn } = useAdminSession()
 const { state: siteState } = useSite()
 
-const form = reactive({ username: '', password: '' })
+const form = reactive({ username: '', password: '', totpCode: '' })
 const showPassword = ref(false)
 const busy = ref(false)
 const error = ref('')
@@ -53,6 +53,7 @@ async function submit() {
     await signIn({
       username: form.username.trim(),
       password: form.password,
+      totpCode: form.totpCode.trim(),
     })
     await router.replace(safeNextPath())
   } catch (loginError) {
@@ -147,6 +148,21 @@ async function submit() {
                 {{ showPassword ? '藏好' : '看看' }}
               </button>
             </div>
+          </div>
+
+          <div class="field">
+            <label for="admin-totp">两步验证码 <span class="label-optional">启用了 2FA 才需要</span></label>
+            <input
+              id="admin-totp"
+              v-model="form.totpCode"
+              class="input"
+              type="text"
+              inputmode="numeric"
+              maxlength="6"
+              autocomplete="one-time-code"
+              placeholder="6 位数字，可留空"
+              :disabled="busy"
+            />
           </div>
 
           <p v-if="error" class="alert alert--error login-error" role="alert">

@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import media, repository
+from . import media, repository, search
 
 
 def _metadata_post(row: sqlite3.Row) -> dict[str, Any]:
@@ -106,6 +106,120 @@ def build_backup(conn: sqlite3.Connection) -> io.BytesIO:
             )
         output.seek(0)
         return output
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+
+BACKUP_KEEP = 7
+
+
+def backup_dir() -> Path:
+    path = media.media_dir().parent / "backups"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def create_auto_backup(conn: sqlite3.Connection) -> dict[str, Any]:
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    filename = f"markblog-auto-{stamp}.zip"
+    payload = build_backup(conn)
+    target = backup_dir() / filename
+    target.write_bytes(payload.getvalue())
+    files = sorted(
+        backup_dir().glob("markblog-auto-*.zip"),
+        key=lambda item: item.stat().st_mtime,
+        reverse=True,
+    )
+    for old in files[BACKUP_KEEP:]:
+        old.unlink(missing_ok=True)
+    return {
+        "filename": filename,
+        "size": target.stat().st_size,
+        "created_at": datetime.fromtimestamp(
+            target.stat().st_mtime, timezone.utc
+        ).isoformat(timespec="seconds").replace("+00:00", "Z"),
+    }
+
+
+def list_auto_backups() -> list[dict[str, Any]]:
+    items = []
+    for path in sorted(
+        backup_dir().glob("markblog-auto-*.zip"),
+        key=lambda item: item.stat().st_mtime,
+        reverse=True,
+    ):
+        stat = path.stat()
+        items.append(
+            {
+                "filename": path.name,
+                "size": stat.st_size,
+                "created_at": datetime.fromtimestamp(
+                    stat.st_mtime, timezone.utc
+                ).isoformat(timespec="seconds").replace("+00:00", "Z"),
+            }
+        )
+    return items
+
+
+def backup_path(filename: str) -> Path | None:
+    if not re.fullmatch(r"markblog-auto-\d{8}-\d{6}\.zip", filename or ""):
+        return None
+    path = (backup_dir() / filename).resolve()
+    if not path.is_relative_to(backup_dir().resolve()) or not path.is_file():
+        return None
+    return path
+
+
+def restore_backup_bytes(conn: sqlite3.Connection, data: bytes) -> dict[str, Any]:
+    if not data:
+        raise ValueError("备份文件为空。")
+    if len(data) > 100 * 1024 * 1024:
+        raise ValueError("备份文件不能超过 100 MB。")
+    try:
+        archive = zipfile.ZipFile(io.BytesIO(data))
+    except zipfile.BadZipFile as error:
+        raise ValueError("不是有效的 ZIP 备份文件。") from error
+    names = set(archive.namelist())
+    if "markblog.db" not in names:
+        raise ValueError("备份中缺少 markblog.db。")
+
+    with tempfile.NamedTemporaryFile(
+        prefix="markblog-restore-", suffix=".db", dir=backup_dir(), delete=False
+    ) as handle:
+        handle.write(archive.read("markblog.db"))
+        temp_path = Path(handle.name)
+    try:
+        source = sqlite3.connect(temp_path)
+        try:
+            tables = {
+                row[0]
+                for row in source.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'table'"
+                ).fetchall()
+            }
+            if not {"posts", "settings", "admin"}.issubset(tables):
+                raise ValueError("备份数据库结构不完整。")
+            conn.commit()
+            source.backup(conn)
+        finally:
+            source.close()
+
+        root = media.media_dir().resolve()
+        for name in names:
+            if not name.startswith("media/") or name.endswith("/"):
+                continue
+            target_name = Path(name).name
+            if not target_name:
+                continue
+            target = (root / target_name).resolve()
+            if not target.is_relative_to(root):
+                continue
+            target.write_bytes(archive.read(name))
+        conn.execute("DELETE FROM sessions")
+        conn.commit()
+        search.rebuild(conn)
+        conn.commit()
+        return {"ok": True, "media": len([n for n in names if n.startswith("media/")])}
     finally:
         temp_path.unlink(missing_ok=True)
 

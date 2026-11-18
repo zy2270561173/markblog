@@ -40,6 +40,8 @@ const policeHref = computed(
           <RouterLink to="/">{{ copy.footer_home }}</RouterLink>
           <RouterLink to="/posts">{{ copy.footer_posts }}</RouterLink>
           <RouterLink to="/about">{{ copy.footer_about }}</RouterLink>
+          <RouterLink to="/privacy">{{ copy.footer_privacy }}</RouterLink>
+          <RouterLink to="/disclaimer">{{ copy.footer_disclaimer }}</RouterLink>
           <a href="/feed.xml">{{ copy.footer_rss }}</a>
         </nav>
 

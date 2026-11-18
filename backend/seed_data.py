@@ -53,6 +53,10 @@ DEFAULT_SETTINGS: dict[str, str] = {
     "ntp_server": "ntp.aliyun.com",
     "day_start": "07:00",
     "night_start": "19:00",
+    "privacy_md": "## 隐私说明\n\n本站不要求访客注册，不使用第三方广告或统计脚本。文章阅读量只按文章和日期累计，不保存访客 IP。管理员登录使用必要的会话 Cookie。",
+    "disclaimer_md": "## 免责声明\n\n本站记录的是个人维修经验，不构成专业维修、数据恢复或安全建议。拆机、通电和操作硬件有风险，请先断开电源并备份数据；因参照本站内容造成的损失，作者不承担责任。",
+    "baidu_push_token": "",
+    "indexnow_key": "",
 }
 
 POSTS: list[dict[str, object]] = [

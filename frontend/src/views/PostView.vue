@@ -9,6 +9,7 @@ import { useCopy } from '../lib/useCopy'
 import { setKeywords, setPageMeta } from '../lib/meta'
 import { formatDate, formatShortDate } from '../lib/format'
 import { copyText } from '../lib/media'
+import QRCode from 'qrcode'
 
 const route = useRoute()
 const { state: siteState } = useSite()
@@ -22,6 +23,11 @@ const proseEl = ref(null)
 const progress = ref(0)
 const lightbox = ref(null)
 const fontScale = ref('normal')
+const qrOpen = ref(false)
+const qrData = ref('')
+const qrUrl = ref('')
+const qrError = ref('')
+const completionSent = ref(false)
 const readingTools = [
   { value: 'small', label: '小' },
   { value: 'normal', label: '中' },
@@ -34,22 +40,75 @@ const articleClass = computed(() => `article--font-${fontScale.value}`)
 const toc = computed(() => post.value?.toc || [])
 const related = computed(() => post.value?.related || [])
 const seriesInfo = computed(() => post.value?.series_info || null)
+const riskLabels = { low: '低风险', medium: '中等风险', high: '高风险' }
+const hasRepair = computed(() => {
+  const repair = post.value?.repair
+  if (!repair) return false
+  return Boolean(
+    repair.risk !== 'low' || repair.time || repair.tools || repair.models || repair.safety,
+  )
+})
 
 function applyMeta() {
   if (!post.value) return
   setKeywords(post.value.seo_keywords || site.value.seo_keywords)
+  const path = `/posts/${encodeURIComponent(post.value.slug)}`
+  const base = (site.value.site_url || window.location.origin).replace(/\/$/, '')
   setPageMeta({
     title: post.value.seo_title || `${post.value.title} · ${site.value.site_title || 'Markblog'}`,
     description: post.value.seo_description || post.value.excerpt,
-    canonicalPath: `/posts/${encodeURIComponent(post.value.slug)}`,
+    canonicalPath: path,
+    canonicalUrl: post.value.canonical_url || null,
+    imageUrl: post.value.cover_image ? `${base}${post.value.cover_image}` : null,
     siteUrl: site.value.site_url,
     type: 'article',
   })
 }
 
+function articleUrl() {
+  if (!post.value) return window.location.href
+  if (post.value.canonical_url) return post.value.canonical_url
+  const base = (site.value.site_url || window.location.origin).replace(/\/$/, '')
+  return `${base}/posts/${encodeURIComponent(post.value.slug)}`
+}
+
+async function openQr() {
+  qrError.value = ''
+  qrUrl.value = articleUrl()
+  try {
+    qrData.value = await QRCode.toDataURL(qrUrl.value, {
+      width: 320,
+      margin: 2,
+      color: { dark: '#2c2c2c', light: '#f5f0e8' },
+    })
+    qrOpen.value = true
+  } catch {
+    qrError.value = '二维码生成失败。'
+  }
+}
+
+async function copyArticleLink() {
+  try {
+    await copyText(qrUrl.value || articleUrl())
+  } catch {
+    qrError.value = '复制失败，请手动复制。'
+  }
+}
+
 function updateProgress() {
   const scrollable = document.documentElement.scrollHeight - window.innerHeight
   progress.value = scrollable > 0 ? Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100)) : 0
+  if (!completionSent.value && progress.value >= 90 && post.value) {
+    const key = `markblog:completed:${post.value.slug}`
+    try {
+      if (window.sessionStorage.getItem(key)) return
+      window.sessionStorage.setItem(key, '1')
+    } catch {
+      // Ignore storage failures.
+    }
+    completionSent.value = true
+    publicApi.recordView(post.value.slug, { complete: true }).catch(() => {})
+  }
 }
 
 function setFontScale(value) {
@@ -104,7 +163,9 @@ function enhanceArticle() {
 }
 
 function onKeydown(event) {
-  if (event.key === 'Escape' && lightbox.value) closeLightbox()
+  if (event.key !== 'Escape') return
+  if (lightbox.value) closeLightbox()
+  if (qrOpen.value) qrOpen.value = false
 }
 
 async function recordView(slug) {
@@ -148,6 +209,7 @@ async function loadPost(slug, { preserve = false } = {}) {
     const data = await publicApi.getPost(slug)
     if (current !== requestNumber) return
     post.value = data
+    completionSent.value = false
     applyMeta()
     recordView(slug)
     nextTick(() => {
@@ -257,6 +319,12 @@ const signoff = computed(() =>
           </div>
           <h1>{{ post.title }}</h1>
           <p v-if="post.excerpt" class="article__lead">{{ post.excerpt }}</p>
+          <img
+            v-if="post.cover_image"
+            class="article-cover"
+            :src="post.cover_image"
+            :alt="post.title"
+          />
           <div class="article__footer-meta">
             <TagList :tags="post.tags" linkable />
             <div class="reading-tools" role="group" :aria-label="copy.font_size_label">
@@ -272,10 +340,40 @@ const signoff = computed(() =>
               >
                 {{ size.label }}
               </button>
+              <button type="button" class="reading-tools__button reading-tools__qr" @click="openQr">
+                {{ copy.post_qr }}
+              </button>
               <span class="article__end-mark" aria-hidden="true">{{ copy.post_fin }}</span>
             </div>
           </div>
         </header>
+
+        <section v-if="hasRepair" class="repair-card" aria-labelledby="repair-title">
+          <div class="repair-card__head">
+            <p class="eyebrow">REPAIR BRIEF</p>
+            <h2 id="repair-title">维修速览</h2>
+            <span class="repair-risk" :class="`is-${post.repair.risk}`">
+              {{ riskLabels[post.repair.risk] }}
+            </span>
+          </div>
+          <dl>
+            <div v-if="post.repair.time">
+              <dt>预计耗时</dt>
+              <dd>{{ post.repair.time }}</dd>
+            </div>
+            <div v-if="post.repair.models">
+              <dt>适用机型</dt>
+              <dd>{{ post.repair.models }}</dd>
+            </div>
+            <div v-if="post.repair.tools" class="is-wide">
+              <dt>工具与材料</dt>
+              <dd>{{ post.repair.tools }}</dd>
+            </div>
+          </dl>
+          <p v-if="post.repair.safety" class="repair-card__safety">
+            <strong>安全提醒：</strong>{{ post.repair.safety }}
+          </p>
+        </section>
 
         <details v-if="toc.length > 1" class="article-toc" open>
           <summary>{{ copy.toc_title }}</summary>
@@ -376,6 +474,13 @@ const signoff = computed(() =>
             :to="{ name: 'post', params: { slug: item.slug } }"
             class="related-card"
           >
+            <img
+              v-if="item.cover_image"
+              class="related-card__cover"
+              :src="item.cover_image"
+              :alt="item.title"
+              loading="lazy"
+            />
             <span class="related-card__date">{{ formatShortDate(item.published_at) }}</span>
             <strong>{{ item.title }}</strong>
             <span class="related-card__excerpt">{{ item.excerpt }}</span>
@@ -386,6 +491,25 @@ const signoff = computed(() =>
     </template>
 
     <Teleport to="body">
+      <div
+        v-if="qrOpen"
+        class="qr-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-label="文章二维码"
+        @click.self="qrOpen = false"
+      >
+        <div class="qr-card">
+          <button type="button" class="image-lightbox__close" aria-label="关闭二维码" @click="qrOpen = false">×</button>
+          <p class="eyebrow">SCAN TO READ</p>
+          <h2>把这篇文章带走</h2>
+          <img v-if="qrData" :src="qrData" alt="文章二维码" width="320" height="320" />
+          <p class="qr-card__url">{{ qrUrl }}</p>
+          <p v-if="qrError" class="alert alert--error">{{ qrError }}</p>
+          <button type="button" class="btn btn--small" @click="copyArticleLink">复制链接</button>
+        </div>
+      </div>
+
       <div
         v-if="lightbox"
         class="image-lightbox"
@@ -467,6 +591,135 @@ const signoff = computed(() =>
   color: var(--color-ink-soft);
   font-size: 19px;
   line-height: 1.8;
+}
+
+.article-cover {
+  display: block;
+  width: min(100%, 780px);
+  max-height: 460px;
+  margin: 28px 0 6px;
+  border: 2px solid var(--color-pencil);
+  object-fit: cover;
+  box-shadow: var(--shadow-sketch);
+}
+
+.repair-card {
+  max-width: 740px;
+  margin: 24px 0 0;
+  padding: 20px 22px;
+  border: 2px solid var(--color-pencil);
+  background: var(--surface-soft);
+  box-shadow: var(--shadow-button);
+}
+
+.repair-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 12px;
+}
+
+.repair-card__head h2 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.repair-risk {
+  margin-left: auto;
+  padding: 2px 8px;
+  border: 1px solid var(--color-line-strong);
+  font-family: var(--font-hand);
+  font-size: 13px;
+}
+
+.repair-risk.is-medium {
+  border-color: var(--color-amber);
+  color: var(--color-amber);
+}
+
+.repair-risk.is-high {
+  border-color: var(--color-vermilion);
+  color: var(--color-vermilion);
+}
+
+.repair-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 22px;
+  margin: 15px 0 0;
+}
+
+.repair-card dl .is-wide {
+  grid-column: 1 / -1;
+}
+
+.repair-card dt {
+  color: var(--color-ink-faint);
+  font-family: var(--font-hand);
+  font-size: 13px;
+}
+
+.repair-card dd {
+  margin: 2px 0 0;
+  color: var(--color-ink-soft);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.repair-card__safety {
+  margin: 15px 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--color-line);
+  color: var(--color-vermilion);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.qr-dialog {
+  position: fixed;
+  z-index: 210;
+  inset: 0;
+  display: grid;
+  padding: 24px;
+  place-items: center;
+  background: rgba(15, 14, 12, 0.72);
+}
+
+.qr-card {
+  position: relative;
+  width: min(420px, 100%);
+  padding: 26px;
+  border: 2px solid var(--color-pencil);
+  background-color: var(--color-paper);
+  background-image: var(--paper-grain);
+  box-shadow: var(--shadow-sketch-hover);
+  text-align: center;
+}
+
+.qr-card h2 {
+  margin: 0 0 16px;
+  font-size: 30px;
+}
+
+.qr-card img {
+  display: block;
+  width: 260px;
+  height: 260px;
+  margin: 0 auto 12px;
+  border: 6px solid var(--color-paper-light);
+}
+
+.qr-card__url {
+  overflow-wrap: anywhere;
+  margin: 0 0 12px;
+  color: var(--color-ink-faint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.reading-tools__qr {
+  padding-inline: 7px;
+  font-size: 12px;
 }
 
 .article__footer-meta {
@@ -800,6 +1053,13 @@ const signoff = computed(() =>
   transform: translateY(-3px);
 }
 
+.related-card__cover {
+  width: calc(100% + 36px);
+  max-height: 130px;
+  margin: -18px -18px 8px;
+  object-fit: cover;
+}
+
 .related-card__date {
   color: var(--color-ink-faint);
   font-family: var(--font-hand);
@@ -876,6 +1136,23 @@ const signoff = computed(() =>
 @media (max-width: 680px) {
   .article-page {
     padding-top: 34px;
+  }
+
+  .repair-card dl {
+    grid-template-columns: 1fr;
+  }
+
+  .repair-card dl .is-wide {
+    grid-column: auto;
+  }
+
+  .qr-card {
+    padding: 18px;
+  }
+
+  .qr-card img {
+    width: min(260px, 72vw);
+    height: auto;
   }
 
   .breadcrumb {

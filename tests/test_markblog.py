@@ -6,6 +6,7 @@ import json
 import os
 import shutil
 import tempfile
+import time
 import zipfile
 from datetime import datetime, timezone
 from urllib.parse import quote
@@ -22,6 +23,7 @@ os.environ["BLOG_DISABLE_NTP"] = "1"
 
 from fastapi.testclient import TestClient  # noqa: E402
 
+from backend import totp  # noqa: E402
 from backend.app import app  # noqa: E402
 
 USERNAME = "admin"
@@ -328,6 +330,168 @@ def test_media_search_series_views_backup_and_schedule(client: TestClient):
             client.delete(f"/api/admin/posts/{post_id}", headers=headers)
         if media_id is not None:
             client.delete(f"/api/admin/media/{media_id}", headers=headers)
+
+
+def test_revisions_cover_batch_analytics_security_and_backup(client: TestClient):
+    headers = login(client)
+    post_ids: list[int] = []
+    media_id = None
+    redirect_id = None
+    try:
+        png = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z0YQAAAAASUVORK5CYII="
+        )
+        media = client.post(
+            "/api/admin/media?filename=cover.png&alt=封面&width=1&height=1",
+            content=png,
+            headers={**headers, "Content-Type": "image/png"},
+        )
+        assert media.status_code == 201, media.text
+        media_id = media.json()["id"]
+        cover = media.json()["url"]
+
+        payload = {
+            "title": "第二阶段测试",
+            "slug": "phase-two-test",
+            "excerpt": "摘要",
+            "content_md": "## 第一节\n\n旧正文。",
+            "tags": ["测试", "维修"],
+            "status": "published",
+            "scheduled_at": None,
+            "series": "",
+            "series_order": 0,
+            "seo_title": "",
+            "seo_description": "",
+            "seo_keywords": "",
+            "cover_image": cover,
+            "featured": True,
+            "canonical_url": "",
+            "repair": {
+                "risk": "medium",
+                "time": "30 分钟",
+                "tools": "螺丝刀",
+                "models": "通用",
+                "safety": "先断电。",
+            },
+        }
+        created = client.post("/api/admin/posts", json=payload, headers=headers)
+        assert created.status_code == 201, created.text
+        post = created.json()
+        post_ids.append(post["id"])
+        assert post["cover_image"] == cover
+        assert post["featured"] is True
+        assert post["repair"]["risk"] == "medium"
+        public_post = client.get("/api/public/posts/phase-two-test").json()
+        assert public_post["repair"]["time"] == "30 分钟"
+        assert public_post["cover_image"] == cover
+
+        updated = client.put(
+            f"/api/admin/posts/{post['id']}",
+            json={**payload, "title": "第二阶段测试（新）", "content_md": "## 新正文"},
+            headers=headers,
+        )
+        assert updated.status_code == 200
+        revisions = client.get(
+            f"/api/admin/posts/{post['id']}/revisions", headers=headers
+        )
+        assert revisions.status_code == 200
+        assert revisions.json()["items"]
+        old_revision = revisions.json()["items"][0]
+        restored = client.post(
+            f"/api/admin/posts/{post['id']}/revisions/{old_revision['id']}/restore",
+            headers=headers,
+        )
+        assert restored.status_code == 200, restored.text
+        assert restored.json()["title"] == "第二阶段测试"
+
+        duplicated = client.post(
+            f"/api/admin/posts/{post['id']}/duplicate", headers=headers
+        )
+        assert duplicated.status_code == 200
+        post_ids.append(duplicated.json()["id"])
+        assert duplicated.json()["status"] == "draft"
+
+        batch = client.post(
+            "/api/admin/posts/batch",
+            json={
+                "ids": [duplicated.json()["id"]],
+                "action": "tag",
+                "tags": ["批量"],
+            },
+            headers=headers,
+        )
+        assert batch.status_code == 200
+        assert "批量" in client.get(
+            f"/api/admin/posts/{duplicated.json()['id']}", headers=headers
+        ).json()["tags"]
+
+        view = client.post("/api/public/posts/phase-two-test/view?complete=true")
+        assert view.status_code == 200
+        dashboard = client.get("/api/admin/dashboard", headers=headers).json()
+        assert dashboard["counts"]["completions_total"] >= 1
+        assert "referrers" in dashboard
+        csv_export = client.get("/api/admin/analytics/export.csv", headers=headers)
+        assert csv_export.status_code == 200
+        assert "title,slug,day,views,completions" in csv_export.text
+
+        redirect = client.post(
+            "/api/admin/redirects",
+            json={"path": "/legacy-phase-two", "target": "/posts"},
+            headers=headers,
+        )
+        assert redirect.status_code == 200
+        redirect_id = redirect.json()["id"]
+        hit = client.get("/legacy-phase-two", follow_redirects=False)
+        assert hit.status_code == 308
+        assert hit.headers["location"] == "/posts"
+
+        client.get("/definitely-missing-phase-two")
+        not_found = client.get("/api/admin/not-found", headers=headers)
+        assert not_found.status_code == 200
+        assert any(
+            item["path"] == "/definitely-missing-phase-two"
+            for item in not_found.json()["items"]
+        )
+
+        backup = client.post("/api/admin/backups/run", headers=headers)
+        assert backup.status_code == 200
+        filename = backup.json()["filename"]
+        assert client.get(
+            f"/api/admin/backups/{filename}", headers=headers
+        ).status_code == 200
+        assert client.get("/api/admin/backups", headers=headers).json()["items"]
+
+        privacy = client.get("/privacy")
+        assert privacy.status_code == 200
+        assert "隐私" in privacy.text
+
+        setup = client.post(
+            "/api/admin/2fa/setup",
+            json={"password": PASSWORD},
+            headers=headers,
+        )
+        assert setup.status_code == 200, setup.text
+        secret = setup.json()["secret"]
+        code = totp._code_at(secret, int(time.time()) // 30)
+        enable = client.post(
+            "/api/admin/2fa/enable", json={"code": code}, headers=headers
+        )
+        assert enable.status_code == 200, enable.text
+        assert client.get("/api/admin/2fa", headers=headers).json()["enabled"] is True
+        disable = client.post(
+            "/api/admin/2fa/disable",
+            json={"password": PASSWORD, "code": totp._code_at(secret, int(time.time()) // 30)},
+            headers=headers,
+        )
+        assert disable.status_code == 200, disable.text
+        assert client.get("/api/admin/audit", headers=headers).json()["items"]
+    finally:
+        for post_id in post_ids:
+            client.delete(f"/api/admin/posts/{post_id}", headers=headers)
+        if media_id is not None:
+            client.delete(f"/api/admin/media/{media_id}", headers=headers)
+        if redirect_id is not None:
+            client.delete(f"/api/admin/redirects/{redirect_id}", headers=headers)
 
 
 def test_settings_and_footer_records(client: TestClient):

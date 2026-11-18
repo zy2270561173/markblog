@@ -4,6 +4,7 @@
 Usage:
     python -m backend.manage reset-password
     python -m backend.manage reset-password --password "a-long-new-password"
+    python -m backend.manage reset-2fa
     python -m backend.manage info
 """
 
@@ -15,7 +16,12 @@ import sys
 
 from .config import get_settings
 from .db import connect, init_db
-from .repository import get_admin_account, get_all_settings, update_admin_password
+from .repository import (
+    get_admin_account,
+    get_all_settings,
+    set_admin_totp,
+    update_admin_password,
+)
 from .auth import password_problem
 
 
@@ -47,6 +53,17 @@ def reset_password(password: str | None) -> None:
     print("Password updated. All existing admin sessions were signed out.")
 
 
+def reset_2fa() -> None:
+    init_db()
+    with connect() as conn:
+        account = get_admin_account(conn)
+        if account is None:
+            print("Administrator account not found.", file=sys.stderr)
+            raise SystemExit(1)
+        set_admin_totp(conn, "", False)
+    print("Two-factor authentication disabled. Restart the app if it is running.")
+
+
 def show_info() -> None:
     init_db()
     settings = get_settings()
@@ -68,11 +85,14 @@ def main() -> None:
         "--password",
         help="password (prefer the interactive prompt so it does not stay in shell history)",
     )
+    sub.add_parser("reset-2fa", help="disable TOTP two-factor authentication")
     sub.add_parser("info", help="show database and admin metadata")
     args = parser.parse_args()
 
     if args.command == "reset-password":
         reset_password(args.password)
+    elif args.command == "reset-2fa":
+        reset_2fa()
     elif args.command == "info":
         show_info()
 

@@ -37,6 +37,8 @@ export function setPageMeta({
   title,
   description,
   canonicalPath = null,
+  canonicalUrl = null,
+  imageUrl = null,
   siteUrl = window.location.origin,
   noindex = false,
   type = 'website',
@@ -54,7 +56,9 @@ export function setPageMeta({
   setRobots(noindex)
 
   let absolute = null
-  if (!noindex && canonicalPath) {
+  if (!noindex && canonicalUrl) {
+    absolute = canonicalUrl
+  } else if (!noindex && canonicalPath) {
     try {
       absolute = new URL(canonicalPath, `${siteUrl.replace(/\/$/, '')}/`).toString()
     } catch {
@@ -68,7 +72,8 @@ export function setPageMeta({
   upsertMeta('property', 'og:type', type)
   const imageBase = siteUrl || window.location.origin
   try {
-    upsertMeta('property', 'og:image', new URL('/og-cover.png', imageBase).toString())
+    const image = imageUrl || new URL('/og-cover.png', imageBase).toString()
+    upsertMeta('property', 'og:image', image)
   } catch {
     upsertMeta('property', 'og:image', '/og-cover.png')
   }

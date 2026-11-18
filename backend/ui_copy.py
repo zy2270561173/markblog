@@ -89,4 +89,7 @@ DEFAULT_UI_COPY: dict[str, str] = {
     "copy_code": "复制",
     "copied": "已复制",
     "image_close": "关闭图片",
+    "post_qr": "二维码",
+    "footer_privacy": "隐私说明",
+    "footer_disclaimer": "免责声明",
 }

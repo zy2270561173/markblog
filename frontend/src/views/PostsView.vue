@@ -264,6 +264,13 @@ watch(
           {{ String(index + 1).padStart(2, '0') }}
         </div>
         <div class="ledger-row__main">
+          <RouterLink
+            v-if="post.cover_image"
+            :to="{ name: 'post', params: { slug: post.slug } }"
+            class="ledger-row__cover"
+          >
+            <img :src="post.cover_image" :alt="post.title" loading="lazy" />
+          </RouterLink>
           <div class="ledger-row__meta">
             <time :datetime="post.published_at">{{ formatShortDate(post.published_at) }}</time>
             <span aria-hidden="true">·</span>
@@ -540,6 +547,20 @@ watch(
   font-family: var(--font-hand);
   font-size: 24px;
   transform: rotate(-3deg);
+}
+
+.ledger-row__cover {
+  display: block;
+  width: min(100%, 520px);
+  margin-bottom: 12px;
+  border: 1px solid var(--color-line);
+}
+
+.ledger-row__cover img {
+  display: block;
+  width: 100%;
+  max-height: 230px;
+  object-fit: cover;
 }
 
 .ledger-row__meta {

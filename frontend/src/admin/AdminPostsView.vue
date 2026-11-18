@@ -16,6 +16,13 @@ const actionError = ref('')
 const filter = ref('all')
 const deleteTarget = ref(null)
 const deleting = ref(false)
+const selectedIds = ref([])
+const batchAction = ref('publish')
+const batchTags = ref('')
+const batchBusy = ref(false)
+const allSelected = computed(
+  () => posts.value.length > 0 && selectedIds.value.length === posts.value.length,
+)
 
 const filters = [
   { key: 'all', label: '全部' },
@@ -42,6 +49,51 @@ async function loadPosts() {
     error.value = requestError.message || '文章列表加载失败。'
   } finally {
     loading.value = false
+  }
+}
+
+function toggleAll() {
+  selectedIds.value = allSelected.value ? [] : posts.value.map((post) => post.id)
+}
+
+function toggleOne(id) {
+  selectedIds.value = selectedIds.value.includes(id)
+    ? selectedIds.value.filter((item) => item !== id)
+    : [...selectedIds.value, id]
+}
+
+async function runBatch() {
+  if (!selectedIds.value.length || batchBusy.value) return
+  if (batchAction.value === 'delete' && !window.confirm(`确定删除选中的 ${selectedIds.value.length} 篇文章吗？`)) return
+  batchBusy.value = true
+  actionError.value = ''
+  try {
+    await adminApi.batchPosts({
+      ids: selectedIds.value,
+      action: batchAction.value,
+      tags: batchTags.value.split(/[,，]/).map((tag) => tag.trim()).filter(Boolean),
+    })
+    selectedIds.value = []
+    batchTags.value = ''
+    await loadPosts()
+  } catch (requestError) {
+    actionError.value = requestError.message || '批量操作失败。'
+  } finally {
+    batchBusy.value = false
+  }
+}
+
+async function duplicate(post) {
+  if (batchBusy.value) return
+  batchBusy.value = true
+  actionError.value = ''
+  try {
+    await adminApi.duplicatePost(post.id)
+    await loadPosts()
+  } catch (requestError) {
+    actionError.value = requestError.message || '复制失败。'
+  } finally {
+    batchBusy.value = false
   }
 }
 
@@ -106,6 +158,29 @@ onMounted(() => {
         </p>
       </div>
 
+      <div v-if="posts.length" class="batch-bar">
+        <label class="batch-check">
+          <input type="checkbox" :checked="allSelected" @change="toggleAll" />
+          全选
+        </label>
+        <span class="batch-count">已选 {{ selectedIds.length }} 篇</span>
+        <select v-model="batchAction" class="select batch-select" :disabled="batchBusy">
+          <option value="publish">批量发布</option>
+          <option value="draft">转草稿</option>
+          <option value="tag">追加标签</option>
+          <option value="delete">删除</option>
+        </select>
+        <input
+          v-if="batchAction === 'tag'"
+          v-model="batchTags"
+          class="input batch-tags"
+          placeholder="标签，用逗号分隔"
+        />
+        <button type="button" class="btn btn--small" :disabled="!selectedIds.length || batchBusy" @click="runBatch">
+          {{ batchBusy ? '处理中…' : '执行' }}
+        </button>
+      </div>
+
       <p v-if="actionError" class="alert alert--error" role="alert">{{ actionError }}</p>
 
       <StateBlock v-if="loading" tone="loading" message="正在把稿子按时间排好。" />
@@ -138,6 +213,13 @@ onMounted(() => {
 
         <article v-for="post in filteredPosts" :key="post.id" class="post-row">
           <div class="post-row__main">
+            <input
+              type="checkbox"
+              class="post-select"
+              :checked="selectedIds.includes(post.id)"
+              :aria-label="`选择 ${post.title}`"
+              @change="toggleOne(post.id)"
+            />
             <span class="post-row__number" aria-hidden="true">
               {{ String(post.id).padStart(2, '0') }}
             </span>
@@ -146,6 +228,7 @@ onMounted(() => {
                 <RouterLink :to="{ name: 'admin-post-edit', params: { id: post.id } }">
                   {{ post.title }}
                 </RouterLink>
+                <span v-if="post.featured" class="featured-badge">推荐</span>
               </h2>
               <p class="post-row__sub">
                 /posts/{{ post.slug }} · {{ post.reading_minutes }} 分钟阅读
@@ -183,6 +266,7 @@ onMounted(() => {
             >
               编辑
             </RouterLink>
+            <button type="button" class="row-action" @click="duplicate(post)">复制</button>
             <button
               type="button"
               class="row-action row-action--danger"
@@ -268,6 +352,62 @@ onMounted(() => {
   margin: 0;
   color: var(--color-ink-faint);
   font-size: 12px;
+}
+
+.batch-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border: 1.5px dashed var(--color-line);
+  background: var(--surface-soft);
+}
+
+.batch-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-hand);
+  font-size: 14px;
+}
+
+.batch-count {
+  color: var(--color-ink-faint);
+  font-size: 11px;
+}
+
+.batch-select {
+  width: 130px;
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.batch-tags {
+  width: 200px;
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.post-select {
+  flex: 0 0 auto;
+  margin-top: 6px;
+  accent-color: var(--color-vermilion);
+}
+
+.featured-badge {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 1px 5px;
+  border: 1px solid var(--color-amber);
+  color: var(--color-amber);
+  font-family: var(--font-serif);
+  font-size: 9px;
+  font-weight: 400;
+  vertical-align: middle;
 }
 
 .posts-sheet {
