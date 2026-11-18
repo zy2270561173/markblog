@@ -145,15 +145,6 @@ class SettingsIn(StrictModel):
     ntp_server: str = Field(default="ntp.aliyun.com", max_length=253)
     day_start: str = Field(default="07:00", max_length=5)
     night_start: str = Field(default="19:00", max_length=5)
-    mascot_enabled: str = Field(default="1", max_length=8)
-    mascot_name: str = Field(default="小铅", max_length=20)
-    mascot_greeting: str = Field(default="修电脑之前，先备份。", max_length=120)
-    mascot_position: Literal["left", "right"] = "right"
-
-    @field_validator("mascot_enabled")
-    @classmethod
-    def valid_mascot_enabled(cls, value: str) -> str:
-        return "1" if value.strip().lower() in {"1", "true", "yes", "on"} else "0"
 
     @field_validator("ui_copy")
     @classmethod

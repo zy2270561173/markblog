@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/HomeView-Bhgg-i2z.js","assets/TagList-ChkPQlnV.js","assets/StateBlock-CK5HZ31x.js","assets/HomeView-p3gBRTpA.css","assets/PostsView-CIQVBQHp.js","assets/PostsView-BQQJCgto.css","assets/PostView-DYb9kMO9.js","assets/media-eAuSznjK.js","assets/PostView-DSHzumzH.css","assets/AboutView-D_bhc4V6.js","assets/AboutView-LTEQ2DmT.css","assets/SeriesView-WrCcCRXv.js","assets/SeriesView-DmtpQEMK.css","assets/AdminLoginView-CnLTrqVP.js","assets/AdminLoginView-DSt0Y5MU.css","assets/AdminDashboardView-CpALOedT.js","assets/AdminLayout-DhMcPi1G.js","assets/AdminLayout-X47Wnmat.css","assets/AdminDashboardView-B7YrKTc1.css","assets/AdminPostsView-CIIRMu8l.js","assets/ConfirmDialog-CIT-_0U3.js","assets/ConfirmDialog-CPl499JJ.css","assets/AdminPostsView-CoDUS4lv.css","assets/AdminAssetsView-CRt9hz3z.js","assets/AdminAssetsView-BCW55Z7U.css","assets/AdminAppearanceView-CgsMzROh.js","assets/AdminAppearanceView-g_3mW8H_.css","assets/AdminEditorView-Dc7sAZhl.js","assets/AdminEditorView-AqSzBwJX.css","assets/AdminSettingsView-DjUA1eHV.js","assets/AdminSettingsView-dzc07W69.css","assets/NotFoundView-zgIkw5g4.js","assets/NotFoundView-BEaxyTzW.css"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/HomeView-cdwamVj-.js","assets/TagList-BGC5fB_D.js","assets/StateBlock-BQJ65rCm.js","assets/HomeView-p3gBRTpA.css","assets/PostsView-BKZgkfQz.js","assets/PostsView-BQQJCgto.css","assets/PostView-CH3DGtXV.js","assets/media-BjI8ce3D.js","assets/PostView-DSHzumzH.css","assets/AboutView-DhhEjV-o.js","assets/AboutView-LTEQ2DmT.css","assets/SeriesView-p60lgwxm.js","assets/SeriesView-DmtpQEMK.css","assets/AdminLoginView-m0xgC9UG.js","assets/AdminLoginView-DSt0Y5MU.css","assets/AdminDashboardView-BLNhWrDj.js","assets/AdminLayout-Cos1s8oi.js","assets/AdminLayout-X47Wnmat.css","assets/AdminDashboardView-B7YrKTc1.css","assets/AdminPostsView-CM46pUAG.js","assets/ConfirmDialog-CMJgm9TD.js","assets/ConfirmDialog-CPl499JJ.css","assets/AdminPostsView-CoDUS4lv.css","assets/AdminAssetsView-Dw38hUai.js","assets/AdminAssetsView-BCW55Z7U.css","assets/AdminAppearanceView-BC0_rqOu.js","assets/AdminAppearanceView-DE--qBAX.css","assets/AdminEditorView-DveXWrk4.js","assets/AdminEditorView-AqSzBwJX.css","assets/AdminSettingsView-DQYTrPki.js","assets/AdminSettingsView-dzc07W69.css","assets/NotFoundView-D07a0sVt.js","assets/NotFoundView-BEaxyTzW.css"])))=>i.map(i=>d[i]);
 true              &&(function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -508,10 +508,6 @@ const fallback = {
   footer_note: '维修有风险，重要数据请先备份；本站内容为个人经验记录。',
   site_since: '2026',
   site_url: window.location.origin,
-  mascot_enabled: '1',
-  mascot_name: '小铅',
-  mascot_greeting: '修电脑之前，先备份。',
-  mascot_position: 'right',
   ui_copy: { ...UI_COPY_DEFAULTS },
   appearance: {
     mode: 'auto',
@@ -645,14 +641,14 @@ const _export_sfc = (sfc, props) => {
   return target;
 };
 
-const _hoisted_1$3 = { class: "site-header" };
-const _hoisted_2$3 = { class: "container header-inner" };
-const _hoisted_3$3 = { class: "brand-type" };
-const _hoisted_4$3 = { class: "brand-name" };
-const _hoisted_5$2 = { class: "brand-note" };
-const _hoisted_6$2 = ["aria-expanded"];
-const _hoisted_7$2 = { class: "nav-toggle__label" };
-const _hoisted_8$2 = ["aria-label"];
+const _hoisted_1$2 = { class: "site-header" };
+const _hoisted_2$2 = { class: "container header-inner" };
+const _hoisted_3$2 = { class: "brand-type" };
+const _hoisted_4$2 = { class: "brand-name" };
+const _hoisted_5$1 = { class: "brand-note" };
+const _hoisted_6$1 = ["aria-expanded"];
+const _hoisted_7$1 = { class: "nav-toggle__label" };
+const _hoisted_8$1 = ["aria-label"];
 const _hoisted_9$1 = {
   key: 0,
   viewBox: "0 0 20 20",
@@ -694,7 +690,7 @@ const _hoisted_18$1 = {
 };
 
 
-const _sfc_main$3 = {
+const _sfc_main$2 = {
   __name: 'SiteHeader',
   setup(__props) {
 
@@ -740,8 +736,8 @@ lw(() => document.removeEventListener('keydown', onKeydown));
 return (_ctx, _cache) => {
   const _component_RouterLink = lN("RouterLink");
 
-  return (r9(), ir("header", _hoisted_1$3, [
-    id("div", _hoisted_2$3, [
+  return (r9(), ir("header", _hoisted_1$2, [
+    id("div", _hoisted_2$2, [
       ip(_component_RouterLink, {
         to: "/",
         class: "brand",
@@ -777,12 +773,12 @@ return (_ctx, _cache) => {
               })
             ])
           ], -1)),
-          id("span", _hoisted_3$3, [
-            id("span", _hoisted_4$3, [
+          id("span", _hoisted_3$2, [
+            id("span", _hoisted_4$2, [
               iv(ea(siteTitle.value), 1),
               _cache[1] || (_cache[1] = id("span", { class: "brand-dot" }, ".", -1))
             ]),
-            id("span", _hoisted_5$2, ea(tA(copy).header_note), 1)
+            id("span", _hoisted_5$1, ea(tA(copy).header_note), 1)
           ])
         ]),
         _: 1
@@ -795,7 +791,7 @@ return (_ctx, _cache) => {
         "aria-controls": "site-nav",
         onClick: _cache[0] || (_cache[0] = $event => (menuOpen.value = !menuOpen.value))
       }, [
-        id("span", _hoisted_7$2, ea(menuOpen.value ? '收起' : '目录'), 1),
+        id("span", _hoisted_7$1, ea(menuOpen.value ? '收起' : '目录'), 1),
         _cache[3] || (_cache[3] = id("svg", {
           viewBox: "0 0 26 18",
           width: "26",
@@ -822,7 +818,7 @@ return (_ctx, _cache) => {
             "stroke-linecap": "round"
           })
         ], -1))
-      ], 8, _hoisted_6$2),
+      ], 8, _hoisted_6$1),
       id("nav", {
         id: "site-nav",
         class: Y$1(["site-nav", { 'is-open': menuOpen.value }]),
@@ -907,7 +903,7 @@ return (_ctx, _cache) => {
                     }, null, -1)
                   ]))])),
             id("span", _hoisted_12$1, ea(tA(copy).theme_menu_label), 1)
-          ], 8, _hoisted_8$2),
+          ], 8, _hoisted_8$1),
           id("div", {
             class: "theme-menu",
             role: "group",
@@ -966,7 +962,7 @@ return (_ctx, _cache) => {
 }
 
 };
-const SiteHeader = /*#__PURE__*/_export_sfc(_sfc_main$3, [['__scopeId',"data-v-204080f3"]]);
+const SiteHeader = /*#__PURE__*/_export_sfc(_sfc_main$2, [['__scopeId',"data-v-204080f3"]]);
 
 const longDate = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',
@@ -1005,17 +1001,17 @@ function copyrightLine(value) {
   return (value || fallback).replaceAll('{year}', year)
 }
 
-const _hoisted_1$2 = { class: "site-footer" };
-const _hoisted_2$2 = { class: "container" };
-const _hoisted_3$2 = { class: "footer-top" };
-const _hoisted_4$2 = { class: "footer-brand" };
-const _hoisted_5$1 = { class: "footer-brand__name" };
-const _hoisted_6$1 = { class: "footer-brand__text" };
-const _hoisted_7$1 = {
+const _hoisted_1$1 = { class: "site-footer" };
+const _hoisted_2$1 = { class: "container" };
+const _hoisted_3$1 = { class: "footer-top" };
+const _hoisted_4$1 = { class: "footer-brand" };
+const _hoisted_5 = { class: "footer-brand__name" };
+const _hoisted_6 = { class: "footer-brand__text" };
+const _hoisted_7 = {
   key: 0,
   class: "footer-brand__since"
 };
-const _hoisted_8$1 = {
+const _hoisted_8 = {
   class: "footer-nav",
   "aria-label": "页脚导航"
 };
@@ -1053,7 +1049,7 @@ const _hoisted_24 = ["href"];
 const _hoisted_25 = { class: "filing-hint" };
 
 
-const _sfc_main$2 = {
+const _sfc_main$1 = {
   __name: 'SiteFooter',
   setup(__props) {
 
@@ -1074,24 +1070,24 @@ const policeHref = iH(
 return (_ctx, _cache) => {
   const _component_RouterLink = lN("RouterLink");
 
-  return (r9(), ir("footer", _hoisted_1$2, [
-    id("div", _hoisted_2$2, [
+  return (r9(), ir("footer", _hoisted_1$1, [
+    id("div", _hoisted_2$1, [
       _cache[2] || (_cache[2] = id("div", {
         class: "footer-line",
         "aria-hidden": "true"
       }, null, -1)),
-      id("div", _hoisted_3$2, [
-        id("div", _hoisted_4$2, [
-          id("p", _hoisted_5$1, [
+      id("div", _hoisted_3$1, [
+        id("div", _hoisted_4$1, [
+          id("p", _hoisted_5, [
             iv(ea(site.value.site_title || 'Markblog'), 1),
             _cache[0] || (_cache[0] = id("span", null, ".", -1))
           ]),
-          id("p", _hoisted_6$1, ea(site.value.site_subtitle || '把电脑问题，写到纸上。'), 1),
+          id("p", _hoisted_6, ea(site.value.site_subtitle || '把电脑问题，写到纸上。'), 1),
           (since.value)
-            ? (r9(), ir("p", _hoisted_7$1, ea(tA(copy).footer_since_label) + " " + ea(since.value) + " · " + ea(tA(copy).footer_since), 1))
+            ? (r9(), ir("p", _hoisted_7, ea(tA(copy).footer_since_label) + " " + ea(since.value) + " · " + ea(tA(copy).footer_since), 1))
             : i_("", true)
         ]),
-        id("nav", _hoisted_8$1, [
+        id("nav", _hoisted_8, [
           id("p", _hoisted_9, ea(tA(copy).footer_heading), 1),
           ip(_component_RouterLink, { to: "/" }, {
             default: na(() => [
@@ -1158,149 +1154,7 @@ return (_ctx, _cache) => {
 }
 
 };
-const SiteFooter = /*#__PURE__*/_export_sfc(_sfc_main$2, [['__scopeId',"data-v-730ff2d4"]]);
-
-const _hoisted_1$1 = ["aria-label"];
-const _hoisted_2$1 = {
-  key: 0,
-  class: "mascot-bubble"
-};
-const _hoisted_3$1 = ["aria-label"];
-const _hoisted_4$1 = { class: "mascot-bubble__name" };
-const _hoisted_5 = { class: "mascot-bubble__text" };
-const _hoisted_6 = ["aria-label"];
-const _hoisted_7 = {
-  viewBox: "0 0 220 320",
-  fill: "none",
-  "aria-hidden": "true"
-};
-const _hoisted_8 = { class: "mascot-breathe" };
-
-
-const _sfc_main$1 = {
-  __name: 'MascotWidget',
-  setup(__props) {
-
-const { state: siteState } = useSite();
-const dismissed = tx(false);
-const open = tx(typeof window === 'undefined' ? true : window.innerWidth > 760);
-const tilt = tx(0);
-const site = iH(() => siteState.site);
-const enabled = iH(() => site.value.mascot_enabled !== '0');
-const name = iH(() => site.value.mascot_name || '小铅');
-const greeting = iH(
-  () => site.value.mascot_greeting || '修电脑之前，先备份。',
-);
-const position = iH(() => (site.value.mascot_position === 'left' ? 'left' : 'right'));
-
-function close() {
-  open.value = false;
-  dismissed.value = true;
-  try {
-    window.sessionStorage.setItem('markblog:mascot-hidden', '1');
-  } catch {
-    // Ignore storage failures.
-  }
-}
-
-function reopen() {
-  dismissed.value = false;
-  open.value = true;
-  try {
-    window.sessionStorage.removeItem('markblog:mascot-hidden');
-  } catch {
-    // Ignore.
-  }
-}
-
-function toggleOpen() {
-  open.value = !open.value;
-}
-
-function onPointerMove(event) {
-  const relative = event.clientX / window.innerWidth - 0.5;
-  tilt.value = Math.max(-7, Math.min(7, relative * 14));
-}
-
-lS(() => {
-  try {
-    dismissed.value = window.sessionStorage.getItem('markblog:mascot-hidden') === '1';
-  } catch {
-    dismissed.value = false;
-  }
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-  }
-});
-
-lw(() => window.removeEventListener('pointermove', onPointerMove));
-
-return (_ctx, _cache) => {
-  return (enabled.value)
-    ? (r9(), ir("div", {
-        key: 0,
-        class: Y$1(["mascot", [`is-${position.value}`, { 'is-dismissed': dismissed.value }]])
-      }, [
-        (dismissed.value)
-          ? (r9(), ir("button", {
-              key: 0,
-              type: "button",
-              class: "mascot-reopen",
-              "aria-label": `重新叫出${name.value}`,
-              onClick: reopen
-            }, [...(_cache[0] || (_cache[0] = [
-              id("span", { "aria-hidden": "true" }, "✎", -1)
-            ]))], 8, _hoisted_1$1))
-          : (r9(), ir(r2, { key: 1 }, [
-              (open.value)
-                ? (r9(), ir("div", _hoisted_2$1, [
-                    id("button", {
-                      type: "button",
-                      class: "mascot-bubble__close",
-                      "aria-label": `收起${name.value}`,
-                      onClick: close
-                    }, " × ", 8, _hoisted_3$1),
-                    id("p", _hoisted_4$1, ea(name.value), 1),
-                    id("p", _hoisted_5, ea(greeting.value), 1),
-                    _cache[1] || (_cache[1] = id("span", {
-                      class: "mascot-bubble__tail",
-                      "aria-hidden": "true"
-                    }, null, -1))
-                  ]))
-                : i_("", true),
-              id("button", {
-                type: "button",
-                class: "mascot-figure",
-                "aria-label": `${name.value}，点击${open.value ? '收起' : '打招呼'}`,
-                onClick: toggleOpen
-              }, [
-                (r9(), ir("svg", _hoisted_7, [
-                  _cache[4] || (_cache[4] = id("ellipse", {
-                    cx: "112",
-                    cy: "303",
-                    rx: "57",
-                    ry: "9",
-                    fill: "rgba(44,44,44,.12)"
-                  }, null, -1)),
-                  id("g", _hoisted_8, [
-                    _cache[3] || (_cache[3] = im("<g class=\"mascot-body\" data-v-8abe3113><path d=\"M88 205c-14 8-22 25-25 49l-3 32h101l-6-35c-4-22-12-37-27-46Z\" fill=\"#f7f0e2\" stroke=\"#3b3833\" stroke-width=\"2.2\" stroke-linejoin=\"round\" data-v-8abe3113></path><path d=\"M89 207c-13 3-25 13-32 27-2 4 0 9 5 10 5 1 9-2 12-6l16-15Z\" fill=\"#f7f0e2\" stroke=\"#3b3833\" stroke-width=\"2.1\" stroke-linejoin=\"round\" data-v-8abe3113></path><path d=\"M133 207c15 4 27 14 33 29 2 5-1 9-6 9-5 0-8-2-11-6l-17-16Z\" fill=\"#f7f0e2\" stroke=\"#3b3833\" stroke-width=\"2.1\" stroke-linejoin=\"round\" data-v-8abe3113></path><path d=\"M96 214c8 5 18 8 27 8 9 0 18-3 25-8\" stroke=\"#cfc4b2\" stroke-width=\"1.6\" stroke-dasharray=\"3 4\" data-v-8abe3113></path><path d=\"M76 282h70\" stroke=\"#3b3833\" stroke-width=\"2\" stroke-linecap=\"round\" data-v-8abe3113></path><path d=\"M90 282v17M126 282v17\" stroke=\"#3b3833\" stroke-width=\"2\" stroke-linecap=\"round\" data-v-8abe3113></path><g class=\"mascot-pencil\" data-v-8abe3113><path d=\"m41 198 47 92\" stroke=\"#3b3833\" stroke-width=\"2.2\" data-v-8abe3113></path><path d=\"m46 198 12-7 40 78-12 7Z\" fill=\"#e9b949\" stroke=\"#3b3833\" stroke-width=\"2\" stroke-linejoin=\"round\" data-v-8abe3113></path><path d=\"m43 212 13-7 7 14-13 7Z\" fill=\"#ef7b6c\" stroke=\"#3b3833\" stroke-width=\"2\" data-v-8abe3113></path><path d=\"m90 270 9-5 9 17-13 4Z\" fill=\"#f2d6b8\" stroke=\"#3b3833\" stroke-width=\"2\" stroke-linejoin=\"round\" data-v-8abe3113></path><path d=\"m99 285 9-3-2 8Z\" fill=\"#3b3833\" data-v-8abe3113></path></g></g>", 1)),
-                    id("g", {
-                      class: "mascot-head",
-                      style: G$1({ transform: `rotate(${tilt.value}deg)` })
-                    }, [...(_cache[2] || (_cache[2] = [
-                      im("<path d=\"M81 147c-4-35 7-61 34-68 30-8 58 13 61 45 2 21-7 38-24 48-14 8-34 8-48 1-14-8-21-20-23-26Z\" fill=\"#3b3833\" data-v-8abe3113></path><path d=\"M91 118c4-19 17-30 34-31 20-1 36 13 39 31 3 16-1 34-12 45-11 12-30 14-44 5-12-8-19-29-17-50Z\" fill=\"#f3dfc8\" stroke=\"#3b3833\" stroke-width=\"2\" data-v-8abe3113></path><path d=\"M89 119c-6 3-9 10-7 16 2 7 8 10 14 8\" fill=\"#f3dfc8\" stroke=\"#3b3833\" stroke-width=\"2\" data-v-8abe3113></path><path d=\"M162 120c6 4 8 11 5 17-2 6-8 8-13 6\" fill=\"#f3dfc8\" stroke=\"#3b3833\" stroke-width=\"2\" data-v-8abe3113></path><path d=\"M91 107c6-20 24-30 43-27 21 3 34 18 35 36-10-6-21-8-33-7-17 1-31 6-45 17Z\" fill=\"#3b3833\" data-v-8abe3113></path><path d=\"M94 93c-10 8-15 20-15 35 0 5 4 8 8 5 5-4 9-8 13-15 6-10 13-18 24-23-10-5-21-6-30-2Z\" fill=\"#3b3833\" data-v-8abe3113></path><path d=\"M156 95c8 7 12 18 11 30-1 5-6 6-9 2-5-6-10-11-16-16-8-6-15-11-24-13 9-6 19-8 29-6Z\" fill=\"#3b3833\" data-v-8abe3113></path><g class=\"mascot-eyes\" data-v-8abe3113><ellipse cx=\"117\" cy=\"132\" rx=\"4.6\" ry=\"6.2\" fill=\"#2f2c29\" data-v-8abe3113></ellipse><ellipse cx=\"144\" cy=\"132\" rx=\"4.6\" ry=\"6.2\" fill=\"#2f2c29\" data-v-8abe3113></ellipse><circle cx=\"118.5\" cy=\"130\" r=\"1.35\" fill=\"#fff\" data-v-8abe3113></circle><circle cx=\"145.5\" cy=\"130\" r=\"1.35\" fill=\"#fff\" data-v-8abe3113></circle></g><path d=\"M108 145c4 3 8 4 12 3M141 147c4 1 8 0 11-3\" stroke=\"#b87968\" stroke-width=\"1.4\" stroke-linecap=\"round\" opacity=\".55\" data-v-8abe3113></path><path d=\"M127 153c3 2 6 2 9 0\" stroke=\"#b3564c\" stroke-width=\"1.8\" stroke-linecap=\"round\" data-v-8abe3113></path><ellipse cx=\"107\" cy=\"144\" rx=\"6\" ry=\"3\" fill=\"#e89d8f\" opacity=\".4\" data-v-8abe3113></ellipse><ellipse cx=\"153\" cy=\"144\" rx=\"6\" ry=\"3\" fill=\"#e89d8f\" opacity=\".4\" data-v-8abe3113></ellipse><g class=\"mascot-hairclip\" data-v-8abe3113><path d=\"m160 91 19-11\" stroke=\"#e9b949\" stroke-width=\"5\" stroke-linecap=\"round\" data-v-8abe3113></path><path d=\"m163 95 20 1\" stroke=\"#ef7b6c\" stroke-width=\"3.5\" stroke-linecap=\"round\" data-v-8abe3113></path><circle cx=\"178\" cy=\"80\" r=\"3.2\" fill=\"#ef7b6c\" stroke=\"#3b3833\" stroke-width=\"1\" data-v-8abe3113></circle></g>", 13)
-                    ]))], 4)
-                  ])
-                ]))
-              ], 8, _hoisted_6)
-            ], 64))
-      ], 2))
-    : i_("", true)
-}
-}
-
-};
-const MascotWidget = /*#__PURE__*/_export_sfc(_sfc_main$1, [['__scopeId',"data-v-8abe3113"]]);
+const SiteFooter = /*#__PURE__*/_export_sfc(_sfc_main$1, [['__scopeId',"data-v-730ff2d4"]]);
 
 function upsertMeta(attribute, key, content) {
   let element = document.head.querySelector(`meta[${attribute}="${CSS.escape(key)}"]`);
@@ -1477,8 +1331,7 @@ return (_ctx, _cache) => {
           id("main", _hoisted_4, [
             ip(_component_RouterView)
           ]),
-          ip(SiteFooter),
-          ip(MascotWidget)
+          ip(SiteFooter)
         ], 64))
       : (r9(), ii(_component_RouterView, { key: 1 }))
   ]))
@@ -1486,7 +1339,7 @@ return (_ctx, _cache) => {
 }
 
 };
-const App = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-652298ff"]]);
+const App = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-5f114f5f"]]);
 
 const scriptRel = 'modulepreload';const assetsURL = function(dep) { return "/"+dep };const seen = {};const __vitePreload = function preload(baseModule, deps, importerUrl) {
   let promise = Promise.resolve();
@@ -1642,86 +1495,86 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: () => __vitePreload(() => import('./HomeView-Bhgg-i2z.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0),
+    component: () => __vitePreload(() => import('./HomeView-cdwamVj-.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0),
   },
   {
     path: '/posts',
     name: 'posts',
-    component: () => __vitePreload(() => import('./PostsView-CIQVBQHp.js'),true              ?__vite__mapDeps([4,2,5]):void 0),
+    component: () => __vitePreload(() => import('./PostsView-BKZgkfQz.js'),true              ?__vite__mapDeps([4,2,5]):void 0),
   },
   {
     path: '/posts/:slug',
     name: 'post',
-    component: () => __vitePreload(() => import('./PostView-DYb9kMO9.js'),true              ?__vite__mapDeps([6,2,1,7,8]):void 0),
+    component: () => __vitePreload(() => import('./PostView-CH3DGtXV.js'),true              ?__vite__mapDeps([6,2,1,7,8]):void 0),
   },
   {
     path: '/about',
     name: 'about',
-    component: () => __vitePreload(() => import('./AboutView-D_bhc4V6.js'),true              ?__vite__mapDeps([9,2,10]):void 0),
+    component: () => __vitePreload(() => import('./AboutView-DhhEjV-o.js'),true              ?__vite__mapDeps([9,2,10]):void 0),
   },
   {
     path: '/series/:name',
     name: 'series',
-    component: () => __vitePreload(() => import('./SeriesView-WrCcCRXv.js'),true              ?__vite__mapDeps([11,2,12]):void 0),
+    component: () => __vitePreload(() => import('./SeriesView-p60lgwxm.js'),true              ?__vite__mapDeps([11,2,12]):void 0),
   },
   {
     path: '/admin',
     name: 'admin-login',
-    component: () => __vitePreload(() => import('./AdminLoginView-CnLTrqVP.js'),true              ?__vite__mapDeps([13,14]):void 0),
+    component: () => __vitePreload(() => import('./AdminLoginView-m0xgC9UG.js'),true              ?__vite__mapDeps([13,14]):void 0),
     meta: { admin: true, guestOnly: true, noindex: true },
   },
   {
     path: '/admin/dashboard',
     name: 'admin-dashboard',
-    component: () => __vitePreload(() => import('./AdminDashboardView-CpALOedT.js'),true              ?__vite__mapDeps([15,16,17,2,18]):void 0),
+    component: () => __vitePreload(() => import('./AdminDashboardView-BLNhWrDj.js'),true              ?__vite__mapDeps([15,16,17,2,18]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts',
     name: 'admin-posts',
-    component: () => __vitePreload(() => import('./AdminPostsView-CIIRMu8l.js'),true              ?__vite__mapDeps([19,16,17,20,21,2,22]):void 0),
+    component: () => __vitePreload(() => import('./AdminPostsView-CM46pUAG.js'),true              ?__vite__mapDeps([19,16,17,20,21,2,22]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/assets',
     name: 'admin-assets',
-    component: () => __vitePreload(() => import('./AdminAssetsView-CRt9hz3z.js'),true              ?__vite__mapDeps([23,16,17,20,21,2,7,24]):void 0),
+    component: () => __vitePreload(() => import('./AdminAssetsView-Dw38hUai.js'),true              ?__vite__mapDeps([23,16,17,20,21,2,7,24]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/appearance',
     name: 'admin-appearance',
-    component: () => __vitePreload(() => import('./AdminAppearanceView-CgsMzROh.js'),true              ?__vite__mapDeps([25,16,17,2,26]):void 0),
+    component: () => __vitePreload(() => import('./AdminAppearanceView-BC0_rqOu.js'),true              ?__vite__mapDeps([25,16,17,2,26]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts/new',
     name: 'admin-post-new',
-    component: () => __vitePreload(() => import('./AdminEditorView-Dc7sAZhl.js'),true              ?__vite__mapDeps([27,16,17,2,7,28]):void 0),
+    component: () => __vitePreload(() => import('./AdminEditorView-DveXWrk4.js'),true              ?__vite__mapDeps([27,16,17,2,7,28]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts/:id(\\d+)',
     name: 'admin-post-edit',
-    component: () => __vitePreload(() => import('./AdminEditorView-Dc7sAZhl.js'),true              ?__vite__mapDeps([27,16,17,2,7,28]):void 0),
+    component: () => __vitePreload(() => import('./AdminEditorView-DveXWrk4.js'),true              ?__vite__mapDeps([27,16,17,2,7,28]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/settings',
     name: 'admin-settings',
-    component: () => __vitePreload(() => import('./AdminSettingsView-DjUA1eHV.js'),true              ?__vite__mapDeps([29,16,17,2,30]):void 0),
+    component: () => __vitePreload(() => import('./AdminSettingsView-DQYTrPki.js'),true              ?__vite__mapDeps([29,16,17,2,30]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/404',
     name: 'not-found',
-    component: () => __vitePreload(() => import('./NotFoundView-zgIkw5g4.js'),true              ?__vite__mapDeps([31,32]):void 0),
+    component: () => __vitePreload(() => import('./NotFoundView-D07a0sVt.js'),true              ?__vite__mapDeps([31,32]):void 0),
     meta: { noindex: true },
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'catch-all',
-    component: () => __vitePreload(() => import('./NotFoundView-zgIkw5g4.js'),true              ?__vite__mapDeps([31,32]):void 0),
+    component: () => __vitePreload(() => import('./NotFoundView-D07a0sVt.js'),true              ?__vite__mapDeps([31,32]):void 0),
     meta: { noindex: true },
   },
 ];
@@ -1780,4 +1633,4 @@ app.config.errorHandler = (error) => {
 app.use(router);
 app.mount('#app');
 
-export { sd as A, nO as B, t8 as C, Dt as D, Et as E, setKeywords as F, G$1 as G, useAdminSession as H, tu as I, im as J, ss as K, copyrightLine as L, adminApi as M, lD as N, sn as O, sl as P, se$1 as Q, UI_COPY_GROUPS as R, ut as S, setRobots as T, UI_COPY_DEFAULTS as U, Y$1 as Y, _export_sfc as _, ir as a, id as b, ip as c, iv as d, ea as e, formatShortDate as f, _t as g, i_ as h, iH as i, useSite as j, tx as k, lS as l, ny as m, na as n, r2 as o, lj as p, ii as q, r9 as r, setPageMeta as s, tA as t, useCopy as u, publicApi as v, lw as w, nu as x, o7 as y, formatDate as z };
+export { sd as A, nO as B, t8 as C, Dt as D, Et as E, setKeywords as F, G$1 as G, useAdminSession as H, tu as I, im as J, ss as K, copyrightLine as L, adminApi as M, lD as N, sn as O, sl as P, UI_COPY_GROUPS as Q, ut as R, setRobots as S, UI_COPY_DEFAULTS as U, Y$1 as Y, _export_sfc as _, ir as a, id as b, ip as c, iv as d, ea as e, formatShortDate as f, _t as g, i_ as h, iH as i, useSite as j, tx as k, lS as l, ny as m, na as n, r2 as o, lj as p, ii as q, r9 as r, setPageMeta as s, tA as t, useCopy as u, publicApi as v, lw as w, nu as x, o7 as y, formatDate as z };

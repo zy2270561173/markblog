@@ -1,6 +1,6 @@
-import { _ as _export_sfc, j as useSite, k as tx, I as tu, U as UI_COPY_DEFAULTS, i as iH, l as lS, q as ii, n as na, r as r9, b as id, e as ea, a as ir, o as r2, h as i_, Y, p as lj, x as nu, O as sn, P as sl, y as o7, Q as se, t as tA, R as UI_COPY_GROUPS, M as adminApi, s as setPageMeta } from './index-CxCyKt3e.js';
-import { A as AdminLayout } from './AdminLayout-DhMcPi1G.js';
-import { _ as _sfc_main$1 } from './StateBlock-CK5HZ31x.js';
+import { _ as _export_sfc, j as useSite, k as tx, I as tu, U as UI_COPY_DEFAULTS, i as iH, l as lS, q as ii, n as na, r as r9, b as id, e as ea, a as ir, o as r2, h as i_, Y, p as lj, x as nu, O as sn, P as sl, y as o7, t as tA, Q as UI_COPY_GROUPS, M as adminApi, s as setPageMeta } from './index-CDga9JDG.js';
+import { A as AdminLayout } from './AdminLayout-Cos1s8oi.js';
+import { _ as _sfc_main$1 } from './StateBlock-BQJ65rCm.js';
 
 const _hoisted_1 = { class: "container admin-page appearance-page" };
 const _hoisted_2 = { class: "admin-page__head" };
@@ -42,30 +42,19 @@ const _hoisted_25 = { class: "field" };
 const _hoisted_26 = ["disabled"];
 const _hoisted_27 = { class: "field" };
 const _hoisted_28 = ["disabled"];
-const _hoisted_29 = {
-  class: "admin-card mascot-card",
-  "aria-labelledby": "mascot-title"
-};
-const _hoisted_30 = { class: "mascot-switch" };
-const _hoisted_31 = { class: "field" };
-const _hoisted_32 = ["disabled"];
-const _hoisted_33 = { class: "field" };
-const _hoisted_34 = ["disabled"];
-const _hoisted_35 = { class: "field field--wide" };
-const _hoisted_36 = ["disabled"];
-const _hoisted_37 = ["aria-labelledby"];
-const _hoisted_38 = { class: "admin-card__head" };
-const _hoisted_39 = ["id"];
-const _hoisted_40 = { class: "copy-grid" };
-const _hoisted_41 = ["for"];
-const _hoisted_42 = ["id", "onUpdate:modelValue", "rows"];
-const _hoisted_43 = ["id", "onUpdate:modelValue"];
-const _hoisted_44 = {
+const _hoisted_29 = ["aria-labelledby"];
+const _hoisted_30 = { class: "admin-card__head" };
+const _hoisted_31 = ["id"];
+const _hoisted_32 = { class: "copy-grid" };
+const _hoisted_33 = ["for"];
+const _hoisted_34 = ["id", "onUpdate:modelValue", "rows"];
+const _hoisted_35 = ["id", "onUpdate:modelValue"];
+const _hoisted_36 = {
   key: 2,
   class: "field-hint"
 };
-const _hoisted_45 = { class: "appearance-save-bar" };
-const _hoisted_46 = ["disabled"];
+const _hoisted_37 = { class: "appearance-save-bar" };
+const _hoisted_38 = ["disabled"];
 
 
 const _sfc_main = {
@@ -81,10 +70,6 @@ const saveError = tx('');
 const saveSuccess = tx('');
 const rawSettings = tx(null);
 const appearance = tx(null);
-const mascotEnabled = tx(true);
-const mascotName = tx('小铅');
-const mascotGreeting = tx('修电脑之前，先备份。');
-const mascotPosition = tx('right');
 
 const form = tu({
   layout_style: 'sketch',
@@ -167,10 +152,6 @@ async function loadPage() {
     for (const key of Object.keys(form)) {
       if (typeof settings[key] === 'string') form[key] = settings[key];
     }
-    mascotEnabled.value = settings.mascot_enabled !== '0';
-    mascotName.value = settings.mascot_name || '小铅';
-    mascotGreeting.value = settings.mascot_greeting || '修电脑之前，先备份。';
-    mascotPosition.value = settings.mascot_position === 'left' ? 'left' : 'right';
     Object.assign(copy, UI_COPY_DEFAULTS, parseCopy(settings.ui_copy));
     appearance.value = currentAppearance;
   } catch (requestError) {
@@ -213,18 +194,10 @@ async function saveAppearance() {
       ntp_server: form.ntp_server.trim(),
       day_start: form.day_start,
       night_start: form.night_start,
-      mascot_enabled: mascotEnabled.value ? '1' : '0',
-      mascot_name: mascotName.value.trim() || '小铅',
-      mascot_greeting: mascotGreeting.value.trim() || '修电脑之前，先备份。',
-      mascot_position: mascotPosition.value === 'left' ? 'left' : 'right',
       ui_copy: JSON.stringify(copy),
     };
     const settings = await adminApi.saveSettings(payload);
     rawSettings.value = settings;
-    mascotEnabled.value = settings.mascot_enabled !== '0';
-    mascotName.value = settings.mascot_name || '小铅';
-    mascotGreeting.value = settings.mascot_greeting || '修电脑之前，先备份。';
-    mascotPosition.value = settings.mascot_position === 'left' ? 'left' : 'right';
     Object.assign(copy, UI_COPY_DEFAULTS, parseCopy(settings.ui_copy));
     await loadSite(true);
     appearance.value = await adminApi.getAppearance();
@@ -249,7 +222,7 @@ return (_ctx, _cache) => {
     default: na(() => [
       id("div", _hoisted_1, [
         id("header", _hoisted_2, [
-          _cache[10] || (_cache[10] = id("div", null, [
+          _cache[6] || (_cache[6] = id("div", null, [
             id("p", { class: "eyebrow" }, "APPEARANCE / 外观与文案"),
             id("h1", null, "外观与文案"),
             id("p", null, "排版、昼夜主题、NTP 校时和公开页面的所有文字都在这里。")
@@ -300,7 +273,7 @@ return (_ctx, _cache) => {
                         id("p", _hoisted_7, " 公开站当前：" + ea(themeLabel.value) + " · " + ea(layoutLabel.value), 1),
                         id("p", _hoisted_8, ea(sourceLabel.value) + " · " + ea(localTimeLabel.value) + " · " + ea(appearance.value.ntp_server), 1)
                       ]),
-                      _cache[11] || (_cache[11] = id("a", {
+                      _cache[7] || (_cache[7] = id("a", {
                         href: "/",
                         target: "_blank",
                         rel: "noopener",
@@ -310,7 +283,7 @@ return (_ctx, _cache) => {
                   : i_("", true),
                 id("div", _hoisted_9, [
                   id("section", _hoisted_10, [
-                    _cache[13] || (_cache[13] = id("div", { class: "admin-card__head" }, [
+                    _cache[9] || (_cache[9] = id("div", { class: "admin-card__head" }, [
                       id("h2", null, "排版方案"),
                       id("p", null, "选择公开站点的整体版式")
                     ], -1)),
@@ -333,7 +306,7 @@ return (_ctx, _cache) => {
                           id("span", {
                             class: Y(["choice-card__preview", `is-${option.value}`]),
                             "aria-hidden": "true"
-                          }, [...(_cache[12] || (_cache[12] = [
+                          }, [...(_cache[8] || (_cache[8] = [
                             id("i", null, null, -1),
                             id("i", null, null, -1),
                             id("i", null, null, -1)
@@ -343,7 +316,7 @@ return (_ctx, _cache) => {
                     ])
                   ]),
                   id("section", _hoisted_15, [
-                    _cache[19] || (_cache[19] = id("div", { class: "admin-card__head" }, [
+                    _cache[15] || (_cache[15] = id("div", { class: "admin-card__head" }, [
                       id("h2", null, "白天 / 黑夜"),
                       id("p", null, "自动模式按 NTP 校时后的本地时间切换")
                     ], -1)),
@@ -370,7 +343,7 @@ return (_ctx, _cache) => {
                       class: Y(["form-grid auto-theme-fields", { 'is-disabled': form.theme_mode !== 'auto' }])
                     }, [
                       id("div", _hoisted_20, [
-                        _cache[14] || (_cache[14] = id("label", { for: "theme-timezone" }, "时区", -1)),
+                        _cache[10] || (_cache[10] = id("label", { for: "theme-timezone" }, "时区", -1)),
                         nu(id("select", {
                           id: "theme-timezone",
                           "onUpdate:modelValue": _cache[2] || (_cache[2] = $event => ((form.theme_timezone) = $event)),
@@ -388,7 +361,7 @@ return (_ctx, _cache) => {
                         ])
                       ]),
                       id("div", _hoisted_23, [
-                        _cache[15] || (_cache[15] = id("label", { for: "ntp-server" }, "NTP 服务器", -1)),
+                        _cache[11] || (_cache[11] = id("label", { for: "ntp-server" }, "NTP 服务器", -1)),
                         nu(id("input", {
                           id: "ntp-server",
                           "onUpdate:modelValue": _cache[3] || (_cache[3] = $event => ((form.ntp_server) = $event)),
@@ -398,10 +371,10 @@ return (_ctx, _cache) => {
                         }, null, 8, _hoisted_24), [
                           [o7, form.ntp_server]
                         ]),
-                        _cache[16] || (_cache[16] = id("p", { class: "field-hint" }, "只填域名或 IP，使用 UDP 123 端口。", -1))
+                        _cache[12] || (_cache[12] = id("p", { class: "field-hint" }, "只填域名或 IP，使用 UDP 123 端口。", -1))
                       ]),
                       id("div", _hoisted_25, [
-                        _cache[17] || (_cache[17] = id("label", { for: "day-start" }, "白天开始", -1)),
+                        _cache[13] || (_cache[13] = id("label", { for: "day-start" }, "白天开始", -1)),
                         nu(id("input", {
                           id: "day-start",
                           "onUpdate:modelValue": _cache[4] || (_cache[4] = $event => ((form.day_start) = $event)),
@@ -413,7 +386,7 @@ return (_ctx, _cache) => {
                         ])
                       ]),
                       id("div", _hoisted_27, [
-                        _cache[18] || (_cache[18] = id("label", { for: "night-start" }, "黑夜开始", -1)),
+                        _cache[14] || (_cache[14] = id("label", { for: "night-start" }, "黑夜开始", -1)),
                         nu(id("input", {
                           id: "night-start",
                           "onUpdate:modelValue": _cache[5] || (_cache[5] = $event => ((form.night_start) = $event)),
@@ -425,72 +398,10 @@ return (_ctx, _cache) => {
                         ])
                       ])
                     ], 2),
-                    _cache[20] || (_cache[20] = id("p", { class: "admin-note" }, " NTP 使用 UDP 123。服务器或网络阻断 UDP 时会自动回退到系统时间，页面不会报错。 自动模式每 5 分钟在浏览器中重新检查一次。 ", -1))
+                    _cache[16] || (_cache[16] = id("p", { class: "admin-note" }, " NTP 使用 UDP 123。服务器或网络阻断 UDP 时会自动回退到系统时间，页面不会报错。 自动模式每 5 分钟在浏览器中重新检查一次。 ", -1))
                   ])
                 ]),
-                id("section", _hoisted_29, [
-                  _cache[27] || (_cache[27] = id("div", { class: "admin-card__head" }, [
-                    id("h2", { id: "mascot-title" }, "站娘"),
-                    id("p", null, "手绘动画小人，会跟随鼠标轻轻转头、呼吸和眨眼；不加载外部模型文件。")
-                  ], -1)),
-                  id("label", _hoisted_30, [
-                    nu(id("input", {
-                      "onUpdate:modelValue": _cache[6] || (_cache[6] = $event => ((mascotEnabled).value = $event)),
-                      type: "checkbox"
-                    }, null, 512), [
-                      [se, mascotEnabled.value]
-                    ]),
-                    _cache[21] || (_cache[21] = id("span", null, [
-                      id("strong", null, "在公开页面显示站娘"),
-                      id("small", null, "访客可以点右上角收起，本次会话内不再出现。")
-                    ], -1))
-                  ]),
-                  id("div", {
-                    class: Y(["form-grid mascot-fields", { 'is-disabled': !mascotEnabled.value }])
-                  }, [
-                    id("div", _hoisted_31, [
-                      _cache[22] || (_cache[22] = id("label", { for: "mascot-name" }, "名字", -1)),
-                      nu(id("input", {
-                        id: "mascot-name",
-                        "onUpdate:modelValue": _cache[7] || (_cache[7] = $event => ((mascotName).value = $event)),
-                        class: "input",
-                        maxlength: "20",
-                        disabled: !mascotEnabled.value
-                      }, null, 8, _hoisted_32), [
-                        [o7, mascotName.value]
-                      ])
-                    ]),
-                    id("div", _hoisted_33, [
-                      _cache[24] || (_cache[24] = id("label", { for: "mascot-position" }, "位置", -1)),
-                      nu(id("select", {
-                        id: "mascot-position",
-                        "onUpdate:modelValue": _cache[8] || (_cache[8] = $event => ((mascotPosition).value = $event)),
-                        class: "select",
-                        disabled: !mascotEnabled.value
-                      }, [...(_cache[23] || (_cache[23] = [
-                        id("option", { value: "right" }, "右下角", -1),
-                        id("option", { value: "left" }, "左下角", -1)
-                      ]))], 8, _hoisted_34), [
-                        [sl, mascotPosition.value]
-                      ])
-                    ]),
-                    id("div", _hoisted_35, [
-                      _cache[25] || (_cache[25] = id("label", { for: "mascot-greeting" }, "想说的话", -1)),
-                      nu(id("textarea", {
-                        id: "mascot-greeting",
-                        "onUpdate:modelValue": _cache[9] || (_cache[9] = $event => ((mascotGreeting).value = $event)),
-                        class: "textarea",
-                        rows: "2",
-                        maxlength: "120",
-                        disabled: !mascotEnabled.value
-                      }, null, 8, _hoisted_36), [
-                        [o7, mascotGreeting.value]
-                      ]),
-                      _cache[26] || (_cache[26] = id("p", { class: "field-hint" }, "会显示在站娘旁边的对话气泡里，最多 120 字。", -1))
-                    ])
-                  ], 2)
-                ]),
-                _cache[29] || (_cache[29] = id("div", { class: "copy-intro" }, [
+                _cache[18] || (_cache[18] = id("div", { class: "copy-intro" }, [
                   id("p", { class: "eyebrow" }, "PUBLIC COPY / 前台文案"),
                   id("h2", null, "每一块字，都可以改"),
                   id("p", null, "这些文字保存在 SQLite，并会在公开页面即时生效。支持的内容会保留换行。")
@@ -501,13 +412,13 @@ return (_ctx, _cache) => {
                     class: "admin-card copy-card",
                     "aria-labelledby": `copy-group-${group.title}`
                   }, [
-                    id("div", _hoisted_38, [
+                    id("div", _hoisted_30, [
                       id("h2", {
                         id: `copy-group-${group.title}`
-                      }, ea(group.title), 9, _hoisted_39),
+                      }, ea(group.title), 9, _hoisted_31),
                       id("p", null, ea(group.description), 1)
                     ]),
-                    id("div", _hoisted_40, [
+                    id("div", _hoisted_32, [
                       (r9(true), ir(r2, null, lj(group.fields, (field) => {
                         return (r9(), ir("div", {
                           key: field.key,
@@ -515,7 +426,7 @@ return (_ctx, _cache) => {
                         }, [
                           id("label", {
                             for: `copy-${field.key}`
-                          }, ea(field.label), 9, _hoisted_41),
+                          }, ea(field.label), 9, _hoisted_33),
                           (field.type === 'textarea')
                             ? nu((r9(), ir("textarea", {
                                 key: 0,
@@ -524,7 +435,7 @@ return (_ctx, _cache) => {
                                 class: "textarea copy-textarea",
                                 rows: field.rows || 2,
                                 maxlength: "4000"
-                              }, null, 8, _hoisted_42)), [
+                              }, null, 8, _hoisted_34)), [
                                 [o7, copy[field.key]]
                               ])
                             : nu((r9(), ir("input", {
@@ -533,25 +444,25 @@ return (_ctx, _cache) => {
                                 "onUpdate:modelValue": $event => ((copy[field.key]) = $event),
                                 class: "input",
                                 maxlength: "4000"
-                              }, null, 8, _hoisted_43)), [
+                              }, null, 8, _hoisted_35)), [
                                 [o7, copy[field.key]]
                               ]),
                           (field.help)
-                            ? (r9(), ir("p", _hoisted_44, ea(field.help), 1))
+                            ? (r9(), ir("p", _hoisted_36, ea(field.help), 1))
                             : i_("", true)
                         ], 2))
                       }), 128))
                     ])
-                  ], 8, _hoisted_37))
+                  ], 8, _hoisted_29))
                 }), 128)),
-                id("div", _hoisted_45, [
-                  _cache[28] || (_cache[28] = id("p", null, "保存后会立即应用到公开页面，也会刷新当前后台主题。", -1)),
+                id("div", _hoisted_37, [
+                  _cache[17] || (_cache[17] = id("p", null, "保存后会立即应用到公开页面，也会刷新当前后台主题。", -1)),
                   id("button", {
                     type: "button",
                     class: "btn",
                     disabled: saving.value,
                     onClick: saveAppearance
-                  }, ea(saving.value ? '正在保存…' : '保存全部设置'), 9, _hoisted_46)
+                  }, ea(saving.value ? '正在保存…' : '保存全部设置'), 9, _hoisted_38)
                 ])
               ], 64))
       ])
@@ -562,6 +473,6 @@ return (_ctx, _cache) => {
 }
 
 };
-const AdminAppearanceView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-271244ed"]]);
+const AdminAppearanceView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-56a4e905"]]);
 
 export { AdminAppearanceView as default };

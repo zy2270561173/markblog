@@ -53,10 +53,6 @@ DEFAULT_SETTINGS: dict[str, str] = {
     "ntp_server": "ntp.aliyun.com",
     "day_start": "07:00",
     "night_start": "19:00",
-    "mascot_enabled": "1",
-    "mascot_name": "小铅",
-    "mascot_greeting": "修电脑之前，先备份。",
-    "mascot_position": "right",
 }
 
 POSTS: list[dict[str, object]] = [

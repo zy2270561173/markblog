@@ -475,7 +475,6 @@ def admin_dashboard(
         "seo_ready": bool(
             settings.get("seo_title") and settings.get("seo_description")
         ),
-        "mascot_enabled": settings.get("mascot_enabled") == "1",
         "icp_ready": bool(settings.get("icp_number")),
         "police_ready": bool(settings.get("police_number")),
         "about_characters": len(settings.get("about_md", "")),

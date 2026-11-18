@@ -20,10 +20,6 @@ const fallback = {
   footer_note: '维修有风险，重要数据请先备份；本站内容为个人经验记录。',
   site_since: '2026',
   site_url: window.location.origin,
-  mascot_enabled: '1',
-  mascot_name: '小铅',
-  mascot_greeting: '修电脑之前，先备份。',
-  mascot_position: 'right',
   ui_copy: { ...UI_COPY_DEFAULTS },
   appearance: {
     mode: 'auto',

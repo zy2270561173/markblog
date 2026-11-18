@@ -217,6 +217,15 @@ def _migrate_post_columns(conn: sqlite3.Connection) -> None:
     )
 
 
+def _remove_retired_settings(conn: sqlite3.Connection) -> None:
+    """Drop rows for features that were intentionally removed."""
+
+    conn.execute(
+        "DELETE FROM settings WHERE key IN "
+        "('mascot_enabled', 'mascot_name', 'mascot_greeting', 'mascot_position')"
+    )
+
+
 def _seed_posts(conn: sqlite3.Connection) -> None:
     count = conn.execute("SELECT COUNT(*) FROM posts").fetchone()[0]
     if count:
@@ -255,6 +264,7 @@ def init_db() -> None:
             (iso_utc(utc_now()),),
         )
         _seed_settings(conn)
+        _remove_retired_settings(conn)
         _migrate_default_profile(conn)
         _bootstrap_admin(conn)
         _seed_posts(conn)

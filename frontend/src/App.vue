@@ -3,7 +3,6 @@ import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import SiteHeader from './components/SiteHeader.vue'
 import SiteFooter from './components/SiteFooter.vue'
-import MascotWidget from './components/MascotWidget.vue'
 import { useSite } from './lib/site'
 import { applyAppearance as applyThemePreference } from './lib/theme'
 import { setKeywords, setRobots } from './lib/meta'
@@ -83,7 +82,6 @@ function retrySite() {
         <RouterView />
       </main>
       <SiteFooter />
-      <MascotWidget />
     </template>
 
     <RouterView v-else />

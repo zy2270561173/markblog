@@ -34,10 +34,6 @@ PUBLIC_SETTING_KEYS = (
     "footer_note",
     "site_since",
     "site_url",
-    "mascot_enabled",
-    "mascot_name",
-    "mascot_greeting",
-    "mascot_position",
 )
 
 ADMIN_SETTING_KEYS = PUBLIC_SETTING_KEYS + (

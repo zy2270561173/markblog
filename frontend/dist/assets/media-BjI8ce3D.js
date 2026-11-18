@@ -1,4 +1,4 @@
-import { M as adminApi } from './index-CxCyKt3e.js';
+import { M as adminApi } from './index-CDga9JDG.js';
 
 const MAX_INPUT_BYTES = 15 * 1024 * 1024;
 const MAX_EDGE = 2200;
