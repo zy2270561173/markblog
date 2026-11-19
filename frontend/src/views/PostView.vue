@@ -29,6 +29,8 @@ const qrData = ref('')
 const qrUrl = ref('')
 const qrError = ref('')
 const completionSent = ref(false)
+const backToTopVisible = ref(false)
+let pendingHash = ''
 const readingTools = [
   { value: 'small', label: '小' },
   { value: 'normal', label: '中' },
@@ -102,6 +104,7 @@ async function copyArticleLink() {
 function updateProgress() {
   const scrollable = document.documentElement.scrollHeight - window.innerHeight
   progress.value = scrollable > 0 ? Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100)) : 0
+  backToTopVisible.value = window.scrollY > 620
   if (!isPreview.value && !completionSent.value && progress.value >= 90 && post.value) {
     const key = `markblog:completed:${post.value.slug}`
     try {
@@ -112,6 +115,47 @@ function updateProgress() {
     }
     completionSent.value = true
     publicApi.recordView(post.value.slug, { complete: true }).catch(() => {})
+  }
+}
+
+function headerOffset() {
+  const header = document.querySelector('.site-header')
+  return (header?.getBoundingClientRect().height || 92) + 18
+}
+
+function scrollToAnchor(id, { smooth = true, updateHash = true } = {}) {
+  const target = document.getElementById(id)
+  if (!target) return
+  const top = Math.max(
+    0,
+    target.getBoundingClientRect().top + window.scrollY - headerOffset(),
+  )
+  window.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' })
+  if (updateHash) {
+    history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${window.location.search}#${encodeURIComponent(id)}`,
+    )
+  }
+}
+
+function handleTocClick(event, id) {
+  event.preventDefault()
+  scrollToAnchor(id)
+}
+
+function scrollToInitialHash() {
+  if (!pendingHash) return
+  const id = pendingHash
+  pendingHash = ''
+  window.setTimeout(() => scrollToAnchor(id, { smooth: false, updateHash: false }), 80)
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+  if (window.location.hash) {
+    history.replaceState(null, '', `${window.location.pathname}${window.location.search}`)
   }
 }
 
@@ -224,11 +268,13 @@ async function loadPost(identifier, { preserve = false } = {}) {
     if (current !== requestNumber) return
     post.value = data
     completionSent.value = false
+    pendingHash = window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : ''
     applyMeta()
     if (!isPreview.value) recordView(identifier)
     nextTick(() => {
       enhanceArticle()
       updateProgress()
+      scrollToInitialHash()
     })
   } catch (requestError) {
     if (current !== requestNumber) return
@@ -399,7 +445,7 @@ const signoff = computed(() =>
           <summary>{{ copy.toc_title }}</summary>
           <ol>
             <li v-for="item in toc" :key="item.id" :class="`is-level-${item.level}`">
-              <a :href="`#${item.id}`">{{ item.text }}</a>
+              <a :href="`#${item.id}`" @click="handleTocClick($event, item.id)">{{ item.text }}</a>
             </li>
           </ol>
         </details>
@@ -453,6 +499,17 @@ const signoff = computed(() =>
           <RouterLink to="/posts" class="text-link">{{ copy.post_back }}</RouterLink>
         </footer>
       </article>
+
+      <button
+        v-if="backToTopVisible"
+        type="button"
+        class="back-to-top"
+        aria-label="返回文章顶部"
+        @click="scrollToTop"
+      >
+        <span aria-hidden="true">↑</span>
+        <span>顶部</span>
+      </button>
 
       <nav
         v-if="adjacent.newer || adjacent.older"
@@ -874,6 +931,43 @@ const signoff = computed(() =>
   display: block;
 }
 
+.prose :is(h2, h3)[id] {
+  scroll-margin-top: 122px;
+}
+
+.back-to-top {
+  position: fixed;
+  z-index: 55;
+  left: 24px;
+  bottom: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 11px;
+  border: 1.5px dashed var(--color-line-strong);
+  background-color: var(--color-paper);
+  background-image: var(--paper-grain);
+  box-shadow: var(--shadow-button);
+  color: var(--color-ink-soft);
+  font-family: var(--font-hand);
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.back-to-top:hover {
+  color: var(--color-pencil);
+  transform: translateY(-2px);
+}
+
+.back-to-top span:first-child {
+  color: var(--color-vermilion);
+  font-size: 18px;
+  line-height: 1;
+}
+
 .preview-banner {
   display: flex;
   flex-wrap: wrap;
@@ -1216,6 +1310,13 @@ const signoff = computed(() =>
 @media (max-width: 680px) {
   .article-page {
     padding-top: 34px;
+  }
+
+  .back-to-top {
+    left: 12px;
+    bottom: 12px;
+    padding: 7px 9px;
+    font-size: 12px;
   }
 
   .repair-card dl {

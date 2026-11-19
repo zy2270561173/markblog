@@ -1,7 +1,7 @@
-import { _ as _export_sfc, k as useSite, u as useCopy, i as iH, l as tx, m as lS, w as lw, o as ny, a as ir, b as id, G, g as i_, c as ii, n as na, p as r2, h as ip, t as tA, d as _t, e as ea, z as formatDate, q as lj, Y, j as iv, A as sd, B as nO, D as Dt, C as t8, r as r9, f as formatShortDate, v as publicApi, s as setPageMeta, F as setKeywords } from './index-Dz5M3SeI.js';
-import { _ as _sfc_main$1 } from './StateBlock-S-hHniVX.js';
-import { _ as _sfc_main$2 } from './TagList-D6gapMOS.js';
-import { c as copyText } from './media-CaEVXEFp.js';
+import { _ as _export_sfc, k as useSite, u as useCopy, i as iH, l as tx, m as lS, w as lw, o as ny, a as ir, b as id, G, g as i_, c as ii, n as na, p as r2, h as ip, t as tA, d as _t, e as ea, z as formatDate, q as lj, Y, j as iv, A as sd, B as nO, D as Dt, C as t8, r as r9, f as formatShortDate, v as publicApi, s as setPageMeta, F as setKeywords } from './index-NOrEVVHS.js';
+import { _ as _sfc_main$1 } from './StateBlock-tx_KSiNY.js';
+import { _ as _sfc_main$2 } from './TagList-CvdUkb2T.js';
+import { c as copyText } from './media-CTPzXMbo.js';
 import { Q as QRCode } from './browser-_egF2y6r.js';
 
 const _hoisted_1 = { class: "article-page container" };
@@ -53,7 +53,7 @@ const _hoisted_22 = {
   class: "article-toc",
   open: ""
 };
-const _hoisted_23 = ["href"];
+const _hoisted_23 = ["href", "onClick"];
 const _hoisted_24 = ["innerHTML"];
 const _hoisted_25 = {
   key: 2,
@@ -77,12 +77,12 @@ const _hoisted_33 = {
 const _hoisted_34 = { class: "adjacent__label" };
 const _hoisted_35 = { class: "adjacent__title" };
 const _hoisted_36 = {
-  key: 2,
+  key: 3,
   class: "article-faq",
   "aria-labelledby": "faq-title"
 };
 const _hoisted_37 = {
-  key: 3,
+  key: 4,
   class: "related",
   "aria-labelledby": "related-title"
 };
@@ -126,6 +126,8 @@ const qrData = tx('');
 const qrUrl = tx('');
 const qrError = tx('');
 const completionSent = tx(false);
+const backToTopVisible = tx(false);
+let pendingHash = '';
 const readingTools = [
   { value: 'small', label: '小' },
   { value: 'normal', label: '中' },
@@ -199,6 +201,7 @@ async function copyArticleLink() {
 function updateProgress() {
   const scrollable = document.documentElement.scrollHeight - window.innerHeight;
   progress.value = scrollable > 0 ? Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100)) : 0;
+  backToTopVisible.value = window.scrollY > 620;
   if (!isPreview.value && !completionSent.value && progress.value >= 90 && post.value) {
     const key = `markblog:completed:${post.value.slug}`;
     try {
@@ -209,6 +212,47 @@ function updateProgress() {
     }
     completionSent.value = true;
     publicApi.recordView(post.value.slug, { complete: true }).catch(() => {});
+  }
+}
+
+function headerOffset() {
+  const header = document.querySelector('.site-header');
+  return (header?.getBoundingClientRect().height || 92) + 18
+}
+
+function scrollToAnchor(id, { smooth = true, updateHash = true } = {}) {
+  const target = document.getElementById(id);
+  if (!target) return
+  const top = Math.max(
+    0,
+    target.getBoundingClientRect().top + window.scrollY - headerOffset(),
+  );
+  window.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
+  if (updateHash) {
+    history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${window.location.search}#${encodeURIComponent(id)}`,
+    );
+  }
+}
+
+function handleTocClick(event, id) {
+  event.preventDefault();
+  scrollToAnchor(id);
+}
+
+function scrollToInitialHash() {
+  if (!pendingHash) return
+  const id = pendingHash;
+  pendingHash = '';
+  window.setTimeout(() => scrollToAnchor(id, { smooth: false, updateHash: false }), 80);
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (window.location.hash) {
+    history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
   }
 }
 
@@ -321,11 +365,13 @@ async function loadPost(identifier, { preserve = false } = {}) {
     if (current !== requestNumber) return
     post.value = data;
     completionSent.value = false;
+    pendingHash = window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : '';
     applyMeta();
     if (!isPreview.value) recordView(identifier);
     t8(() => {
       enhanceArticle();
       updateProgress();
+      scrollToInitialHash();
     });
   } catch (requestError) {
     if (current !== requestNumber) return
@@ -557,7 +603,8 @@ return (_ctx, _cache) => {
                               class: Y(`is-level-${item.level}`)
                             }, [
                               id("a", {
-                                href: `#${item.id}`
+                                href: `#${item.id}`,
+                                onClick: $event => (handleTocClick($event, item.id))
                               }, ea(item.text), 9, _hoisted_23)
                             ], 2))
                           }), 128))
@@ -639,9 +686,21 @@ return (_ctx, _cache) => {
                     })
                   ])
                 ], 2),
+                (backToTopVisible.value)
+                  ? (r9(), ir("button", {
+                      key: 1,
+                      type: "button",
+                      class: "back-to-top",
+                      "aria-label": "返回文章顶部",
+                      onClick: scrollToTop
+                    }, [...(_cache[14] || (_cache[14] = [
+                      id("span", { "aria-hidden": "true" }, "↑", -1),
+                      id("span", null, "顶部", -1)
+                    ]))]))
+                  : i_("", true),
                 (adjacent.value.newer || adjacent.value.older)
                   ? (r9(), ir("nav", {
-                      key: 1,
+                      key: 2,
                       class: Y(["adjacent", { 'adjacent--single': !(adjacent.value.newer && adjacent.value.older) }]),
                       "aria-label": "相邻文章"
                     }, [
@@ -654,7 +713,7 @@ return (_ctx, _cache) => {
                             default: na(() => [
                               id("span", _hoisted_31, ea(tA(copy).post_newer), 1),
                               id("span", _hoisted_32, ea(adjacent.value.newer.title), 1),
-                              _cache[14] || (_cache[14] = id("span", {
+                              _cache[15] || (_cache[15] = id("span", {
                                 class: "adjacent__arrow",
                                 "aria-hidden": "true"
                               }, "↑", -1))
@@ -671,7 +730,7 @@ return (_ctx, _cache) => {
                             default: na(() => [
                               id("span", _hoisted_34, ea(tA(copy).post_older), 1),
                               id("span", _hoisted_35, ea(adjacent.value.older.title), 1),
-                              _cache[15] || (_cache[15] = id("span", {
+                              _cache[16] || (_cache[16] = id("span", {
                                 class: "adjacent__arrow",
                                 "aria-hidden": "true"
                               }, "↓", -1))
@@ -683,8 +742,8 @@ return (_ctx, _cache) => {
                   : i_("", true),
                 (post.value.faq?.length)
                   ? (r9(), ir("section", _hoisted_36, [
-                      _cache[16] || (_cache[16] = id("p", { class: "eyebrow" }, "FAQ / 常见问题", -1)),
-                      _cache[17] || (_cache[17] = id("h2", { id: "faq-title" }, "你可能还想问", -1)),
+                      _cache[17] || (_cache[17] = id("p", { class: "eyebrow" }, "FAQ / 常见问题", -1)),
+                      _cache[18] || (_cache[18] = id("h2", { id: "faq-title" }, "你可能还想问", -1)),
                       (r9(true), ir(r2, null, lj(post.value.faq, (item, index) => {
                         return (r9(), ir("details", {
                           key: index,
@@ -699,7 +758,7 @@ return (_ctx, _cache) => {
                 (related.value.length)
                   ? (r9(), ir("section", _hoisted_37, [
                       id("div", _hoisted_38, [
-                        _cache[18] || (_cache[18] = id("p", { class: "eyebrow" }, "KEEP READING", -1)),
+                        _cache[19] || (_cache[19] = id("p", { class: "eyebrow" }, "KEEP READING", -1)),
                         id("h2", _hoisted_39, ea(tA(copy).related_title), 1)
                       ]),
                       id("div", _hoisted_40, [
@@ -722,7 +781,7 @@ return (_ctx, _cache) => {
                               id("span", _hoisted_42, ea(tA(formatShortDate)(item.published_at)), 1),
                               id("strong", null, ea(item.title), 1),
                               id("span", _hoisted_43, ea(item.excerpt), 1),
-                              _cache[19] || (_cache[19] = id("span", {
+                              _cache[20] || (_cache[20] = id("span", {
                                 class: "related-card__arrow",
                                 "aria-hidden": "true"
                               }, "→", -1))
@@ -752,8 +811,8 @@ return (_ctx, _cache) => {
                 "aria-label": "关闭二维码",
                 onClick: _cache[1] || (_cache[1] = $event => (qrOpen.value = false))
               }, "×"),
-              _cache[20] || (_cache[20] = id("p", { class: "eyebrow" }, "SCAN TO READ", -1)),
-              _cache[21] || (_cache[21] = id("h2", null, "把这篇文章带走", -1)),
+              _cache[21] || (_cache[21] = id("p", { class: "eyebrow" }, "SCAN TO READ", -1)),
+              _cache[22] || (_cache[22] = id("h2", null, "把这篇文章带走", -1)),
               (qrData.value)
                 ? (r9(), ir("img", {
                     key: 0,
@@ -802,6 +861,6 @@ return (_ctx, _cache) => {
 }
 
 };
-const PostView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-790c4c28"]]);
+const PostView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-93ca629d"]]);
 
 export { PostView as default };

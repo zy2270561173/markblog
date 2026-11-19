@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/HomeView-cJz5TMiG.js","assets/TagList-D6gapMOS.js","assets/StateBlock-S-hHniVX.js","assets/HomeView-B9MK6Fl5.css","assets/PostsView-CHoae5O0.js","assets/PostsView-DV2uftu2.css","assets/PostView-CHGxKPlN.js","assets/media-CaEVXEFp.js","assets/browser-_egF2y6r.js","assets/PostView-DyCPJgGE.css","assets/AboutView-G4-ZJxo1.js","assets/AboutView-LTEQ2DmT.css","assets/SeriesView-C-5kMRhq.js","assets/SeriesView-DFgEjHx3.css","assets/LegalView-BpW2TT7-.js","assets/LegalView-CiDhoeYc.css","assets/AdminLoginView-BEFap7Zh.js","assets/AdminLoginView-CjD8mjBd.css","assets/AdminDashboardView-Ck_LGfMF.js","assets/AdminLayout-D1aO2TbO.js","assets/AdminLayout-D9IzFoRu.css","assets/AdminDashboardView-D87QodOB.css","assets/AdminTaxonomyView-BOp_vqCS.js","assets/AdminTaxonomyView-BFz56gI1.css","assets/AdminPostsView-C3p34Kwi.js","assets/ConfirmDialog-B07rAO64.js","assets/ConfirmDialog-CPl499JJ.css","assets/AdminPostsView-DsbwtAY3.css","assets/AdminAssetsView-C49wrxSp.js","assets/AdminAssetsView-C6yhLyLI.css","assets/AdminMaintenanceView-M9CsLw88.js","assets/AdminMaintenanceView-B8L0MZS1.css","assets/AdminAppearanceView-DsUaqqdw.js","assets/AdminAppearanceView--8vd-tiI.css","assets/AdminEditorView-B9rwnp9g.js","assets/AdminEditorView-BNEO4PJA.css","assets/AdminSettingsView-DYrFWvJn.js","assets/AdminSettingsView-CB45oAVt.css","assets/NotFoundView-CXiCV5aO.js","assets/NotFoundView-BEaxyTzW.css"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/HomeView-BMhRlu9v.js","assets/TagList-CvdUkb2T.js","assets/StateBlock-tx_KSiNY.js","assets/HomeView-B9MK6Fl5.css","assets/PostsView-CnlRzlRG.js","assets/PostsView-DV2uftu2.css","assets/PostView-Ur8svW9s.js","assets/media-CTPzXMbo.js","assets/browser-_egF2y6r.js","assets/PostView-CJk7EfUg.css","assets/AboutView-D0tRPefS.js","assets/AboutView-LTEQ2DmT.css","assets/SeriesView-D6eLmXVK.js","assets/SeriesView-DFgEjHx3.css","assets/LegalView-B6-BonN-.js","assets/LegalView-CiDhoeYc.css","assets/AdminLoginView-BxcyjNAm.js","assets/AdminLoginView-CjD8mjBd.css","assets/AdminDashboardView-DDODnu6v.js","assets/AdminLayout-DC4n1tpp.js","assets/AdminLayout-D9IzFoRu.css","assets/AdminDashboardView-D87QodOB.css","assets/AdminTaxonomyView-D4PCYeG1.js","assets/AdminTaxonomyView-BFz56gI1.css","assets/AdminPostsView-B3bP9Hj7.js","assets/ConfirmDialog-jJNMl_Iu.js","assets/ConfirmDialog-CPl499JJ.css","assets/AdminPostsView-DsbwtAY3.css","assets/AdminAssetsView-DOKjJLwd.js","assets/AdminAssetsView-C6yhLyLI.css","assets/AdminMaintenanceView-1sjU6Hdj.js","assets/AdminMaintenanceView-B8L0MZS1.css","assets/AdminAppearanceView-DhPXGFw0.js","assets/AdminAppearanceView--8vd-tiI.css","assets/AdminEditorView-Dh0RTVDU.js","assets/AdminEditorView-BNEO4PJA.css","assets/AdminSettingsView-_s3Wb0YG.js","assets/AdminSettingsView-CB45oAVt.css","assets/NotFoundView-C-W18dEj.js","assets/NotFoundView-BEaxyTzW.css"])))=>i.map(i=>d[i]);
 true              &&(function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -2496,114 +2496,114 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: () => __vitePreload(() => import('./HomeView-cJz5TMiG.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0),
+    component: () => __vitePreload(() => import('./HomeView-BMhRlu9v.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0),
   },
   {
     path: '/posts',
     name: 'posts',
-    component: () => __vitePreload(() => import('./PostsView-CHoae5O0.js'),true              ?__vite__mapDeps([4,2,5]):void 0),
+    component: () => __vitePreload(() => import('./PostsView-CnlRzlRG.js'),true              ?__vite__mapDeps([4,2,5]):void 0),
   },
   {
     path: '/posts/:slug',
     name: 'post',
-    component: () => __vitePreload(() => import('./PostView-CHGxKPlN.js'),true              ?__vite__mapDeps([6,2,1,7,8,9]):void 0),
+    component: () => __vitePreload(() => import('./PostView-Ur8svW9s.js'),true              ?__vite__mapDeps([6,2,1,7,8,9]):void 0),
   },
   {
     path: '/preview/:token',
     name: 'post-preview',
-    component: () => __vitePreload(() => import('./PostView-CHGxKPlN.js'),true              ?__vite__mapDeps([6,2,1,7,8,9]):void 0),
+    component: () => __vitePreload(() => import('./PostView-Ur8svW9s.js'),true              ?__vite__mapDeps([6,2,1,7,8,9]):void 0),
     meta: { noindex: true },
   },
   {
     path: '/about',
     name: 'about',
-    component: () => __vitePreload(() => import('./AboutView-G4-ZJxo1.js'),true              ?__vite__mapDeps([10,2,11]):void 0),
+    component: () => __vitePreload(() => import('./AboutView-D0tRPefS.js'),true              ?__vite__mapDeps([10,2,11]):void 0),
   },
   {
     path: '/series/:name',
     name: 'series',
-    component: () => __vitePreload(() => import('./SeriesView-C-5kMRhq.js'),true              ?__vite__mapDeps([12,2,13]):void 0),
+    component: () => __vitePreload(() => import('./SeriesView-D6eLmXVK.js'),true              ?__vite__mapDeps([12,2,13]):void 0),
   },
   {
     path: '/privacy',
     name: 'privacy',
-    component: () => __vitePreload(() => import('./LegalView-BpW2TT7-.js'),true              ?__vite__mapDeps([14,2,15]):void 0),
+    component: () => __vitePreload(() => import('./LegalView-B6-BonN-.js'),true              ?__vite__mapDeps([14,2,15]):void 0),
   },
   {
     path: '/disclaimer',
     name: 'disclaimer',
-    component: () => __vitePreload(() => import('./LegalView-BpW2TT7-.js'),true              ?__vite__mapDeps([14,2,15]):void 0),
+    component: () => __vitePreload(() => import('./LegalView-B6-BonN-.js'),true              ?__vite__mapDeps([14,2,15]):void 0),
   },
   {
     path: '/admin',
     name: 'admin-login',
-    component: () => __vitePreload(() => import('./AdminLoginView-BEFap7Zh.js'),true              ?__vite__mapDeps([16,17]):void 0),
+    component: () => __vitePreload(() => import('./AdminLoginView-BxcyjNAm.js'),true              ?__vite__mapDeps([16,17]):void 0),
     meta: { admin: true, guestOnly: true, noindex: true },
   },
   {
     path: '/admin/dashboard',
     name: 'admin-dashboard',
-    component: () => __vitePreload(() => import('./AdminDashboardView-Ck_LGfMF.js'),true              ?__vite__mapDeps([18,19,20,2,21]):void 0),
+    component: () => __vitePreload(() => import('./AdminDashboardView-DDODnu6v.js'),true              ?__vite__mapDeps([18,19,20,2,21]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/taxonomy',
     name: 'admin-taxonomy',
-    component: () => __vitePreload(() => import('./AdminTaxonomyView-BOp_vqCS.js'),true              ?__vite__mapDeps([22,19,20,2,23]):void 0),
+    component: () => __vitePreload(() => import('./AdminTaxonomyView-D4PCYeG1.js'),true              ?__vite__mapDeps([22,19,20,2,23]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts',
     name: 'admin-posts',
-    component: () => __vitePreload(() => import('./AdminPostsView-C3p34Kwi.js'),true              ?__vite__mapDeps([24,19,20,25,26,2,27]):void 0),
+    component: () => __vitePreload(() => import('./AdminPostsView-B3bP9Hj7.js'),true              ?__vite__mapDeps([24,19,20,25,26,2,27]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/assets',
     name: 'admin-assets',
-    component: () => __vitePreload(() => import('./AdminAssetsView-C49wrxSp.js'),true              ?__vite__mapDeps([28,19,20,25,26,2,7,29]):void 0),
+    component: () => __vitePreload(() => import('./AdminAssetsView-DOKjJLwd.js'),true              ?__vite__mapDeps([28,19,20,25,26,2,7,29]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/maintenance',
     name: 'admin-maintenance',
-    component: () => __vitePreload(() => import('./AdminMaintenanceView-M9CsLw88.js'),true              ?__vite__mapDeps([30,8,19,20,31]):void 0),
+    component: () => __vitePreload(() => import('./AdminMaintenanceView-1sjU6Hdj.js'),true              ?__vite__mapDeps([30,8,19,20,31]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/appearance',
     name: 'admin-appearance',
-    component: () => __vitePreload(() => import('./AdminAppearanceView-DsUaqqdw.js'),true              ?__vite__mapDeps([32,19,20,2,33]):void 0),
+    component: () => __vitePreload(() => import('./AdminAppearanceView-DhPXGFw0.js'),true              ?__vite__mapDeps([32,19,20,2,33]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts/new',
     name: 'admin-post-new',
-    component: () => __vitePreload(() => import('./AdminEditorView-B9rwnp9g.js'),true              ?__vite__mapDeps([34,19,20,2,7,35]):void 0),
+    component: () => __vitePreload(() => import('./AdminEditorView-Dh0RTVDU.js'),true              ?__vite__mapDeps([34,19,20,2,7,35]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts/:id(\\d+)',
     name: 'admin-post-edit',
-    component: () => __vitePreload(() => import('./AdminEditorView-B9rwnp9g.js'),true              ?__vite__mapDeps([34,19,20,2,7,35]):void 0),
+    component: () => __vitePreload(() => import('./AdminEditorView-Dh0RTVDU.js'),true              ?__vite__mapDeps([34,19,20,2,7,35]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/settings',
     name: 'admin-settings',
-    component: () => __vitePreload(() => import('./AdminSettingsView-DYrFWvJn.js'),true              ?__vite__mapDeps([36,19,20,2,37]):void 0),
+    component: () => __vitePreload(() => import('./AdminSettingsView-_s3Wb0YG.js'),true              ?__vite__mapDeps([36,19,20,2,37]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/404',
     name: 'not-found',
-    component: () => __vitePreload(() => import('./NotFoundView-CXiCV5aO.js'),true              ?__vite__mapDeps([38,39]):void 0),
+    component: () => __vitePreload(() => import('./NotFoundView-C-W18dEj.js'),true              ?__vite__mapDeps([38,39]):void 0),
     meta: { noindex: true },
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'catch-all',
-    component: () => __vitePreload(() => import('./NotFoundView-CXiCV5aO.js'),true              ?__vite__mapDeps([38,39]):void 0),
+    component: () => __vitePreload(() => import('./NotFoundView-C-W18dEj.js'),true              ?__vite__mapDeps([38,39]):void 0),
     meta: { noindex: true },
   },
 ];
