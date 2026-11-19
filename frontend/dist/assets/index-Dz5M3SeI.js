@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/HomeView-_PK0MZkw.js","assets/TagList-kbTajt-g.js","assets/StateBlock-BcgC6NKn.js","assets/HomeView-B9MK6Fl5.css","assets/PostsView-DAJuPb_K.js","assets/PostsView-DV2uftu2.css","assets/PostView-B2vQOEXU.js","assets/media-DqM667uo.js","assets/browser-_egF2y6r.js","assets/PostView-DyCPJgGE.css","assets/AboutView-BerxwVNY.js","assets/AboutView-LTEQ2DmT.css","assets/SeriesView-g6wROgFf.js","assets/SeriesView-DFgEjHx3.css","assets/LegalView-DqBYOOBg.js","assets/LegalView-CiDhoeYc.css","assets/AdminLoginView-CG1-3hWX.js","assets/AdminLoginView-CjD8mjBd.css","assets/AdminDashboardView-DPGISu8W.js","assets/AdminLayout-C_K7AnsG.js","assets/AdminLayout-D9IzFoRu.css","assets/AdminDashboardView-D87QodOB.css","assets/AdminTaxonomyView-s2Qdx4zM.js","assets/AdminTaxonomyView-BFz56gI1.css","assets/AdminPostsView-Dz_Dd-rR.js","assets/ConfirmDialog-C0wubusX.js","assets/ConfirmDialog-CPl499JJ.css","assets/AdminPostsView-DsbwtAY3.css","assets/AdminAssetsView-CFSxRtWH.js","assets/AdminAssetsView-C6yhLyLI.css","assets/AdminMaintenanceView-DfcbWv2f.js","assets/AdminMaintenanceView-B8L0MZS1.css","assets/AdminAppearanceView-4BDEee4H.js","assets/AdminAppearanceView--8vd-tiI.css","assets/AdminEditorView-ymEJS3Jh.js","assets/AdminEditorView-BNEO4PJA.css","assets/AdminSettingsView-Chnj4isn.js","assets/AdminSettingsView-CB45oAVt.css","assets/NotFoundView-NLdL1aTw.js","assets/NotFoundView-BEaxyTzW.css"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/HomeView-cJz5TMiG.js","assets/TagList-D6gapMOS.js","assets/StateBlock-S-hHniVX.js","assets/HomeView-B9MK6Fl5.css","assets/PostsView-CHoae5O0.js","assets/PostsView-DV2uftu2.css","assets/PostView-CHGxKPlN.js","assets/media-CaEVXEFp.js","assets/browser-_egF2y6r.js","assets/PostView-DyCPJgGE.css","assets/AboutView-G4-ZJxo1.js","assets/AboutView-LTEQ2DmT.css","assets/SeriesView-C-5kMRhq.js","assets/SeriesView-DFgEjHx3.css","assets/LegalView-BpW2TT7-.js","assets/LegalView-CiDhoeYc.css","assets/AdminLoginView-BEFap7Zh.js","assets/AdminLoginView-CjD8mjBd.css","assets/AdminDashboardView-Ck_LGfMF.js","assets/AdminLayout-D1aO2TbO.js","assets/AdminLayout-D9IzFoRu.css","assets/AdminDashboardView-D87QodOB.css","assets/AdminTaxonomyView-BOp_vqCS.js","assets/AdminTaxonomyView-BFz56gI1.css","assets/AdminPostsView-C3p34Kwi.js","assets/ConfirmDialog-B07rAO64.js","assets/ConfirmDialog-CPl499JJ.css","assets/AdminPostsView-DsbwtAY3.css","assets/AdminAssetsView-C49wrxSp.js","assets/AdminAssetsView-C6yhLyLI.css","assets/AdminMaintenanceView-M9CsLw88.js","assets/AdminMaintenanceView-B8L0MZS1.css","assets/AdminAppearanceView-DsUaqqdw.js","assets/AdminAppearanceView--8vd-tiI.css","assets/AdminEditorView-B9rwnp9g.js","assets/AdminEditorView-BNEO4PJA.css","assets/AdminSettingsView-DYrFWvJn.js","assets/AdminSettingsView-CB45oAVt.css","assets/NotFoundView-CXiCV5aO.js","assets/NotFoundView-BEaxyTzW.css"])))=>i.map(i=>d[i]);
 true              &&(function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -851,7 +851,7 @@ const _hoisted_4$4 = { class: "brand-name" };
 const _hoisted_5$3 = { class: "brand-note" };
 const _hoisted_6$3 = ["aria-expanded"];
 const _hoisted_7$3 = { class: "nav-toggle__label" };
-const _hoisted_8$3 = ["aria-label"];
+const _hoisted_8$2 = ["aria-label"];
 const _hoisted_9$2 = {
   key: 0,
   viewBox: "0 0 20 20",
@@ -1116,7 +1116,7 @@ return (_ctx, _cache) => {
                     }, null, -1)
                   ]))])),
             id("span", _hoisted_12$2, ea(tA(copy).theme_menu_label), 1)
-          ], 8, _hoisted_8$3),
+          ], 8, _hoisted_8$2),
           id("div", {
             class: "theme-menu",
             role: "group",
@@ -1224,7 +1224,7 @@ const _hoisted_7$2 = {
   key: 0,
   class: "footer-brand__since"
 };
-const _hoisted_8$2 = {
+const _hoisted_8$1 = {
   class: "footer-nav",
   "aria-label": "页脚导航"
 };
@@ -1300,7 +1300,7 @@ return (_ctx, _cache) => {
             ? (r9(), ir("p", _hoisted_7$2, ea(tA(copy).footer_since_label) + " " + ea(since.value) + " · " + ea(tA(copy).footer_since), 1))
             : i_("", true)
         ]),
-        id("nav", _hoisted_8$2, [
+        id("nav", _hoisted_8$1, [
           id("p", _hoisted_9$1, ea(tA(copy).footer_heading), 1),
           ip(_component_RouterLink, { to: "/" }, {
             default: na(() => [
@@ -1385,19 +1385,15 @@ const _hoisted_1$2 = {
   key: 0,
   class: "pet-wrap"
 };
-const _hoisted_2$2 = {
-  key: 0,
-  class: "pet__bubble"
-};
-const _hoisted_3$2 = ["src"];
-const _hoisted_4$2 = { class: "pet-menu__head" };
-const _hoisted_5$1 = {
+const _hoisted_2$2 = ["src"];
+const _hoisted_3$2 = { class: "pet-menu__head" };
+const _hoisted_4$2 = {
   key: 0,
   class: "pet-actions"
 };
-const _hoisted_6$1 = ["title", "onClick"];
-const _hoisted_7$1 = { class: "pet-scale" };
-const _hoisted_8$1 = ["value"];
+const _hoisted_5$1 = ["title", "onClick"];
+const _hoisted_6$1 = { class: "pet-scale" };
+const _hoisted_7$1 = ["value"];
 
 const PREF_KEY = 'markblog:pet:v1';
 
@@ -1455,6 +1451,8 @@ const hidden = tx(false);
 const current = tx('idle');
 const frame = tx(1);
 const bubble = tx('');
+const bubbleEl = tx(null);
+const bubblePosition = tx(null);
 const menuOpen = tx(false);
 const actionOpen = tx(false);
 const menuAnchor = tx(null);
@@ -1469,6 +1467,7 @@ let randomTimer = null;
 let dragStart = null;
 let moved = false;
 let hoverTimer = null;
+let bubbleFrame = 0;
 
 const petStyle = iH(() => ({
   '--pet-scale': String(scale.value),
@@ -1476,6 +1475,11 @@ const petStyle = iH(() => ({
     ? { left: `${position.value.left}px`, top: `${position.value.top}px`, right: 'auto', bottom: 'auto' }
     : {}),
 }));
+const bubbleStyle = iH(() =>
+  bubblePosition.value
+    ? { left: `${bubblePosition.value.left}px`, top: `${bubblePosition.value.top}px` }
+    : { left: '0px', top: '0px', opacity: 0 },
+);
 const sprite = iH(() => `/pet/${current.value}_0/${frame.value}.webp`);
 const actionList = iH(() =>
   Object.entries(ACTIONS).map(([name, info]) => ({ name, ...info })),
@@ -1510,10 +1514,48 @@ function savePrefs() {
   }
 }
 
+function placeBubble() {
+  const bubbleNode = bubbleEl.value;
+  const pet = petEl.value;
+  if (!bubble.value || !bubbleNode || !pet) return
+  const margin = 8;
+  const gap = 9;
+  const petRect = pet.getBoundingClientRect();
+  const bubbleRect = bubbleNode.getBoundingClientRect();
+  let left = petRect.left - bubbleRect.width - gap;
+  let top = petRect.top - bubbleRect.height - gap;
+
+  // Prefer above-left. If that is clipped, flip to the right or below and
+  // finally clamp inside the viewport so the text is always readable.
+  if (left < margin) left = petRect.right + gap;
+  if (left + bubbleRect.width > window.innerWidth - margin) {
+    left = window.innerWidth - margin - bubbleRect.width;
+  }
+  if (top < margin) {
+    top = petRect.bottom + gap;
+    if (top + bubbleRect.height > window.innerHeight - margin) {
+      top = Math.max(margin, window.innerHeight - margin - bubbleRect.height);
+    }
+  }
+  bubblePosition.value = {
+    left: Math.max(margin, left),
+    top: Math.max(margin, top),
+  };
+}
+
+function scheduleBubblePlacement() {
+  window.cancelAnimationFrame(bubbleFrame);
+  bubbleFrame = window.requestAnimationFrame(placeBubble);
+}
+
 function say(text, duration = 3200) {
   bubble.value = text;
+  bubblePosition.value = null;
   window.clearTimeout(bubbleTimer);
-  if (text) bubbleTimer = window.setTimeout(() => (bubble.value = ''), duration);
+  if (text) {
+    bubbleTimer = window.setTimeout(() => (bubble.value = ''), duration);
+    t8(scheduleBubblePlacement);
+  }
 }
 
 function stopTick() {
@@ -1696,6 +1738,14 @@ function randomAction() {
   play(randomOf(['happy', 'stretch', 'blush', 'dance', 'wave']));
 }
 
+ny(
+  [bubble, position, scale, menuOpen],
+  () => {
+    if (bubble.value && !menuOpen.value) t8(scheduleBubblePlacement);
+  },
+  { deep: true },
+);
+
 lS(() => {
   readPrefs();
   mounted.value = true;
@@ -1708,13 +1758,16 @@ lS(() => {
   }
   randomTimer = window.setInterval(randomAction, 52000);
   window.addEventListener('keydown', onKeydown);
+  window.addEventListener('resize', scheduleBubblePlacement);
 });
 
 lw(() => {
   stopTick();
   window.clearTimeout(bubbleTimer);
   window.clearInterval(randomTimer);
+  window.cancelAnimationFrame(bubbleFrame);
   window.removeEventListener('keydown', onKeydown);
+  window.removeEventListener('resize', scheduleBubblePlacement);
 });
 
 return (_ctx, _cache) => {
@@ -1737,8 +1790,14 @@ return (_ctx, _cache) => {
             }, [
               ip(ol, { name: "pet-bubble" }, {
                 default: na(() => [
-                  (bubble.value)
-                    ? (r9(), ir("p", _hoisted_2$2, ea(bubble.value), 1))
+                  (bubble.value && !menuOpen.value)
+                    ? (r9(), ir("p", {
+                        key: 0,
+                        ref_key: "bubbleEl",
+                        ref: bubbleEl,
+                        class: "pet__bubble",
+                        style: G$1(bubbleStyle.value)
+                      }, ea(bubble.value), 5))
                     : i_("", true)
                 ]),
                 _: 1
@@ -1762,7 +1821,7 @@ return (_ctx, _cache) => {
                   alt: "大肥鱼鲸鱼娘",
                   draggable: "false",
                   onDragstart: _cache[0] || (_cache[0] = sd(() => {}, ["prevent"]))
-                }, null, 40, _hoisted_3$2)
+                }, null, 40, _hoisted_2$2)
               ], 32),
               (menuOpen.value)
                 ? (r9(), ir("div", {
@@ -1771,7 +1830,7 @@ return (_ctx, _cache) => {
                     style: G$1(menuAnchor.value ? { bottom: `${menuAnchor.value}px` } : undefined),
                     onClick: _cache[2] || (_cache[2] = sd(() => {}, ["stop"]))
                   }, [
-                    id("div", _hoisted_4$2, [
+                    id("div", _hoisted_3$2, [
                       _cache[3] || (_cache[3] = id("strong", null, "大肥鱼", -1)),
                       id("button", {
                         type: "button",
@@ -1794,18 +1853,18 @@ return (_ctx, _cache) => {
                       id("span", null, ea(actionOpen.value ? '−' : '+'), 1)
                     ]),
                     (actionOpen.value)
-                      ? (r9(), ir("div", _hoisted_5$1, [
+                      ? (r9(), ir("div", _hoisted_4$2, [
                           (r9(true), ir(r2, null, lj(actionList.value, (action) => {
                             return (r9(), ir("button", {
                               key: action.name,
                               type: "button",
                               title: action.label,
                               onClick: $event => (pickAction(action.name))
-                            }, ea(action.label), 9, _hoisted_6$1))
+                            }, ea(action.label), 9, _hoisted_5$1))
                           }), 128))
                         ]))
                       : i_("", true),
-                    id("label", _hoisted_7$1, [
+                    id("label", _hoisted_6$1, [
                       _cache[4] || (_cache[4] = id("span", null, "大小", -1)),
                       id("input", {
                         type: "range",
@@ -1814,7 +1873,7 @@ return (_ctx, _cache) => {
                         step: "0.05",
                         value: scale.value,
                         onInput: setScale
-                      }, null, 40, _hoisted_8$1)
+                      }, null, 40, _hoisted_7$1)
                     ]),
                     id("button", {
                       type: "button",
@@ -1833,7 +1892,7 @@ return (_ctx, _cache) => {
 }
 
 };
-const PetMascot = /*#__PURE__*/_export_sfc(_sfc_main$2, [['__scopeId',"data-v-b690cddc"]]);
+const PetMascot = /*#__PURE__*/_export_sfc(_sfc_main$2, [['__scopeId',"data-v-054d6953"]]);
 
 const _hoisted_1$1 = {
   key: 0,
@@ -2437,114 +2496,114 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: () => __vitePreload(() => import('./HomeView-_PK0MZkw.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0),
+    component: () => __vitePreload(() => import('./HomeView-cJz5TMiG.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0),
   },
   {
     path: '/posts',
     name: 'posts',
-    component: () => __vitePreload(() => import('./PostsView-DAJuPb_K.js'),true              ?__vite__mapDeps([4,2,5]):void 0),
+    component: () => __vitePreload(() => import('./PostsView-CHoae5O0.js'),true              ?__vite__mapDeps([4,2,5]):void 0),
   },
   {
     path: '/posts/:slug',
     name: 'post',
-    component: () => __vitePreload(() => import('./PostView-B2vQOEXU.js'),true              ?__vite__mapDeps([6,2,1,7,8,9]):void 0),
+    component: () => __vitePreload(() => import('./PostView-CHGxKPlN.js'),true              ?__vite__mapDeps([6,2,1,7,8,9]):void 0),
   },
   {
     path: '/preview/:token',
     name: 'post-preview',
-    component: () => __vitePreload(() => import('./PostView-B2vQOEXU.js'),true              ?__vite__mapDeps([6,2,1,7,8,9]):void 0),
+    component: () => __vitePreload(() => import('./PostView-CHGxKPlN.js'),true              ?__vite__mapDeps([6,2,1,7,8,9]):void 0),
     meta: { noindex: true },
   },
   {
     path: '/about',
     name: 'about',
-    component: () => __vitePreload(() => import('./AboutView-BerxwVNY.js'),true              ?__vite__mapDeps([10,2,11]):void 0),
+    component: () => __vitePreload(() => import('./AboutView-G4-ZJxo1.js'),true              ?__vite__mapDeps([10,2,11]):void 0),
   },
   {
     path: '/series/:name',
     name: 'series',
-    component: () => __vitePreload(() => import('./SeriesView-g6wROgFf.js'),true              ?__vite__mapDeps([12,2,13]):void 0),
+    component: () => __vitePreload(() => import('./SeriesView-C-5kMRhq.js'),true              ?__vite__mapDeps([12,2,13]):void 0),
   },
   {
     path: '/privacy',
     name: 'privacy',
-    component: () => __vitePreload(() => import('./LegalView-DqBYOOBg.js'),true              ?__vite__mapDeps([14,2,15]):void 0),
+    component: () => __vitePreload(() => import('./LegalView-BpW2TT7-.js'),true              ?__vite__mapDeps([14,2,15]):void 0),
   },
   {
     path: '/disclaimer',
     name: 'disclaimer',
-    component: () => __vitePreload(() => import('./LegalView-DqBYOOBg.js'),true              ?__vite__mapDeps([14,2,15]):void 0),
+    component: () => __vitePreload(() => import('./LegalView-BpW2TT7-.js'),true              ?__vite__mapDeps([14,2,15]):void 0),
   },
   {
     path: '/admin',
     name: 'admin-login',
-    component: () => __vitePreload(() => import('./AdminLoginView-CG1-3hWX.js'),true              ?__vite__mapDeps([16,17]):void 0),
+    component: () => __vitePreload(() => import('./AdminLoginView-BEFap7Zh.js'),true              ?__vite__mapDeps([16,17]):void 0),
     meta: { admin: true, guestOnly: true, noindex: true },
   },
   {
     path: '/admin/dashboard',
     name: 'admin-dashboard',
-    component: () => __vitePreload(() => import('./AdminDashboardView-DPGISu8W.js'),true              ?__vite__mapDeps([18,19,20,2,21]):void 0),
+    component: () => __vitePreload(() => import('./AdminDashboardView-Ck_LGfMF.js'),true              ?__vite__mapDeps([18,19,20,2,21]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/taxonomy',
     name: 'admin-taxonomy',
-    component: () => __vitePreload(() => import('./AdminTaxonomyView-s2Qdx4zM.js'),true              ?__vite__mapDeps([22,19,20,2,23]):void 0),
+    component: () => __vitePreload(() => import('./AdminTaxonomyView-BOp_vqCS.js'),true              ?__vite__mapDeps([22,19,20,2,23]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts',
     name: 'admin-posts',
-    component: () => __vitePreload(() => import('./AdminPostsView-Dz_Dd-rR.js'),true              ?__vite__mapDeps([24,19,20,25,26,2,27]):void 0),
+    component: () => __vitePreload(() => import('./AdminPostsView-C3p34Kwi.js'),true              ?__vite__mapDeps([24,19,20,25,26,2,27]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/assets',
     name: 'admin-assets',
-    component: () => __vitePreload(() => import('./AdminAssetsView-CFSxRtWH.js'),true              ?__vite__mapDeps([28,19,20,25,26,2,7,29]):void 0),
+    component: () => __vitePreload(() => import('./AdminAssetsView-C49wrxSp.js'),true              ?__vite__mapDeps([28,19,20,25,26,2,7,29]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/maintenance',
     name: 'admin-maintenance',
-    component: () => __vitePreload(() => import('./AdminMaintenanceView-DfcbWv2f.js'),true              ?__vite__mapDeps([30,8,19,20,31]):void 0),
+    component: () => __vitePreload(() => import('./AdminMaintenanceView-M9CsLw88.js'),true              ?__vite__mapDeps([30,8,19,20,31]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/appearance',
     name: 'admin-appearance',
-    component: () => __vitePreload(() => import('./AdminAppearanceView-4BDEee4H.js'),true              ?__vite__mapDeps([32,19,20,2,33]):void 0),
+    component: () => __vitePreload(() => import('./AdminAppearanceView-DsUaqqdw.js'),true              ?__vite__mapDeps([32,19,20,2,33]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts/new',
     name: 'admin-post-new',
-    component: () => __vitePreload(() => import('./AdminEditorView-ymEJS3Jh.js'),true              ?__vite__mapDeps([34,19,20,2,7,35]):void 0),
+    component: () => __vitePreload(() => import('./AdminEditorView-B9rwnp9g.js'),true              ?__vite__mapDeps([34,19,20,2,7,35]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/posts/:id(\\d+)',
     name: 'admin-post-edit',
-    component: () => __vitePreload(() => import('./AdminEditorView-ymEJS3Jh.js'),true              ?__vite__mapDeps([34,19,20,2,7,35]):void 0),
+    component: () => __vitePreload(() => import('./AdminEditorView-B9rwnp9g.js'),true              ?__vite__mapDeps([34,19,20,2,7,35]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/admin/settings',
     name: 'admin-settings',
-    component: () => __vitePreload(() => import('./AdminSettingsView-Chnj4isn.js'),true              ?__vite__mapDeps([36,19,20,2,37]):void 0),
+    component: () => __vitePreload(() => import('./AdminSettingsView-DYrFWvJn.js'),true              ?__vite__mapDeps([36,19,20,2,37]):void 0),
     meta: { admin: true, requiresAdmin: true, noindex: true },
   },
   {
     path: '/404',
     name: 'not-found',
-    component: () => __vitePreload(() => import('./NotFoundView-NLdL1aTw.js'),true              ?__vite__mapDeps([38,39]):void 0),
+    component: () => __vitePreload(() => import('./NotFoundView-CXiCV5aO.js'),true              ?__vite__mapDeps([38,39]):void 0),
     meta: { noindex: true },
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'catch-all',
-    component: () => __vitePreload(() => import('./NotFoundView-NLdL1aTw.js'),true              ?__vite__mapDeps([38,39]):void 0),
+    component: () => __vitePreload(() => import('./NotFoundView-CXiCV5aO.js'),true              ?__vite__mapDeps([38,39]):void 0),
     meta: { noindex: true },
   },
 ];

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const emit = defineEmits(['open-ai'])
 
@@ -53,6 +53,8 @@ const hidden = ref(false)
 const current = ref('idle')
 const frame = ref(1)
 const bubble = ref('')
+const bubbleEl = ref(null)
+const bubblePosition = ref(null)
 const menuOpen = ref(false)
 const actionOpen = ref(false)
 const menuAnchor = ref(null)
@@ -67,6 +69,7 @@ let randomTimer = null
 let dragStart = null
 let moved = false
 let hoverTimer = null
+let bubbleFrame = 0
 
 const petStyle = computed(() => ({
   '--pet-scale': String(scale.value),
@@ -74,6 +77,11 @@ const petStyle = computed(() => ({
     ? { left: `${position.value.left}px`, top: `${position.value.top}px`, right: 'auto', bottom: 'auto' }
     : {}),
 }))
+const bubbleStyle = computed(() =>
+  bubblePosition.value
+    ? { left: `${bubblePosition.value.left}px`, top: `${bubblePosition.value.top}px` }
+    : { left: '0px', top: '0px', opacity: 0 },
+)
 const sprite = computed(() => `/pet/${current.value}_0/${frame.value}.webp`)
 const actionList = computed(() =>
   Object.entries(ACTIONS).map(([name, info]) => ({ name, ...info })),
@@ -108,10 +116,48 @@ function savePrefs() {
   }
 }
 
+function placeBubble() {
+  const bubbleNode = bubbleEl.value
+  const pet = petEl.value
+  if (!bubble.value || !bubbleNode || !pet) return
+  const margin = 8
+  const gap = 9
+  const petRect = pet.getBoundingClientRect()
+  const bubbleRect = bubbleNode.getBoundingClientRect()
+  let left = petRect.left - bubbleRect.width - gap
+  let top = petRect.top - bubbleRect.height - gap
+
+  // Prefer above-left. If that is clipped, flip to the right or below and
+  // finally clamp inside the viewport so the text is always readable.
+  if (left < margin) left = petRect.right + gap
+  if (left + bubbleRect.width > window.innerWidth - margin) {
+    left = window.innerWidth - margin - bubbleRect.width
+  }
+  if (top < margin) {
+    top = petRect.bottom + gap
+    if (top + bubbleRect.height > window.innerHeight - margin) {
+      top = Math.max(margin, window.innerHeight - margin - bubbleRect.height)
+    }
+  }
+  bubblePosition.value = {
+    left: Math.max(margin, left),
+    top: Math.max(margin, top),
+  }
+}
+
+function scheduleBubblePlacement() {
+  window.cancelAnimationFrame(bubbleFrame)
+  bubbleFrame = window.requestAnimationFrame(placeBubble)
+}
+
 function say(text, duration = 3200) {
   bubble.value = text
+  bubblePosition.value = null
   window.clearTimeout(bubbleTimer)
-  if (text) bubbleTimer = window.setTimeout(() => (bubble.value = ''), duration)
+  if (text) {
+    bubbleTimer = window.setTimeout(() => (bubble.value = ''), duration)
+    nextTick(scheduleBubblePlacement)
+  }
 }
 
 function stopTick() {
@@ -294,6 +340,14 @@ function randomAction() {
   play(randomOf(['happy', 'stretch', 'blush', 'dance', 'wave']))
 }
 
+watch(
+  [bubble, position, scale, menuOpen],
+  () => {
+    if (bubble.value && !menuOpen.value) nextTick(scheduleBubblePlacement)
+  },
+  { deep: true },
+)
+
 onMounted(() => {
   readPrefs()
   mounted.value = true
@@ -306,13 +360,16 @@ onMounted(() => {
   }
   randomTimer = window.setInterval(randomAction, 52000)
   window.addEventListener('keydown', onKeydown)
+  window.addEventListener('resize', scheduleBubblePlacement)
 })
 
 onBeforeUnmount(() => {
   stopTick()
   window.clearTimeout(bubbleTimer)
   window.clearInterval(randomTimer)
+  window.cancelAnimationFrame(bubbleFrame)
   window.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('resize', scheduleBubblePlacement)
 })
 </script>
 
@@ -324,7 +381,12 @@ onBeforeUnmount(() => {
 
     <div v-else ref="petEl" class="pet" :style="petStyle">
       <transition name="pet-bubble">
-        <p v-if="bubble" class="pet__bubble">{{ bubble }}</p>
+        <p
+          v-if="bubble && !menuOpen"
+          ref="bubbleEl"
+          class="pet__bubble"
+          :style="bubbleStyle"
+        >{{ bubble }}</p>
       </transition>
 
       <div
@@ -435,9 +497,8 @@ onBeforeUnmount(() => {
 }
 
 .pet__bubble {
-  position: absolute;
-  right: calc(100% + 9px);
-  bottom: 66px;
+  position: fixed;
+  z-index: 81;
   width: max-content;
   max-width: 210px;
   margin: 0;
@@ -585,9 +646,7 @@ onBeforeUnmount(() => {
   }
 
   .pet__bubble {
-    right: calc(100% + 7px);
-    bottom: 48px;
-    max-width: 150px;
+    max-width: min(180px, calc(100vw - 32px));
     font-size: 12px;
   }
 
