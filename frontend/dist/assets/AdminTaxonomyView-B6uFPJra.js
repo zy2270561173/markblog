@@ -1,6 +1,6 @@
-import { _ as _export_sfc, l as tx, I as tu, i as iH, m as lS, c as ii, n as na, r as r9, b as id, a as ir, e as ea, g as i_, Y, j as iv, p as r2, q as lj, x as nu, N as sh, y as o7, h as ip, t as tA, d as _t, M as adminApi, s as setPageMeta } from './index-BeCxQsOb.js';
-import { A as AdminLayout } from './AdminLayout-Czl6SbBQ.js';
-import { _ as _sfc_main$1 } from './StateBlock-DekcyWUZ.js';
+import { _ as _export_sfc, l as tx, I as tu, i as iH, m as lS, c as ii, n as na, r as r9, b as id, a as ir, e as ea, g as i_, Y, j as iv, p as r2, q as lj, x as nu, N as sh, y as o7, h as ip, t as tA, d as _t, M as adminApi, s as setPageMeta } from './index-Bh5gh0kG.js';
+import { A as AdminLayout } from './AdminLayout-BemB1M3v.js';
+import { _ as _sfc_main$1 } from './StateBlock-BWboh6p9.js';
 
 const _hoisted_1 = { class: "container admin-page taxonomy-page" };
 const _hoisted_2 = { class: "admin-page__head" };

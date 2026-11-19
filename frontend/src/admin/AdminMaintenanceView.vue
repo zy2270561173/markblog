@@ -57,7 +57,7 @@ function settingsPayload() {
     ai_api_key: aiForm.ai_api_key.trim(),
     ai_model: aiForm.ai_model.trim(),
     ai_system_prompt: aiForm.ai_system_prompt.trim(),
-    ai_daily_limit: aiForm.ai_daily_limit.trim(),
+    ai_daily_limit: String(aiForm.ai_daily_limit ?? '').trim() || '30',
     remote_auto_backup: remoteForm.remote_auto_backup,
     webdav_url: remoteForm.webdav_url.trim(),
     webdav_username: remoteForm.webdav_username.trim(),
@@ -161,7 +161,7 @@ async function loadPage() {
     aiForm.ai_api_key = settingData.ai_api_key || ''
     aiForm.ai_model = settingData.ai_model || 'deepseek-chat'
     aiForm.ai_system_prompt = settingData.ai_system_prompt || ''
-    aiForm.ai_daily_limit = settingData.ai_daily_limit || '30'
+    aiForm.ai_daily_limit = String(settingData.ai_daily_limit || '30')
     remoteForm.remote_auto_backup = settingData.remote_auto_backup === '1' ? '1' : '0'
     remoteForm.webdav_url = settingData.webdav_url || ''
     remoteForm.webdav_username = settingData.webdav_username || ''
@@ -533,7 +533,7 @@ onMounted(() => {
             </div>
             <div class="field">
               <label for="ai-limit">每人每天次数</label>
-              <input id="ai-limit" v-model="aiForm.ai_daily_limit" class="input" type="number" min="1" max="1000" />
+              <input id="ai-limit" v-model="aiForm.ai_daily_limit" class="input" type="text" inputmode="numeric" maxlength="4" />
             </div>
           </div>
           <div class="field">

@@ -1,6 +1,6 @@
-import { _ as _export_sfc, l as tx, I as tu, m as lS, c as ii, n as na, r as r9, b as id, t as tA, M as adminApi, a as ir, e as ea, g as i_, j as iv, x as nu, y as o7, Y, p as r2, q as lj, Q as se, O as sl, s as setPageMeta } from './index-BeCxQsOb.js';
+import { _ as _export_sfc, l as tx, I as tu, m as lS, c as ii, n as na, r as r9, b as id, t as tA, M as adminApi, a as ir, e as ea, g as i_, j as iv, x as nu, y as o7, Y, p as r2, q as lj, Q as se, O as sl, s as setPageMeta } from './index-Bh5gh0kG.js';
 import { Q as QRCode } from './browser-_egF2y6r.js';
-import { A as AdminLayout } from './AdminLayout-Czl6SbBQ.js';
+import { A as AdminLayout } from './AdminLayout-BemB1M3v.js';
 
 const _hoisted_1 = { class: "container admin-page maintenance-page" };
 const _hoisted_2 = { class: "admin-page__head" };
@@ -192,7 +192,7 @@ function settingsPayload() {
     ai_api_key: aiForm.ai_api_key.trim(),
     ai_model: aiForm.ai_model.trim(),
     ai_system_prompt: aiForm.ai_system_prompt.trim(),
-    ai_daily_limit: aiForm.ai_daily_limit.trim(),
+    ai_daily_limit: String(aiForm.ai_daily_limit ?? '').trim() || '30',
     remote_auto_backup: remoteForm.remote_auto_backup,
     webdav_url: remoteForm.webdav_url.trim(),
     webdav_username: remoteForm.webdav_username.trim(),
@@ -296,7 +296,7 @@ async function loadPage() {
     aiForm.ai_api_key = settingData.ai_api_key || '';
     aiForm.ai_model = settingData.ai_model || 'deepseek-chat';
     aiForm.ai_system_prompt = settingData.ai_system_prompt || '';
-    aiForm.ai_daily_limit = settingData.ai_daily_limit || '30';
+    aiForm.ai_daily_limit = String(settingData.ai_daily_limit || '30');
     remoteForm.remote_auto_backup = settingData.remote_auto_backup === '1' ? '1' : '0';
     remoteForm.webdav_url = settingData.webdav_url || '';
     remoteForm.webdav_username = settingData.webdav_username || '';
@@ -821,9 +821,9 @@ return (_ctx, _cache) => {
                       id: "ai-limit",
                       "onUpdate:modelValue": _cache[12] || (_cache[12] = $event => ((aiForm.ai_daily_limit) = $event)),
                       class: "input",
-                      type: "number",
-                      min: "1",
-                      max: "1000"
+                      type: "text",
+                      inputmode: "numeric",
+                      maxlength: "4"
                     }, null, 512), [
                       [o7, aiForm.ai_daily_limit]
                     ])
@@ -1197,6 +1197,6 @@ return (_ctx, _cache) => {
 }
 
 };
-const AdminMaintenanceView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-5d7f5204"]]);
+const AdminMaintenanceView = /*#__PURE__*/_export_sfc(_sfc_main, [['__scopeId',"data-v-b619e8fb"]]);
 
 export { AdminMaintenanceView as default };
