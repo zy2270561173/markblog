@@ -55,6 +55,7 @@ const frame = ref(1)
 const bubble = ref('')
 const menuOpen = ref(false)
 const actionOpen = ref(false)
+const menuAnchor = ref(null)
 const scale = ref(1)
 const position = ref({ left: null, top: null })
 const dragging = ref(false)
@@ -223,9 +224,14 @@ function pointerUp(event) {
 
 function toggleMenu(event) {
   event.preventDefault()
-  menuOpen.value = !menuOpen.value
+  const opening = !menuOpen.value
+  menuOpen.value = opening
   actionOpen.value = false
-  if (menuOpen.value) play('wait', randomOf(LINES.actions))
+  if (opening) {
+    const rect = petEl.value?.getBoundingClientRect()
+    menuAnchor.value = rect ? rect.height + 4 : null
+    play('wait', randomOf(LINES.actions))
+  }
 }
 
 function toggleActions() {
@@ -257,7 +263,17 @@ function showPet() {
 }
 
 function setScale(event) {
-  scale.value = Number(event.target.value)
+  const next = Math.min(1.4, Math.max(0.65, Number(event.target.value)))
+  const pet = petEl.value
+  if (pet && position.value.left !== null && scale.value > 0) {
+    const rect = pet.getBoundingClientRect()
+    const base = rect.width / scale.value
+    const width = base * next
+    const left = Math.max(4, Math.min(window.innerWidth - width - 4, rect.right - width))
+    const top = Math.max(70, rect.bottom - width)
+    position.value = { left, top }
+  }
+  scale.value = next
   savePrefs()
 }
 
@@ -333,7 +349,12 @@ onBeforeUnmount(() => {
         />
       </div>
 
-      <div v-if="menuOpen" class="pet-menu" @click.stop>
+      <div
+        v-if="menuOpen"
+        class="pet-menu"
+        :style="menuAnchor ? { bottom: `${menuAnchor}px` } : undefined"
+        @click.stop
+      >
         <div class="pet-menu__head">
           <strong>大肥鱼</strong>
           <button type="button" class="pet-menu__close" aria-label="关闭菜单" @click="menuOpen = false">×</button>

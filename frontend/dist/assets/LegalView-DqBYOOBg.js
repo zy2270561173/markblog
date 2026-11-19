@@ -1,5 +1,5 @@
-import { _ as _export_sfc, k as useSite, u as useCopy, i as iH, m as lS, a as ir, b as id, e as ea, h as ip, n as na, t as tA, d as _t, c as ii, D as Dt, r as r9, j as iv, s as setPageMeta } from './index-CMmYuTCi.js';
-import { _ as _sfc_main$1 } from './StateBlock-h0oeOJF9.js';
+import { _ as _export_sfc, k as useSite, u as useCopy, i as iH, m as lS, a as ir, b as id, e as ea, h as ip, n as na, t as tA, d as _t, c as ii, D as Dt, r as r9, j as iv, s as setPageMeta } from './index-DObL1nCg.js';
+import { _ as _sfc_main$1 } from './StateBlock-BcgC6NKn.js';
 
 const _hoisted_1 = { class: "legal-page container" };
 const _hoisted_2 = { class: "legal-head" };
